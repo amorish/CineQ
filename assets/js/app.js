@@ -131,6 +131,20 @@ function showVerificationScreen(email) {
   document.getElementById('verifyEmail').textContent = email;
 }
 
+async function sendCustomVerificationEmail(user) {
+  try {
+    const res = await fetch('/api/send-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email })
+    });
+    if (!res.ok) throw new Error('API Error');
+  } catch(e) {
+    console.warn("Custom email failed, falling back to Firebase default", e);
+    await user.sendEmailVerification();
+  }
+}
+
 async function resendVerification() {
   const user = firebase.auth().currentUser;
   if (!user) return showToast('No user logged in');
@@ -138,7 +152,7 @@ async function resendVerification() {
   btn.disabled = true;
   btn.textContent = 'Sending...';
   try {
-    await user.sendEmailVerification();
+    await sendCustomVerificationEmail(user);
     showToast('Verification email sent! Check your inbox & spam.');
   } catch (e) {
     if (e.code === 'auth/too-many-requests') showToast('Too many attempts. Wait a few minutes.');
@@ -194,7 +208,7 @@ async function handleAuth() {
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
       await cred.user.updateProfile({ displayName: username });
       if (db) await db.collection("cineq_users").doc(cred.user.uid).set({ username, email, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-      await cred.user.sendEmailVerification();
+      await sendCustomVerificationEmail(cred.user);
       showToast("Account created! Check your email to verify.");
     } else {
       await firebase.auth().signInWithEmailAndPassword(email, pwd);
