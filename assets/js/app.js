@@ -1130,7 +1130,7 @@ async function openModal(id, mediaType, event) {
                 <button class="progress-btn" onclick="changeSeason(${id},-1,event)">−</button>
                 <span class="progress-text" id="seasonProgressTextModal">${(() => {
                   const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
-                  return \`S\${epInfo.season}\`;
+                  return 'S' + epInfo.season;
                 })()}</span>
                 <button class="progress-btn" onclick="changeSeason(${id},1,event)">+</button>
               </div>
@@ -1141,7 +1141,7 @@ async function openModal(id, mediaType, event) {
                 <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
                 <span class="progress-text" id="epProgressTextModal">${(() => {
                   const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
-                  return \`\${epInfo.episode} / \${epInfo.seasonEpisodes || '?'}\`;
+                  return epInfo.episode + ' / ' + (epInfo.seasonEpisodes || '?');
                 })()}</span>
                 <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
               </div>
