@@ -1211,6 +1211,7 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
   max-width: 32px;
   padding: 0;
   box-sizing: border-box;
+  position: relative;
 }
 
 .streaming-provider-pill:first-child {
