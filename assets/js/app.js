@@ -832,8 +832,12 @@ function shareStats() {
   showToast("Generating image...");
   if (shareBtn) shareBtn.style.visibility = 'hidden';
 
+  // Ensure canvas background matches the theme
+  const style = getComputedStyle(document.body);
+  const bgColor = style.getPropertyValue('--surface').trim() || '#141414';
+
   html2canvas(node, {
-    backgroundColor: null, // Transparent background for rounded edges/shadows
+    backgroundColor: bgColor,
     scale: 2,
     logging: false,
     useCORS: true
