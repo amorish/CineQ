@@ -796,7 +796,10 @@ function updateStats() {
 
   const badge = document.getElementById('statsUsernameBadge');
   if (badge) {
-    badge.textContent = (typeof currentUser !== 'undefined' && currentUser && currentUser.email) ? `@${currentUser.email.split('@')[0]}` : '@cineq_user';
+    const name = (typeof currentUser !== 'undefined' && currentUser)
+      ? (currentUser.displayName || currentUser.email)
+      : 'cineq_user';
+    badge.textContent = `@${name}`;
   }
 }
 
