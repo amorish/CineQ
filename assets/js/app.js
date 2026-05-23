@@ -838,7 +838,11 @@ function shareStats() {
 
   htmlToImage.toBlob(node, {
     backgroundColor: bgColor,
-    pixelRatio: 2
+    pixelRatio: 2,
+    style: {
+      margin: '0',
+      transform: 'none'
+    }
   }).then(async (blob) => {
       // Try native Web Share API first
       if (navigator.canShare) {
