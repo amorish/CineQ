@@ -9,6 +9,7 @@
       "src": "/images/tmdb/(.*)",
       "dest": "https://image.tmdb.org/t/p/$1"
     },
+    { "handle": "filesystem" },
     {
       "src": "/(.*)",
       "dest": "/index.html"
