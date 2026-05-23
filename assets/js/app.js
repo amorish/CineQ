@@ -2149,16 +2149,16 @@ async function processImport(items, importState) {
       let mediaType = 'movie';
       if (it.type === 'letterboxd') {
         // Step 1: Search movie with year
-        const url1 = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&year='+it.year : ''}`;
-        const res1 = await fetch(url1).then(r => r.json());
+        const url1 = `/search/movie?query=${encodeURIComponent(it.name)}${it.year ? '&year='+it.year : ''}&include_adult=false&language=en-US`;
+        const res1 = await tmdbFetch(url1);
         if (res1.results && res1.results.length > 0) {
           tmdbItem = res1.results[0];
           mediaType = 'movie';
         }
         // Step 2: Retry movie search WITHOUT year (year mismatch often causes misses)
         if (!tmdbItem && it.year) {
-          const url2 = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}`;
-          const res2 = await fetch(url2).then(r => r.json());
+          const url2 = `/search/movie?query=${encodeURIComponent(it.name)}&include_adult=false&language=en-US`;
+          const res2 = await tmdbFetch(url2);
           if (res2.results && res2.results.length > 0) {
             tmdbItem = res2.results[0];
             mediaType = 'movie';
@@ -2166,16 +2166,16 @@ async function processImport(items, importState) {
         }
         // Step 3: Fallback to TV search (for anime, shows on Letterboxd)
         if (!tmdbItem) {
-          const url3 = `${baseUrl}/search/tv?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&first_air_date_year='+it.year : ''}`;
-          const res3 = await fetch(url3).then(r => r.json());
+          const url3 = `/search/tv?query=${encodeURIComponent(it.name)}${it.year ? '&first_air_date_year='+it.year : ''}&include_adult=false&language=en-US`;
+          const res3 = await tmdbFetch(url3);
           if (res3.results && res3.results.length > 0) {
             tmdbItem = res3.results[0];
             mediaType = 'tv';
           }
         }
       } else if (it.type === 'imdb') {
-        const url = `${baseUrl}/find/${it.id}?api_key=${apiKey}&external_source=imdb_id`;
-        const res = await fetch(url).then(r => r.json());
+        const url = `/find/${it.id}?external_source=imdb_id`;
+        const res = await tmdbFetch(url);
         if (res.movie_results && res.movie_results.length > 0) { tmdbItem = res.movie_results[0]; mediaType = 'movie'; }
         else if (res.tv_results && res.tv_results.length > 0) { tmdbItem = res.tv_results[0]; mediaType = 'tv'; }
       }
