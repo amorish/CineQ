@@ -265,14 +265,13 @@ async function loadWatchlist() {
 
 // ===== STATE =====
 let watchlist = [];
-let currentFilter = 'list';
-let currentSort = 'added';
-let currentSortOrder = 'desc';
-let flowModeActive = false;
-let searchTimeout;
-let lastQuery = '';
+let currentFilter = 'list'; // list, watching, watched, explore, archive
+let currentSort = 'added'; // added, name, rating, year
+let currentSortOrder = 'desc'; // desc, asc
+let advFilters = { type: 'all', year: 'all', length: 'all' };
 let deleteMode = false;
 let selectedForDelete = new Set();
+let flowModeActive = false;
 let recentlyDeletedItems = [];
 let exploreLoaded = false;
 let currentModalTitle = null;
@@ -327,12 +326,41 @@ const SORT_OPTIONS = [
 function toggleSortPanel() {
   const panel = document.getElementById('sortPanel');
   const backdrop = document.getElementById('sortPanelBackdrop');
-  const btn = document.getElementById('sortFilterBtn');
-  const isOpen = panel.style.display !== 'none';
-  panel.style.display = isOpen ? 'none' : 'block';
-  backdrop.style.display = isOpen ? 'none' : 'block';
-  btn.classList.toggle('active', !isOpen);
-  if (!isOpen) renderSortPills();
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'block';
+    backdrop.style.display = 'block';
+    setTimeout(() => panel.classList.add('open'), 10);
+  } else {
+    panel.classList.remove('open');
+    setTimeout(() => {
+      panel.style.display = 'none';
+      backdrop.style.display = 'none';
+    }, 300);
+  }
+}
+
+function toggleAdvancedFilter() {
+  const panel = document.getElementById('advFilterPanel');
+  const backdrop = document.getElementById('advFilterBackdrop');
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    panel.style.display = 'block';
+    backdrop.style.display = 'block';
+    setTimeout(() => panel.classList.add('open'), 10);
+  } else {
+    panel.classList.remove('open');
+    setTimeout(() => {
+      panel.style.display = 'none';
+      backdrop.style.display = 'none';
+    }, 300);
+  }
+}
+
+function setAdvFilter(category, value, btn) {
+  advFilters[category] = value;
+  const parent = btn.parentElement;
+  parent.querySelectorAll('.sort-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
 }
 
 function renderSortPills() {
@@ -747,11 +775,46 @@ function renderGrid() {
   updateStats();
 
   let items = [...watchlist];
-  if (currentFilter === 'watched')  items = items.filter(w => w.watched);
-  else if (currentFilter === 'watching') items = items.filter(w => !w.watched && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
-  else items = items.filter(w => !w.watched);
+  if (currentFilter === 'watched')  items = items.filter(w => w.watched && !w.archived);
+  else if (currentFilter === 'watching') items = items.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
+  else if (currentFilter === 'archive') items = items.filter(w => w.archived);
+  else items = items.filter(w => !w.watched && !w.archived);
+
+  // Apply Advanced Filters
+  if (advFilters.type !== 'all') {
+    items = items.filter(w => w.media_type === advFilters.type);
+  }
+  if (advFilters.year !== 'all') {
+    items = items.filter(w => {
+      const y = parseInt(w.year || (w.release_date || '').substring(0,4) || (w.first_air_date || '').substring(0,4));
+      if (!y) return false;
+      if (advFilters.year === '2020s') return y >= 2020 && y < 2030;
+      if (advFilters.year === '2010s') return y >= 2010 && y < 2020;
+      if (advFilters.year === '2000s') return y >= 2000 && y < 2010;
+      if (advFilters.year === '90s') return y >= 1990 && y < 2000;
+      if (advFilters.year === '80s') return y >= 1980 && y < 1990;
+      if (advFilters.year === 'older') return y < 1980;
+      return true;
+    });
+  }
+  if (advFilters.length !== 'all') {
+    items = items.filter(w => {
+      if (w.media_type !== 'movie') return true;
+      const r = w.runtime || 0;
+      if (!r) return true; // skip if no runtime
+      if (advFilters.length === 'short') return r < 90;
+      if (advFilters.length === 'medium') return r >= 90 && r <= 120;
+      if (advFilters.length === 'long') return r > 120;
+      return true;
+    });
+  }
 
   const showEpCounter = (currentFilter === 'watching');
+
+  const sortFilterBtn = document.getElementById('sortFilterBtn');
+  const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
+  if (sortFilterBtn) sortFilterBtn.style.display = items.length <= 1 ? 'none' : '';
+  if (selectModeToggleBtn) selectModeToggleBtn.style.display = items.length <= 1 ? 'none' : '';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
@@ -771,6 +834,7 @@ function renderGrid() {
     if (emptyTitle && emptySub) {
       if (currentFilter === 'watched') { emptyTitle.textContent = "You haven't completed anything yet"; emptySub.textContent = "Mark titles as watched to see them here"; }
       else if (currentFilter === 'watching') { emptyTitle.textContent = "No TV series currently in progress"; emptySub.textContent = "Update episodes watched to track your progress"; }
+      else if (currentFilter === 'archive') { emptyTitle.textContent = "No dropped titles"; emptySub.textContent = "Titles you drop will appear here"; }
       else { emptyTitle.textContent = "Your watchlist is empty"; emptySub.textContent = "Search movies & TV series to get started"; }
     }
     return;
@@ -893,10 +957,12 @@ async function openModal(id, mediaType, event) {
             ${(detail.genres || []).slice(0, 3).map(g => `<span class="tag">${g.name}</span>`).join('')}
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
-            ${inList ? `<div style="font-size:11px;color:var(--muted);">In list</div>` : ''}
+            ${inList && existingItem.archived ? `<div style="font-size:11px;color:var(--accent);">Dropped at: ${escHtml(existingItem.archiveTime) || 'Unknown'}</div>` : (inList ? `<div style="font-size:11px;color:var(--muted);">In list</div>` : '')}
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               ${!inList ? `<button class="modal-add-btn" onclick="addTitleFromModal(this)">+ Add</button>` : ''}
-              ${(!existingItem?.watched) ? `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>` : ''}
+              ${(!existingItem?.watched && !existingItem?.archived) ? `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>` : ''}
+              ${(inList && !existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="archive" style="width:12px;height:12px;"></i> Drop</button>` : ''}
+              ${(inList && existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="unarchive(${detail.id}, '${type}')"><i data-lucide="corner-up-left" style="width:12px;height:12px;"></i> Restore</button>` : ''}
               <button class="modal-cal-btn" onclick="openSchedule(${detail.id})"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule</button>
             </div>
           </div>
@@ -943,12 +1009,22 @@ async function openModal(id, mediaType, event) {
             <div class="detail-val">${detail.vote_count ? detail.vote_count.toLocaleString() : '—'}</div>
           </div>
           ${(inList && !existingItem.watched && type === 'tv') ? `
-          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
-            <div class="detail-label" style="margin: 0;">Episodes Watched</div>
-            <div class="progress-controls">
-              <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
-              <span class="progress-text">${existingItem.episodesWatched || 0} / ${detail.number_of_episodes || '?'}</span>
-              <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="detail-label" style="margin: 0;">Season</div>
+              <div class="progress-controls">
+                <button class="progress-btn" onclick="changeSeason(${id}, -1)">−</button>
+                <span class="progress-text" id="seasonProgressText">S${calculateCurrentSeason(existingItem.episodesWatched, detail.seasons)}</span>
+                <button class="progress-btn" onclick="changeSeason(${id}, 1)">+</button>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="detail-label" style="margin: 0;">Episodes Watched</div>
+              <div class="progress-controls">
+                <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
+                <span class="progress-text" id="epProgressTextModal">${existingItem.episodesWatched || 0} / ${detail.number_of_episodes || '?'}</span>
+                <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+              </div>
             </div>
           </div>` : ''}
           ${(inList && existingItem.watched) ? `
@@ -966,11 +1042,11 @@ async function openModal(id, mediaType, event) {
         </div>
 
         <div class="section-label">Synopsis</div>
-        <div class="synopsis" id="synopsisBox">
+        <div class="synopsis ${syn.length < 180 ? 'expanded' : ''}" id="synopsisBox">
           ${syn}
-          <div class="synopsis-fade"></div>
+          ${syn.length >= 180 ? '<div class="synopsis-fade"></div>' : ''}
         </div>
-        <button class="read-more" onclick="toggleSynopsis()">Read more ↓</button>
+        ${syn.length >= 180 ? '<button class="read-more" onclick="toggleSynopsis()">Read more ↓</button>' : ''}
 
         ${collectionOrder.length > 1 ? `
         <div class="watch-order">
@@ -1149,8 +1225,10 @@ async function updateProgress(id, change, event, skipSave = false) {
   if (wasWatched !== item.watched && !skipSave) renderGrid();
   const modal = document.getElementById('modalBackdrop');
   if (modal && modal.classList.contains('open')) {
-    const textEl = modal.querySelector('.progress-text');
+    const textEl = document.getElementById('epProgressTextModal');
     if (textEl) textEl.textContent = `${item.episodesWatched} / ${epTotal}`;
+    const seasonTextEl = document.getElementById('seasonProgressText');
+    if (seasonTextEl && currentModalTitle) seasonTextEl.textContent = `S${calculateCurrentSeason(item.episodesWatched, currentModalTitle.seasons)}`;
   }
   updateStats();
 }
@@ -1554,6 +1632,14 @@ function updateWatchlistPreference(key, value) {
 
 function exportWatchlistData() {
   try {
+    const today = todayDate();
+    let exportState = { date: today, count: 0 };
+    try { const stored = localStorage.getItem('cineq_export_state'); if (stored) exportState = JSON.parse(stored); } catch(e) {}
+    if (exportState.date !== today) exportState = { date: today, count: 0 };
+    if (exportState.count >= 3) {
+      showToast('Daily export limit reached (3/3). Resets tomorrow.');
+      return;
+    }
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(watchlist, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
@@ -1561,10 +1647,36 @@ function exportWatchlistData() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
+    exportState.count++;
+    localStorage.setItem('cineq_export_state', JSON.stringify(exportState));
     showToast('Watchlist exported successfully');
   } catch (e) { showToast('Failed to export data'); }
 }
+// ===== ARCHIVE / DROP LOGIC =====
+async function promptArchive(id, mediaType) {
+  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  if (!item) return;
+  const timeStr = prompt("Where did you leave off? (e.g. '1h 20m' or 'S02E04')");
+  if (timeStr === null) return;
+  item.archived = true;
+  item.archiveTime = timeStr.trim() || 'Unknown';
+  item.watched = false; // ensure it's not in watched
+  await save();
+  renderGrid();
+  openModal(id, mediaType);
+  showToast('Moved to dropped/archive');
+}
 
+async function unarchive(id, mediaType) {
+  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  if (!item) return;
+  item.archived = false;
+  item.archiveTime = null;
+  await save();
+  renderGrid();
+  openModal(id, mediaType);
+  showToast('Restored from archive');
+}
 // ===== HEADER LOGO CLICK RESET =====
 function resetToHome() {
   clearSearch();
@@ -1598,3 +1710,178 @@ function resetToHome() {
   }
   spawnParticle();
 })();
+
+function calculateCurrentSeason(episodesWatched, seasons) {
+  if (!seasons || !Array.isArray(seasons)) return 1;
+  const regularSeasons = seasons.filter(s => s.season_number > 0).sort((a,b) => a.season_number - b.season_number);
+  let eps = episodesWatched || 0;
+  if (eps === 0) return 1;
+  let s = 1;
+  for (const season of regularSeasons) {
+    if (eps <= season.episode_count) {
+      return season.season_number;
+    }
+    eps -= season.episode_count;
+    s = season.season_number;
+  }
+  return s;
+}
+
+function changeSeason(id, change) {
+  const item = watchlist.find(i => i.id === id && i.media_type === 'tv');
+  if (!item || !currentModalTitle || !currentModalTitle.seasons) return;
+  const regularSeasons = currentModalTitle.seasons.filter(s => s.season_number > 0).sort((a,b) => a.season_number - b.season_number);
+  if (regularSeasons.length === 0) return;
+  
+  const currentS = calculateCurrentSeason(item.episodesWatched, currentModalTitle.seasons);
+  let newS = currentS + change;
+  if (newS < 1) newS = 1;
+  if (newS > regularSeasons[regularSeasons.length - 1].season_number) newS = regularSeasons[regularSeasons.length - 1].season_number;
+  
+  let newEpisodesWatched = 0;
+  for (const season of regularSeasons) {
+    if (season.season_number < newS) {
+      newEpisodesWatched += season.episode_count;
+    } else if (season.season_number === newS) {
+      newEpisodesWatched += season.episode_count;
+    }
+  }
+  
+  const changeAmt = newEpisodesWatched - (item.episodesWatched || 0);
+  if (changeAmt !== 0) {
+    updateProgress(id, changeAmt, null, false);
+  }
+}
+
+// ===== IMPORT LOGIC =====
+function parseCSV(str) {
+  const arr = [];
+  let quote = false;
+  let row = [], col = '';
+  for (let c = 0; c < str.length; c++) {
+    let cc = str[c], nc = str[c+1];
+    if (cc === '"' && quote && nc === '"') { col += cc; ++c; continue; }
+    if (cc === '"') { quote = !quote; continue; }
+    if (cc === ',' && !quote) { row.push(col.trim()); col = ''; continue; }
+    if (cc === '\r' && nc === '\n' && !quote) { row.push(col.trim()); arr.push(row); col = ''; row = []; ++c; continue; }
+    if (cc === '\n' && !quote) { row.push(col.trim()); arr.push(row); col = ''; row = []; continue; }
+    if (cc === '\r' && !quote) { row.push(col.trim()); arr.push(row); col = ''; row = []; continue; }
+    col += cc;
+  }
+  if (col) row.push(col.trim());
+  if (row.length) arr.push(row);
+  return arr;
+}
+
+async function handleImport(event, source) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const today = todayDate();
+  let importState = { date: today, count: 0 };
+  try { const stored = localStorage.getItem('cineq_import_state'); if (stored) importState = JSON.parse(stored); } catch(e) {}
+  if (importState.date !== today) importState = { date: today, count: 0 };
+  if (importState.count >= 3) {
+    showToast('Daily import limit reached (3/3). Resets tomorrow.');
+    event.target.value = '';
+    return;
+  }
+
+  showToast('Reading file...');
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const contents = e.target.result;
+      if (source === 'cineq') {
+        const parsed = JSON.parse(contents);
+        if (!Array.isArray(parsed)) throw new Error('Invalid JSON');
+        let added = 0, skipped = 0;
+        for (const item of parsed) {
+          if (!item.id || !item.media_type) continue;
+          if (watchlist.find(w => w.id == item.id && w.media_type === item.media_type)) skipped++;
+          else { watchlist.unshift(item); added++; }
+        }
+        if (added > 0) {
+          importState.count++;
+          localStorage.setItem('cineq_import_state', JSON.stringify(importState));
+          await save(); renderGrid();
+        }
+        showToast(`Imported ${added} titles. Skipped ${skipped} duplicates.`);
+        event.target.value = '';
+        return;
+      }
+      
+      const rows = parseCSV(contents);
+      if (rows.length < 2) throw new Error('Empty CSV');
+      const headers = rows[0].map(h => h.toLowerCase());
+      const toFetch = [];
+      
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (source === 'letterboxd') {
+          const nameIdx = headers.indexOf('name');
+          const yearIdx = headers.indexOf('year');
+          if (nameIdx >= 0 && r[nameIdx]) toFetch.push({ type: 'letterboxd', name: r[nameIdx], year: r[yearIdx] });
+        } else if (source === 'imdb') {
+          const idIdx = headers.indexOf('const');
+          const typeIdx = headers.indexOf('title type');
+          if (idIdx >= 0 && r[idIdx]) toFetch.push({ type: 'imdb', id: r[idIdx], imdbType: r[typeIdx] });
+        }
+      }
+      
+      if (toFetch.length === 0) throw new Error('No valid rows found');
+      if (toFetch.length > 500) { showToast('File too large. Max 500 items per import.'); event.target.value = ''; return; }
+      
+      processImport(toFetch, importState);
+    } catch (err) { console.error(err); showToast('Failed to parse file.'); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+async function processImport(items, importState) {
+  let added = 0, skipped = 0, failed = 0;
+  showToast(`Starting import of ${items.length} titles... This may take a minute.`);
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i];
+    try {
+      let tmdbItem = null;
+      let mediaType = 'movie';
+      if (it.type === 'letterboxd') {
+        const url = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&year='+it.year : ''}`;
+        const res = await fetch(url).then(r => r.json());
+        if (res.results && res.results.length > 0) tmdbItem = res.results[0];
+      } else if (it.type === 'imdb') {
+        const url = `${baseUrl}/find/${it.id}?api_key=${apiKey}&external_source=imdb_id`;
+        const res = await fetch(url).then(r => r.json());
+        if (res.movie_results && res.movie_results.length > 0) { tmdbItem = res.movie_results[0]; mediaType = 'movie'; }
+        else if (res.tv_results && res.tv_results.length > 0) { tmdbItem = res.tv_results[0]; mediaType = 'tv'; }
+      }
+      
+      if (!tmdbItem) { failed++; continue; }
+      
+      if (watchlist.find(w => w.id == tmdbItem.id && w.media_type === mediaType)) {
+        skipped++;
+      } else {
+        watchlist.unshift({
+          id: tmdbItem.id,
+          media_type: mediaType,
+          title: tmdbItem.title || tmdbItem.name,
+          poster: tmdbItem.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbItem.poster_path}` : null,
+          addedAt: new Date().toISOString(),
+          watched: false
+        });
+        added++;
+      }
+    } catch (e) { failed++; }
+    
+    // throttle to avoid tmdb rate limits
+    if (i % 5 === 0 && i > 0) await new Promise(r => setTimeout(r, 200));
+  }
+  
+  if (added > 0) {
+    importState.count++;
+    localStorage.setItem('cineq_import_state', JSON.stringify(importState));
+    await save(); renderGrid();
+  }
+  showToast(`Import complete! Added: ${added}, Skipped: ${skipped}, Failed: ${failed}`);
+}

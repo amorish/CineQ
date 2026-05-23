@@ -40,10 +40,10 @@ button{font-family:inherit;cursor:pointer}
 }
 .logo-wrap { display:flex; align-items:center; flex-shrink:0; }
 .app-header .logo-img{height:36px;display:block;filter:drop-shadow(0 0 8px rgba(234,179,8,.25));flex-shrink:0;}
-.logo-dark { display: block; }
-.logo-light { display: none; }
-body.light-theme .logo-dark { display: none; }
-body.light-theme .logo-light { display: block; }
+.logo-dark { display: block !important; }
+.logo-light { display: none !important; }
+body.light-theme .logo-dark { display: none !important; }
+body.light-theme .logo-light { display: block !important; }
 .header-left,.header-right{display:flex;align-items:center;gap:8px}
 
 /* Inline header search */

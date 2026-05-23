@@ -89,6 +89,47 @@
     </div>
   </div>
 
+  <!-- Advanced Filter Panel Backdrop -->
+  <div class="sort-panel-backdrop" id="advFilterBackdrop" onclick="toggleAdvancedFilter()" style="display:none;"></div>
+  <!-- Advanced Filter Panel -->
+  <div class="sort-panel" id="advFilterPanel" style="display:none;">
+    <div class="sort-panel-inner" style="max-height:80vh;overflow-y:auto;">
+      <div class="sort-panel-header">
+        <span class="sort-panel-title">Advanced Filter</span>
+        <button class="icon-btn" onclick="toggleAdvancedFilter()" style="width:32px;height:32px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Type</div>
+        <div class="sort-pills" id="advFilterType">
+          <button class="sort-pill active" onclick="setAdvFilter('type', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('type', 'movie', this)">Movie</button>
+          <button class="sort-pill" onclick="setAdvFilter('type', 'tv', this)">TV Series</button>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Year</div>
+        <div class="sort-pills" id="advFilterYear">
+          <button class="sort-pill active" onclick="setAdvFilter('year', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2020s', this)">2020s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2010s', this)">2010s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2000s', this)">2000s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '90s', this)">90s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '80s', this)">80s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', 'older', this)">Older</button>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Length (Movies)</div>
+        <div class="sort-pills" id="advFilterLength">
+          <button class="sort-pill active" onclick="setAdvFilter('length', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'short', this)">Short (&lt;90m)</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'medium', this)">Medium (90-120m)</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'long', this)">Long (&gt;120m)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== TOP APP BAR ===== -->
   <header class="app-header">
     <div class="header-container">
@@ -151,9 +192,13 @@
         <button class="tab-btn active" onclick="setFilter('list', this)" id="tabList">List</button>
         <button class="tab-btn" onclick="setFilter('watching', this)" id="tabWatching">Watching</button>
         <button class="tab-btn" onclick="setFilter('watched', this)" id="tabWatched">Watched</button>
+        <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Archive / Dropped"><i data-lucide="archive" style="width:18px;height:18px;vertical-align:middle;"></i></button>
         <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
         <div style="flex:1"></div>
-        <button class="icon-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort" style="margin-bottom:8px;">
+        <button class="icon-btn" id="advancedFilterBtn" onclick="toggleAdvancedFilter()" title="Advanced Filter" style="margin-bottom:8px;">
+          <i data-lucide="filter"></i>
+        </button>
+        <button class="icon-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort" style="margin-bottom:8px;margin-left:8px;">
           <i data-lucide="sliders-horizontal"></i>
         </button>
         <button class="icon-btn" id="selectModeToggleBtn" onclick="toggleSelectMode()" title="Select" style="margin-bottom:8px;margin-left:8px;">
@@ -443,9 +488,14 @@
             <div class="setting-group">
               <label>Import Watchlist</label>
               <p class="setting-description">Import your watchlist from Letterboxd, IMDb, or a CineQ backup.</p>
-              <button class="settings-action-btn secondary" disabled style="opacity:0.5;cursor:not-allowed;">
-                <i data-lucide="upload" style="width:16px;height:16px;margin-right:8px;display:inline-block;vertical-align:middle;"></i><span style="vertical-align:middle;">Import (Coming Soon)</span>
-              </button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importCineq').click()">CineQ</button>
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importLetterboxd').click()">Letterboxd</button>
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importImdb').click()">IMDb</button>
+                <input type="file" id="importCineq" accept=".json" style="display:none" onchange="handleImport(event, 'cineq')" />
+                <input type="file" id="importLetterboxd" accept=".csv" style="display:none" onchange="handleImport(event, 'letterboxd')" />
+                <input type="file" id="importImdb" accept=".csv" style="display:none" onchange="handleImport(event, 'imdb')" />
+              </div>
             </div>
           </div>
         </main>
