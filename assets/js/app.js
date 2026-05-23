@@ -1288,9 +1288,9 @@ async function loadExplore() {
   }
   await fetchRandomTitle();
   await fetchExploreList('/trending/all/week', 'carousel-trending', null);
-  await fetchExploreList('/movie/popular', 'carousel-movies', 'movie');
-  await fetchExploreList('/tv/popular', 'carousel-tv', 'tv');
-  await fetchExploreList('/movie/upcoming', 'carousel-upcoming', 'movie');
+  await fetchExploreList('/movie/top_rated', 'carousel-movies', 'movie');
+  await fetchExploreList('/tv/top_rated', 'carousel-tv', 'tv');
+  await fetchExploreList('/movie/now_playing', 'carousel-upcoming', 'movie');
 }
 
 async function fetchExploreList(path, containerId, defaultMediaType, retries = 3) {
@@ -1316,7 +1316,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
         return `
           <div class="explore-card-wrap" onclick="openModal(${a.id}, '${mediaType}', event)">
             <div class="explore-card">
-              <img class="explore-card-img" src="${escHtml(poster)}" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
+              <img class="explore-card-img" src="${escHtml(poster)}" loading="lazy" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
             </div>
             <div class="explore-card-rank">${idx + 1}</div>
             <div class="explore-card-title">${escHtml(title)}</div>
@@ -1344,17 +1344,17 @@ async function fetchRandomTitle(forceNew = false) {
   if (btn) btn.classList.add('loading');
   lucide.createIcons();
   try {
-    const page = Math.floor(Math.random() * 15) + 1;
+    const page = Math.floor(Math.random() * 50) + 1;
     const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
-    const useTV = Math.random() > 0.6;
+    const useTV = Math.random() > 0.5;
     const path = useTV
-      ? `/discover/tv?sort_by=vote_average.desc&vote_count.gte=200&page=${page}${adult}`
-      : `/discover/movie?sort_by=vote_average.desc&vote_count.gte=500&page=${page}${adult}`;
+      ? `/discover/tv?sort_by=popularity.desc&vote_average.gte=6.8&vote_count.gte=200&page=${page}${adult}`
+      : `/discover/movie?sort_by=popularity.desc&vote_average.gte=6.5&vote_count.gte=500&page=${page}${adult}`;
     const res = await tmdbFetch(path);
     if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
     const mediaType = useTV ? 'tv' : 'movie';
-    let candidates = (data.results || []).filter(a => a.vote_average >= 7.0 && a.poster_path && !watchlist.some(w => w.id === a.id && w.media_type === mediaType));
+    let candidates = (data.results || []).filter(a => a.poster_path && !watchlist.some(w => w.id === a.id && w.media_type === mediaType));
     candidates = candidates.sort(() => 0.5 - Math.random());
     const newItems = [];
     for (const a of candidates) {
@@ -1399,8 +1399,8 @@ function renderRandomPicks(items) {
     const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
     return `
     <div class="explore-card" style="width:100%;flex-shrink:1;" onclick="openModal(${a.id}, '${mediaType}', event)">
-      <div style="width:100%;aspect-ratio:2/3;position:relative;border-radius:var(--radius-md);overflow:hidden;margin-bottom:8px;">
-        <img class="explore-card-img" src="${escHtml(poster)}" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
+      <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;position:relative;margin-bottom:8px;">
+        <img class="explore-card-img" src="${escHtml(poster)}" loading="lazy" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
       </div>
       <div class="explore-card-title" style="font-size:14px;">${escHtml(title)}</div>
       <div class="explore-card-meta" style="font-size:12px;">${typeLabel} · ★ ${score}</div>
