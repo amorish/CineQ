@@ -687,6 +687,14 @@ async function save() {
 
 // ===== STATS =====
 function updateStats() {
+  const badge = document.getElementById('statsUsernameBadge');
+  if (badge) {
+    const name = (typeof currentUser !== 'undefined' && currentUser)
+      ? (currentUser.displayName || currentUser.email)
+      : 'cineq_user';
+    badge.textContent = `@${name}`;
+  }
+
   const total = watchlist.length;
   const watched = watchlist.filter(w => w.watched).length;
   const totalElem = document.getElementById('totalCount');
@@ -728,72 +736,74 @@ function updateStats() {
   const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 50;
   const tvPct = totalMedia > 0 ? 100 - moviePct : 50;
   
-  const ctx = document.getElementById('mediaChart');
-  if (ctx && window.Chart) {
-    const style = getComputedStyle(document.body);
-    const accentColor  = style.getPropertyValue('--accent').trim()   || '#e11d48';
-    const surfaceColor = style.getPropertyValue('--surface').trim()  || '#ffffff';
-    const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
-    const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
-    const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
-    const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
+  try {
+    const ctx = document.getElementById('mediaChart');
+    if (ctx && typeof window.Chart !== 'undefined') {
+      const style = getComputedStyle(document.body);
+      const accentColor  = style.getPropertyValue('--accent').trim()   || '#e11d48';
+      const surfaceColor = style.getPropertyValue('--surface').trim()  || '#ffffff';
+      const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
+      const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
+      const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
+      const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
 
-    // Always destroy first so theme colors are fully re-applied
-    if (window.mediaChartInstance) {
-      window.mediaChartInstance.destroy();
-      window.mediaChartInstance = null;
-    }
+      // Always destroy first so theme colors are fully re-applied
+      if (window.mediaChartInstance) {
+        window.mediaChartInstance.destroy();
+        window.mediaChartInstance = null;
+      }
 
-    window.mediaChartInstance = new Chart(ctx.getContext('2d'), {
-      type: 'doughnut',
-      data: {
-        labels: ['Movies', 'TV Shows'],
-        datasets: [{
-          data: [moviePct, tvPct],
-          backgroundColor: [accentColor, '#3b82f6'],
-          borderWidth: 3,
-          borderColor: surfaceColor,  // always match the card background for clean gaps
-          borderRadius: 4,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '45%',
-        animation: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: bgColor,
-            titleColor: textColor,
-            bodyColor: mutedColor,
-            borderColor: borderClr,
-            borderWidth: 1,
-            callbacks: {
-              label: function(context) { return ` ${context.label}: ${context.raw}%`; }
+      window.mediaChartInstance = new window.Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Movies', 'TV Shows'],
+          datasets: [{
+            data: [moviePct, tvPct],
+            backgroundColor: [accentColor, '#3b82f6'],
+            borderWidth: 3,
+            borderColor: surfaceColor,
+            borderRadius: 4,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '45%',
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: bgColor,
+              titleColor: textColor,
+              bodyColor: mutedColor,
+              borderColor: borderClr,
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) { return ` ${context.label}: ${context.raw}%`; }
+              }
             }
           }
         }
-      }
-    });
-
-    const legendContainer = document.getElementById('customLegend');
-    if (legendContainer) {
-      legendContainer.innerHTML = '';
-      const labels = ['Movies', 'TV Shows'];
-      const colors = [accentColor, '#3b82f6'];
-      const dataValues = [moviePct, tvPct];
-      labels.forEach((label, index) => {
-        legendContainer.innerHTML += `<div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:4px 10px; border-radius:20px;">
-          <div style="width:10px; height:10px; border-radius:2px; background:${colors[index]};"></div>
-          <span style="color:var(--muted);">${label} (${dataValues[index]}%)</span>
-        </div>`;
       });
-    }
-  }
 
-  const badge = document.getElementById('statsUsernameBadge');
+      const legendContainer = document.getElementById('customLegend');
+      if (legendContainer) {
+        legendContainer.innerHTML = '';
+        const labels = ['Movies', 'TV Shows'];
+        const colors = [accentColor, '#3b82f6'];
+        const dataValues = [moviePct, tvPct];
+        labels.forEach((label, index) => {
+          legendContainer.innerHTML += `<div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:4px 10px; border-radius:20px;">
+            <div style="width:10px; height:10px; border-radius:2px; background:${colors[index]};"></div>
+            <span style="color:var(--muted);">${label} (${dataValues[index]}%)</span>
+          </div>`;
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Chart initialization error:", err);
+  }
   if (badge) {
     const name = (typeof currentUser !== 'undefined' && currentUser)
       ? (currentUser.displayName || currentUser.email)
@@ -805,19 +815,31 @@ function updateStats() {
 function shareStats() {
   const node = document.getElementById('statsExportArea');
   if (!node) return;
+  
+  if (typeof html2canvas === 'undefined') {
+    console.error("html2canvas is blocked or failed to load");
+    showToast("Share failed: Please disable ad-blockers for this site");
+    return;
+  }
+  
   showToast("Generating image...");
-  html2canvas(node, {
-    backgroundColor: getComputedStyle(document.body).backgroundColor,
-    scale: 2
-  }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'cineq-stats.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }).catch(err => {
-    console.error("Export error", err);
-    showToast("Failed to export image");
-  });
+  try {
+    html2canvas(node, {
+      backgroundColor: getComputedStyle(document.body).backgroundColor,
+      scale: 2
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'cineq-stats.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).catch(err => {
+      console.error("Export error", err);
+      showToast("Failed to export image");
+    });
+  } catch (err) {
+    console.error("Share error", err);
+    showToast("Failed to share stats");
+  }
 }
 
 function toggleSearch() {}
