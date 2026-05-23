@@ -2125,9 +2125,25 @@ async function handleImport(event, source) {
 
 async function processImport(items, importState) {
   let added = 0, skipped = 0, failed = 0;
-  showToast(`Starting import of ${items.length} titles... This may take a minute.`);
+  
+  const overlay = document.getElementById('importOverlay');
+  const statusEl = document.getElementById('importStatus');
+  if (overlay) overlay.style.display = 'flex';
+  
   for (let i = 0; i < items.length; i++) {
     const it = items[i];
+    if (statusEl) statusEl.textContent = `Importing ${i + 1} of ${items.length}...`;
+    
+    // Check local watchlist first to save TMDB API calls
+    const localMatch = watchlist.find(w => 
+      w.title && it.name && w.title.toLowerCase() === it.name.toLowerCase()
+    );
+    
+    if (localMatch) {
+      skipped++;
+      continue;
+    }
+    
     try {
       let tmdbItem = null;
       let mediaType = 'movie';
@@ -2190,6 +2206,8 @@ async function processImport(items, importState) {
     localStorage.setItem('cineq_import_state', JSON.stringify(importState));
     await save(); renderGrid();
   }
+  
+  if (overlay) overlay.style.display = 'none';
   showToast(`Import complete! Added: ${added}, Skipped: ${skipped}, Failed: ${failed}`);
 }
 
