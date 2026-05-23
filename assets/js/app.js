@@ -714,16 +714,76 @@ function updateStats() {
   const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 50;
   const tvPct = totalMedia > 0 ? 100 - moviePct : 50;
   
-  const movieArcLength = (moviePct / 100) * 125.66;
-  const pm = document.getElementById('statsGaugeMovie');
-  if (pm) pm.setAttribute('stroke-dasharray', `${movieArcLength} 125.66`);
-  
-  const pt = document.getElementById('statsGaugeTv');
-  if (pt) pt.setAttribute('stroke-dasharray', `${totalMedia > 0 ? 125.66 : 0} 125.66`);
-  const mp = document.getElementById('statsMoviePct');
-  if (mp) mp.textContent = moviePct + '%';
-  const tp = document.getElementById('statsTvPct');
-  if (tp) tp.textContent = tvPct + '%';
+  const ctx = document.getElementById('mediaChart');
+  if (ctx && window.Chart) {
+    const style = getComputedStyle(document.body);
+    const accentColor = style.getPropertyValue('--accent').trim() || '#e11d48';
+    const elevatedColor = style.getPropertyValue('--elevated').trim() || '#1c1c1e';
+    const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
+    const textColor = style.getPropertyValue('--text').trim() || '#ffffff';
+    const mutedColor = style.getPropertyValue('--muted').trim() || '#a1a1aa';
+    const borderColor = style.getPropertyValue('--border').trim() || '#2d2d30';
+    
+    if (window.mediaChartInstance) {
+      window.mediaChartInstance.data.datasets[0].data = [moviePct, tvPct];
+      window.mediaChartInstance.data.datasets[0].backgroundColor = [accentColor, '#3b82f6'];
+      window.mediaChartInstance.data.datasets[0].borderColor = elevatedColor;
+      window.mediaChartInstance.update();
+    } else {
+      window.mediaChartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Movies', 'TV Shows'],
+          datasets: [{
+            data: [moviePct, tvPct],
+            backgroundColor: [accentColor, '#3b82f6'],
+            borderWidth: 3, 
+            borderColor: elevatedColor, 
+            borderRadius: 4, 
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '45%', 
+          animation: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: bgColor,
+              titleColor: textColor,
+              bodyColor: mutedColor,
+              borderColor: borderColor,
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) { return ` ${context.label}: ${context.raw}%`; }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    const legendContainer = document.getElementById('customLegend');
+    if (legendContainer) {
+      legendContainer.innerHTML = '';
+      const labels = ['Movies', 'TV Shows'];
+      const colors = [accentColor, '#3b82f6'];
+      const dataValues = [moviePct, tvPct];
+      labels.forEach((label, index) => {
+        legendContainer.innerHTML += `<div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:4px 10px; border-radius:20px;">
+          <div style="width:10px; height:10px; border-radius:2px; background:${colors[index]};"></div>
+          <span style="color:var(--muted);">${label} (${dataValues[index]}%)</span>
+        </div>`;
+      });
+    }
+  }
+
+  const badge = document.getElementById('statsUsernameBadge');
+  if (badge) {
+    badge.textContent = (typeof currentUser !== 'undefined' && currentUser && currentUser.email) ? `@${currentUser.email.split('@')[0]}` : '@cineq_user';
+  }
 }
 
 function shareStats() {
@@ -971,9 +1031,9 @@ function renderGrid() {
             <span class="ep-text" id="ep-text-${a.id}">${(() => {
               if (a.seasons) {
                 const epInfo = calculateSeasonAndEpisode(a.episodesWatched, a.seasons);
-                return \`S\${epInfo.season} EP\${epInfo.episode}\`;
+                return 'S' + epInfo.season + ' EP' + epInfo.episode;
               }
-              return \`Ep \${a.episodesWatched||0}/\${epCount || '?'}\`;
+              return 'Ep ' + (a.episodesWatched||0) + '/' + (epCount || '?');
             })()}</span>
             <button class="ep-btn" onmousedown="startProgress(${a.id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},1,event)" ontouchend="stopProgress(event)">+</button>
           </div>` : ''}

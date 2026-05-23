@@ -44,6 +44,7 @@
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=2">
 </head>
 <body>
@@ -439,41 +440,53 @@
 
           <!-- Stats Tab -->
           <div class="settings-pane" id="pane-stats">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-              <h3 style="margin:0;">Stats & Insights</h3>
-              <button class="settings-action-btn secondary" onclick="shareStats()"><i data-lucide="share-2" style="width:14px;height:14px;margin-right:6px;"></i>Share Image</button>
-            </div>
-            <div id="statsExportArea" style="background:var(--elevated); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border);">
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
-                <div class="logo" style="font-size: 20px;">CineQ</div>
-                <div style="font-size: 12px; color: var(--muted);">cine-q.vercel.app</div>
+            <div id="statsExportArea" style="background:var(--elevated); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border); display: flex; flex-direction: column; gap: 24px;">
+              <!-- Header -->
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                  <h3 style="margin:0; font-size:1.25rem; font-weight:600;">Stats & Insights</h3>
+                  <span id="statsUsernameBadge" style="background:var(--bg); color:var(--muted); font-size:0.75rem; padding:4px 10px; border-radius:12px; font-weight:500; border:1px solid var(--border);">@username</span>
+                </div>
+                <!-- Share Icon (SVG) -->
+                <button onclick="shareStats()" aria-label="Share" style="background:none; border:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; padding:8px; border-radius:8px; transition:all 0.2s;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                </button>
               </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
-                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
-                  <div style="font-size:24px; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</div>
-                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Total Watch Time</div>
+
+              <!-- Key Stats -->
+              <div style="display:flex; gap:24px; background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border);">
+                <div style="display:flex; flex-direction:column; flex:1;">
+                  <span style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Watch Time</span>
+                  <span style="font-size:1.125rem; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</span>
                 </div>
-                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
-                  <div style="font-size:24px; font-weight:700; color:#22c55e;" id="statsCompletion">0%</div>
-                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Completion Rate</div>
+                <div style="display:flex; flex-direction:column; flex:1;">
+                  <span style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Completion Rate</span>
+                  <span style="font-size:1.125rem; font-weight:700; color:#22c55e;" id="statsCompletion">0%</span>
                 </div>
               </div>
-              
-              <div class="setting-group" style="margin-bottom:0;">
-                <label>Media Distribution</label>
-                <div style="display:flex; align-items:center; gap: 24px; margin-top:16px;">
-                  <div style="width:200px; flex-shrink: 0; position: relative;">
-                    <svg viewBox="0 0 100 55" style="width:100%; overflow:visible;">
-                      <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#2d2d30" stroke-width="12" stroke-linecap="round"></path>
-                      <path id="statsGaugeTv" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#3b82f6" stroke-width="12" stroke-linecap="round" stroke-dasharray="125.66 125.66"></path>
-                      <path id="statsGaugeMovie" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" stroke-dasharray="62.83 125.66"></path>
-                    </svg>
-                  </div>
-                  <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; font-weight:600; flex:1;">
-                    <span style="color:var(--accent); display:flex; align-items:center;"><div style="width:12px;height:12px;background:var(--accent);border-radius:2px;margin-right:8px;"></div><span id="statsMoviePct">50%</span> Movies</span>
-                    <span style="color:#3b82f6; display:flex; align-items:center;"><div style="width:12px;height:12px;background:#3b82f6;border-radius:2px;margin-right:8px;"></div><span id="statsTvPct">50%</span> TV Shows</span>
-                  </div>
+
+              <!-- Chart Area -->
+              <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+                <h3 style="align-self:flex-start; font-size:0.9rem; color:var(--muted); font-weight:500; margin:0;">Media Distribution</h3>
+                <div style="position:relative; width:250px; height:250px;">
+                  <canvas id="mediaChart"></canvas>
                 </div>
+                <!-- Custom Legend -->
+                <div id="customLegend" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:10px;">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div style="border-top:1px solid var(--border); padding-top:16px; display:flex; justify-content:space-between; align-items:center; font-size:0.8rem;">
+                <div class="logo" style="font-weight:700; font-size:1rem; letter-spacing:-0.5px;">CineQ</div>
+                <span style="color:var(--accent);">cine-q.vercel.app</span>
               </div>
             </div>
           </div>
