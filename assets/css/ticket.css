@@ -1,0 +1,212 @@
+/* ===== TICKET EXPORT DESIGN ===== */
+.ticket-wrapper {
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 10px; 
+}
+
+/* Ticket Card Container with Transparent Side Cutouts */
+.card {
+  --r: 20px;
+  --stub-h: 85px;
+  --bg: #1e293b;
+
+  width: 100%;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  
+  background:
+    radial-gradient(circle at 0 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 0 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
+}
+
+/* Top Section of Ticket */
+.ticket-top {
+  padding: 28px 24px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header & Username */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header h2 {
+  font-size: 1.25rem;
+  color: #f8fafc;
+  font-weight: 600;
+  margin: 0;
+}
+
+.username-badge {
+  background: #334155;
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border: 1px solid #475569;
+}
+
+.share-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.share-btn:hover {
+  background: #334155;
+  color: #f8fafc;
+}
+
+/* Summary Stats */
+.stats-row {
+  display: flex;
+  gap: 24px;
+  background: #0f172a;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+/* Chart Section */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.chart-container h3 {
+  align-self: flex-start;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  font-weight: 500;
+  margin: 0;
+}
+
+.canvas-wrapper {
+  position: relative;
+  width: 250px;
+  height: 250px;
+}
+
+/* Custom Legend (Pills) */
+.custom-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  background: #1e293b;
+  border: 1px solid #475569;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+/* Dashed Line separating main body and stub */
+.divider {
+  margin: 0 20px;
+  border-bottom: 2px dashed #475569;
+}
+
+/* Bottom Stub (Footer) */
+.ticket-bottom {
+  height: 85px;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-brand {
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.footer-link {
+  color: #818cf8;
+  text-decoration: none;
+  font-size: 0.8rem;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+/* Decorative Barcode */
+.barcode {
+  width: 70px;
+  height: 32px;
+  background-image: repeating-linear-gradient(to right, #94a3b8 0, #94a3b8 3px, transparent 3px, transparent 5px),
+                    repeating-linear-gradient(to right, #94a3b8 0, #94a3b8 1px, transparent 1px, transparent 4px);
+  background-size: 20px 100%, 11px 100%;
+  background-position: 0 0, 15px 0;
+  opacity: 0.3;
+}

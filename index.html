@@ -46,6 +46,7 @@
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=2">
+  <link rel="stylesheet" href="assets/css/ticket.css">
 </head>
 <body>
   <!-- Inline script to load theme and prevent FOUC -->
@@ -452,17 +453,17 @@
           <!-- Stats Tab -->
           <div class="settings-pane" id="pane-stats">
             <!-- Stats Export Area (Ticket Design) -->
-            <div class="ticket-wrapper" id="statsExportArea">
-              <div class="ticket-card">
+            <!-- Stats Export Area (Ticket Design) -->
+            <div class="ticket-wrapper" id="capture-target">
+              <div class="card">
+                
                 <div class="ticket-top">
-                  <!-- Header -->
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                      <h3 style="margin:0; font-size:1.25rem; font-weight:600;">Stats & Insights</h3>
-                      <span id="statsUsernameBadge" style="background:var(--bg); color:var(--muted); font-size:0.75rem; padding:4px 10px; border-radius:12px; font-weight:500; border:1px solid var(--border);">@username</span>
+                  <div class="header">
+                    <div class="header-title-group">
+                      <h2>Stats & Insights</h2>
+                      <span class="username-badge" id="statsUsernameBadge">@username</span> 
                     </div>
-                    <!-- Share Icon (SVG) -->
-                    <button onclick="shareStats()" id="shareBtn" aria-label="Share" style="background:none; border:none; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; padding:8px; border-radius:8px; transition:all 0.2s;">
+                    <button class="share-btn" id="shareBtn" onclick="shareStats()" aria-label="Share">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="18" cy="5" r="3"></circle>
                         <circle cx="6" cy="12" r="3"></circle>
@@ -473,39 +474,36 @@
                     </button>
                   </div>
 
-                  <!-- Key Stats -->
-                  <div style="display:flex; gap:24px; background:var(--bg); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border);">
-                    <div style="display:flex; flex-direction:column; flex:1;">
-                      <span style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Total Watch Time</span>
-                      <span style="font-size:1.125rem; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</span>
+                  <div class="stats-row">
+                    <div class="stat-item">
+                      <span class="stat-label">Total Watch Time</span>
+                      <span class="stat-value" id="statsTotalTime">0d 0h</span>
                     </div>
-                    <div style="display:flex; flex-direction:column; flex:1;">
-                      <span style="font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Completion Rate</span>
-                      <span style="font-size:1.125rem; font-weight:700; color:#22c55e;" id="statsCompletion">0%</span>
+                    <div class="stat-item">
+                      <span class="stat-label">Completion Rate</span>
+                      <span class="stat-value" id="statsCompletion">0%</span>
                     </div>
                   </div>
 
-                  <!-- Chart Area -->
-                  <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
-                    <h3 style="align-self:flex-start; font-size:0.9rem; color:var(--muted); font-weight:500; margin:0;">Media Distribution</h3>
-                    <div style="position:relative; width:100%; max-width:260px; height:260px; min-height:220px;">
-                      <canvas id="mediaChart" style="display:block;"></canvas>
+                  <div class="chart-container">
+                    <h3>Media Distribution</h3>
+                    <div class="canvas-wrapper">
+                      <canvas id="mediaChart"></canvas>
                     </div>
-                    <!-- Custom Legend -->
-                    <div id="customLegend" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:10px;">
-                      <!-- Injected via JS -->
-                    </div>
+                    <div class="custom-legend" id="customLegend"></div>
                   </div>
                 </div>
 
-                <div class="ticket-divider"></div>
+                <div class="divider"></div>
 
                 <div class="ticket-bottom">
-                  <div style="display:flex; flex-direction:column; gap:4px;">
-                    <img id="statsLogoImg" src="assets/images/cineqLogoForDarkMode.png" alt="CineQ" style="height:24px; object-fit:contain; align-self:flex-start;" draggable="false" oncontextmenu="return false">
+                  <div class="footer-info">
+                    <div class="footer-brand">CineQ</div>
+                    <div class="footer-link">cine-q.vercel.app</div>
                   </div>
-                  <div class="ticket-barcode"></div>
+                  <div class="barcode"></div>
                 </div>
+
               </div>
             </div>
           </div>

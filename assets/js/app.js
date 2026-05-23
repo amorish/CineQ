@@ -739,14 +739,8 @@ function updateStats() {
   try {
     const ctx = document.getElementById('mediaChart');
     if (ctx && typeof window.Chart !== 'undefined') {
-      const style = getComputedStyle(document.body);
-      const accentColor  = style.getPropertyValue('--accent').trim()   || '#e11d48';
-      const surfaceColor = style.getPropertyValue('--surface').trim()  || '#ffffff';
-      const elevatedColor= style.getPropertyValue('--elevated').trim() || '#1e293b';
-      const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
-      const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
-      const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
-      const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
+      const ticketBgColor = '#1e293b'; // From user snippet
+      const colors = ['#818cf8', '#fb923c']; // Matches snippet theme colors for Movies / TV Shows
 
       // Always destroy first so theme colors are fully re-applied
       if (window.mediaChartInstance) {
@@ -760,9 +754,9 @@ function updateStats() {
           labels: ['Movies', 'TV Shows'],
           datasets: [{
             data: [moviePct, tvPct],
-            backgroundColor: [accentColor, '#3b82f6'],
+            backgroundColor: colors,
             borderWidth: 3,
-            borderColor: elevatedColor,  // match ticket background for clean gaps
+            borderColor: ticketBgColor,
             borderRadius: 4,
             hoverOffset: 0
           }]
@@ -775,10 +769,10 @@ function updateStats() {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: bgColor,
-              titleColor: textColor,
-              bodyColor: mutedColor,
-              borderColor: borderClr,
+              backgroundColor: '#0f172a',
+              titleColor: '#f8fafc',
+              bodyColor: '#cbd5e1',
+              borderColor: '#334155',
               borderWidth: 1,
               callbacks: {
                 label: function(context) { return ` ${context.label}: ${context.raw}%`; }
@@ -792,13 +786,18 @@ function updateStats() {
       if (legendContainer) {
         legendContainer.innerHTML = '';
         const labels = ['Movies', 'TV Shows'];
-        const colors = [accentColor, '#3b82f6'];
         const dataValues = [moviePct, tvPct];
         labels.forEach((label, index) => {
-          legendContainer.innerHTML += `<div style="display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:4px 10px; border-radius:20px;">
-            <div style="width:10px; height:10px; border-radius:2px; background:${colors[index]};"></div>
-            <span style="color:var(--muted);">${label} (${dataValues[index]}%)</span>
-          </div>`;
+          const legendItem = document.createElement('div');
+          legendItem.className = 'legend-item';
+          const colorBox = document.createElement('div');
+          colorBox.className = 'legend-color';
+          colorBox.style.backgroundColor = colors[index];
+          const text = document.createElement('span');
+          text.innerText = `${label} (${dataValues[index]}%)`;
+          legendItem.appendChild(colorBox);
+          legendItem.appendChild(text);
+          legendContainer.appendChild(legendItem);
         });
       }
     }
