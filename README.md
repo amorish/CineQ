@@ -23,9 +23,9 @@
 
 | Feature | Description |
 |---------|-------------|
-| ![Secure Auth icon](https://api.iconify.design/lucide/lock.svg?color=white) **Secure Auth** | Email/password login & signup with Firebase — smart auto-detection for new users |
+| ![Secure Auth icon](https://api.iconify.design/lucide/lock.svg?color=white) **Secure Auth** | Email/password login & signup with Firebase - smart auto-detection for new users |
 | ![Instant Search icon](https://api.iconify.design/lucide/search.svg?color=white) **Instant Search** | Search 1M+ movies & TV series via the TMDB API with live dropdown results |
-| ![Watchlist icon](https://api.iconify.design/lucide/clipboard-list.svg?color=white) **Personal Watchlist** | Add, remove, and mark titles as watched — synced to the cloud in real-time |
+| ![Watchlist icon](https://api.iconify.design/lucide/clipboard-list.svg?color=white) **Personal Watchlist** | Add, remove, and mark titles as watched - synced to the cloud in real-time |
 | ![Google Calendar icon](https://api.iconify.design/lucide/calendar.svg?color=white) **Google Calendar** | Schedule watch times directly to your Google Calendar |
 | ![Random Pick icon](https://api.iconify.design/lucide/dices.svg?color=white) **Random Pick** | Get 3 diverse, high-quality movie/TV suggestions instantly (6/day limit) |
 | ![Live Stats icon](https://api.iconify.design/lucide/bar-chart-2.svg?color=white) **Live Stats** | Track total, watched, and remaining titles at a glance |
@@ -93,7 +93,7 @@ Open `index.html` directly in a browser, **or** deploy free on Vercel/Netlify/Gi
 5. **Root Directory**: leave as `/` (default)
 6. **Build Command**: leave empty
 7. **Output Directory**: leave as `.` or empty
-8. Click **Deploy** — done! ✅
+8. Click **Deploy** - done! ✅
 
 Vercel auto-deploys on every `git push` to `main`.
 
@@ -103,7 +103,7 @@ Vercel auto-deploys on every `git push` to `main`.
 
 | Tech | Purpose |
 |------|---------|
-| **HTML5 / CSS3 / Vanilla JS** | Core frontend — zero frameworks, ultra-lightweight |
+| **HTML5 / CSS3 / Vanilla JS** | Core frontend - zero frameworks, ultra-lightweight |
 | **Firebase Auth** | Secure user authentication |
 | **Cloud Firestore** | Real-time database for watchlists |
 | **TMDB API v3** | Movie & TV data (1M+ titles) |
@@ -151,7 +151,7 @@ CineQ/
 
 ## ![Roadmap icon](https://api.iconify.design/lucide/map.svg?color=white) Roadmap
 
-- [ ] Personal ratings (1–10 stars)
+- [ ] Personal ratings (1-10 stars)
 - [ ] Search within your own watchlist
 - [ ] Google Sign-In (one-click login)
 - [ ] Statistics dashboard (hours watched, genre breakdown)

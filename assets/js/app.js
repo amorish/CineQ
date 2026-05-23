@@ -39,7 +39,7 @@ function getYear(item) {
   return d ? d.split('-')[0] : null;
 }
 function formatRuntime(minutes) {
-  if (!minutes) return '—';
+  if (!minutes) return '-';
   const h = Math.floor(minutes / 60), m = minutes % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
@@ -210,7 +210,7 @@ async function handleAuth() {
           document.getElementById('authFooterText').textContent = "Already have an account?";
           document.getElementById('authToggleBtn').textContent = "Sign in";
           document.getElementById('authUsernameGroup').style.display = "block";
-          showToast("No account found — sign up instead!");
+          showToast("No account found - sign up instead!");
         } else { showToast("Incorrect password. Try again."); }
       } catch (_) { showToast(friendlyAuthError(code)); }
     } else { showToast(friendlyAuthError(code)); }
@@ -225,7 +225,7 @@ function friendlyAuthError(code) {
     'auth/user-not-found': 'No account with that email',
     'auth/wrong-password': 'Incorrect password',
     'auth/invalid-credential': 'Invalid email or password',
-    'auth/email-already-in-use': 'Email already registered — try signing in',
+    'auth/email-already-in-use': 'Email already registered - try signing in',
     'auth/weak-password': 'Password must be at least 6 characters',
     'auth/invalid-email': 'Please enter a valid email address',
     'auth/too-many-requests': 'Too many attempts. Please wait a moment',
@@ -435,7 +435,7 @@ async function activateFlowMode() {
   document.body.style.overflow = '';
   renderSortPills();
   renderGrid();
-  showToast('FlowMode active — your optimised order is ready');
+  showToast('FlowMode active - your optimised order is ready');
 }
 
 function applyFlowMode(items) {
@@ -530,7 +530,7 @@ function renderDropdown(results) {
   lastSearchResults = results;
   dropdown.innerHTML = results.slice(0, 8).map((a, idx) => {
     const title = getTitle(a);
-    const year = getYear(a) || '—';
+    const year = getYear(a) || '-';
     const mediaType = a.media_type || 'movie';
     const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
     const typeClass = mediaType === 'tv' ? 'tv' : 'movie';
@@ -925,13 +925,13 @@ async function openModal(id, mediaType, event) {
     const title = getTitle(detail);
     const origTitle = type === 'tv' ? detail.original_name : detail.original_title;
     const year = type === 'tv'
-      ? (detail.first_air_date ? detail.first_air_date.split('-')[0] : '—')
-      : (detail.release_date ? detail.release_date.split('-')[0] : '—');
+      ? (detail.first_air_date ? detail.first_air_date.split('-')[0] : '-')
+      : (detail.release_date ? detail.release_date.split('-')[0] : '-');
 
     const credits = detail.credits || {};
     const director = type === 'movie' ? (credits.crew || []).find(c => c.job === 'Director') : null;
     const creators = type === 'tv' ? (detail.created_by || []) : [];
-    const topCast = (credits.cast || []).slice(0, 3).map(c => c.name).join(', ') || '—';
+    const topCast = (credits.cast || []).slice(0, 3).map(c => c.name).join(', ') || '-';
 
     let syn = detail.overview || 'No synopsis available.';
     syn = escHtml(syn);
@@ -986,15 +986,15 @@ async function openModal(id, mediaType, event) {
           </div>
           <div class="detail-item">
             <div class="detail-label">${type === 'tv' ? 'Seasons' : 'Runtime'}</div>
-            <div class="detail-val">${type === 'tv' ? (detail.number_of_seasons ? detail.number_of_seasons + ' season' + (detail.number_of_seasons > 1 ? 's' : '') : '—') : formatRuntime(detail.runtime)}</div>
+            <div class="detail-val">${type === 'tv' ? (detail.number_of_seasons ? detail.number_of_seasons + ' season' + (detail.number_of_seasons > 1 ? 's' : '') : '-') : formatRuntime(detail.runtime)}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">${type === 'tv' ? 'Episodes' : 'Studio'}</div>
-            <div class="detail-val">${type === 'tv' ? (detail.number_of_episodes || '—') : ((detail.production_companies || [])[0]?.name || '—')}</div>
+            <div class="detail-val">${type === 'tv' ? (detail.number_of_episodes || '-') : ((detail.production_companies || [])[0]?.name || '-')}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">${type === 'tv' ? 'Creator' : 'Director'}</div>
-            <div class="detail-val">${type === 'tv' ? (creators[0]?.name || '—') : (director?.name || '—')}</div>
+            <div class="detail-val">${type === 'tv' ? (creators[0]?.name || '-') : (director?.name || '-')}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Cast</div>
@@ -1002,20 +1002,20 @@ async function openModal(id, mediaType, event) {
           </div>
           <div class="detail-item">
             <div class="detail-label">Language</div>
-            <div class="detail-val">${detail.original_language ? detail.original_language.toUpperCase() : '—'}</div>
+            <div class="detail-val">${detail.original_language ? detail.original_language.toUpperCase() : '-'}</div>
           </div>
           ${type === 'tv' ? `
           <div class="detail-item">
             <div class="detail-label">Network</div>
-            <div class="detail-val">${(detail.networks || [])[0]?.name || '—'}</div>
+            <div class="detail-val">${(detail.networks || [])[0]?.name || '-'}</div>
           </div>` : `
           <div class="detail-item">
             <div class="detail-label">Budget</div>
-            <div class="detail-val">${detail.budget && detail.budget > 0 ? '$' + (detail.budget / 1000000).toFixed(0) + 'M' : '—'}</div>
+            <div class="detail-val">${detail.budget && detail.budget > 0 ? '$' + (detail.budget / 1000000).toFixed(0) + 'M' : '-'}</div>
           </div>`}
           <div class="detail-item">
             <div class="detail-label">Votes</div>
-            <div class="detail-val">${detail.vote_count ? detail.vote_count.toLocaleString() : '—'}</div>
+            <div class="detail-val">${detail.vote_count ? detail.vote_count.toLocaleString() : '-'}</div>
           </div>
           ${(inList && !existingItem.watched && type === 'tv') ? `
           <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
@@ -1042,7 +1042,7 @@ async function openModal(id, mediaType, event) {
               <span class="detail-label" style="margin: 0; color: #22c55e; display: flex; align-items: center; gap: 4px;">
                 <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Watched
               </span>
-              <span style="font-size:11px; color:var(--muted);">Completed on ${existingItem.watchedAt || '—'}</span>
+              <span style="font-size:11px; color:var(--muted);">Completed on ${existingItem.watchedAt || '-'}</span>
             </div>
             <button class="modal-unwatch-btn" onclick="markUnwatchedFromModal(${detail.id}, '${type}')">
               <i data-lucide="eye-off" style="width:12px;height:12px;"></i> Mark Unwatched
