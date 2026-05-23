@@ -13,7 +13,7 @@ body.light-theme .ticket-wrapper {
 
 /* Ticket Card Container with Transparent Side Cutouts */
 .ticket-card {
-  --stub-h: 85px;
+  --stub-h: 70px;
   width: 100%;
   border-radius: 16px;
   display: flex;
@@ -44,10 +44,10 @@ body.light-theme .ticket-wrapper {
 
 /* Top Section of Ticket */
 .ticket-top {
-  padding: 28px 24px 20px 24px;
+  padding: 20px 20px 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 /* Header & Username */
@@ -109,7 +109,7 @@ body.light-theme .ticket-wrapper {
   display: flex;
   justify-content: space-between;
   background: var(--bg);
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
 }
@@ -139,7 +139,7 @@ body.light-theme .ticket-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .chart-container h3 {
@@ -152,8 +152,8 @@ body.light-theme .ticket-wrapper {
 
 .canvas-wrapper {
   position: relative;
-  width: 250px;
-  height: 250px;
+  width: 200px;
+  height: 200px;
 }
 
 /* Custom Legend (Pills) */
@@ -192,8 +192,8 @@ body.light-theme .ticket-wrapper {
 
 /* Bottom Stub (Footer) */
 .ticket-bottom {
-  height: 85px;
-  padding: 0 24px;
+  height: 70px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
