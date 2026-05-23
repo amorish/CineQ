@@ -1813,6 +1813,8 @@ function switchSettingsTab(tabName, btn) {
   btn.classList.add('active');
   document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
   document.getElementById(`pane-${tabName}`).classList.add('active');
+  // Re-render chart after pane is visible (canvas needs to be in DOM with dimensions)
+  if (tabName === 'stats') setTimeout(updateStats, 50);
 }
 
 function updateSettingsModalUI() {
