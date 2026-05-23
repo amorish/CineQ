@@ -326,12 +326,16 @@ const SORT_OPTIONS = [
 function toggleSortPanel() {
   const panel = document.getElementById('sortPanel');
   const backdrop = document.getElementById('sortPanelBackdrop');
+  const btn = document.getElementById('sortFilterBtn');
   if (panel.style.display === 'none' || panel.style.display === '') {
     panel.style.display = 'block';
     backdrop.style.display = 'block';
+    if (btn) btn.classList.add('active');
+    renderSortPills();
     setTimeout(() => panel.classList.add('open'), 10);
   } else {
     panel.classList.remove('open');
+    if (btn) btn.classList.remove('active');
     setTimeout(() => {
       panel.style.display = 'none';
       backdrop.style.display = 'none';
@@ -369,7 +373,7 @@ function renderSortPills() {
   if (flowBtn) {
     flowBtn.classList.toggle('active', flowModeActive);
     flowBtn.classList.toggle('is-selected', flowModeActive);
-    flowBtn.style.display = (currentFilter === 'watched') ? 'none' : '';
+    flowBtn.style.display = (currentFilter === 'list' || currentFilter === 'watching') ? '' : 'none';
   }
   container.innerHTML = SORT_OPTIONS.map(opt => {
     const isActive = !flowModeActive && currentSort === opt.key;
