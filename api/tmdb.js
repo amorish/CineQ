@@ -4,8 +4,9 @@ export const config = {
 
 export default async function handler(req) {
   const url = new URL(req.url);
-  const path = url.pathname.replace('/api/tmdb', '');
-  const tmdbUrl = `https://api.themoviedb.org/3${path}${url.search}`;
+  const targetPath = url.searchParams.get('targetPath') || '';
+  url.searchParams.delete('targetPath');
+  const tmdbUrl = `https://api.themoviedb.org/3/${targetPath}${url.search}`;
 
   const options = {
     method: req.method,

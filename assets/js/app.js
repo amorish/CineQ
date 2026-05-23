@@ -272,6 +272,8 @@ let advFilters = { type: 'all', year: 'all', length: 'all' };
 let deleteMode = false;
 let selectedForDelete = new Set();
 let flowModeActive = false;
+let searchTimeout;
+let lastQuery = '';
 let recentlyDeletedItems = [];
 let exploreLoaded = false;
 let currentModalTitle = null;
@@ -778,11 +780,13 @@ function renderGrid() {
   const empty = document.getElementById('emptyState');
   updateStats();
 
-  let items = [...watchlist];
-  if (currentFilter === 'watched')  items = items.filter(w => w.watched && !w.archived);
-  else if (currentFilter === 'watching') items = items.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
-  else if (currentFilter === 'archive') items = items.filter(w => w.archived);
-  else items = items.filter(w => !w.watched && !w.archived);
+  let baseItems = [...watchlist];
+  if (currentFilter === 'watched')  baseItems = baseItems.filter(w => w.watched && !w.archived);
+  else if (currentFilter === 'watching') baseItems = baseItems.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
+  else if (currentFilter === 'archive') baseItems = baseItems.filter(w => w.archived);
+  else baseItems = baseItems.filter(w => !w.watched && !w.archived);
+
+  let items = [...baseItems];
 
   // Apply Advanced Filters
   if (advFilters.type !== 'all') {
@@ -817,8 +821,9 @@ function renderGrid() {
 
   const sortFilterBtn = document.getElementById('sortFilterBtn');
   const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
-  if (sortFilterBtn) sortFilterBtn.style.display = items.length <= 1 ? 'none' : '';
-  if (selectModeToggleBtn) selectModeToggleBtn.style.display = items.length <= 1 ? 'none' : '';
+  const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all';
+  if (sortFilterBtn) sortFilterBtn.style.display = (baseItems.length <= 1 && !hasAdvFilter && !flowModeActive) ? 'none' : '';
+  if (selectModeToggleBtn) selectModeToggleBtn.style.display = items.length === 0 ? 'none' : '';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
