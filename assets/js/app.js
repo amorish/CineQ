@@ -742,6 +742,7 @@ function updateStats() {
       const style = getComputedStyle(document.body);
       const accentColor  = style.getPropertyValue('--accent').trim()   || '#e11d48';
       const surfaceColor = style.getPropertyValue('--surface').trim()  || '#ffffff';
+      const elevatedColor= style.getPropertyValue('--elevated').trim() || '#1e293b';
       const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
       const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
       const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
@@ -761,16 +762,16 @@ function updateStats() {
             data: [moviePct, tvPct],
             backgroundColor: [accentColor, '#3b82f6'],
             borderWidth: 3,
-            borderColor: surfaceColor,
+            borderColor: elevatedColor,  // match ticket background for clean gaps
             borderRadius: 4,
-            hoverOffset: 6
+            hoverOffset: 0
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           cutout: '45%',
-          animation: false,
+          animation: { duration: 0 },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -814,6 +815,7 @@ function updateStats() {
 
 function shareStats() {
   const node = document.getElementById('statsExportArea');
+  const shareBtn = document.getElementById('shareBtn');
   if (!node) return;
   
   if (typeof html2canvas === 'undefined') {
@@ -823,23 +825,46 @@ function shareStats() {
   }
   
   showToast("Generating image...");
-  try {
-    html2canvas(node, {
-      backgroundColor: getComputedStyle(document.body).backgroundColor,
-      scale: 2
-    }).then(canvas => {
+  if (shareBtn) shareBtn.style.visibility = 'hidden';
+
+  html2canvas(node, {
+    backgroundColor: null, // Transparent background for rounded edges/shadows
+    scale: 2,
+    logging: false,
+    useCORS: true
+  }).then(canvas => {
+    canvas.toBlob(async (blob) => {
+      // Try native Web Share API first
+      if (navigator.canShare) {
+        const file = new File([blob], 'CineQ-Stats.png', { type: 'image/png' });
+        if (navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              title: 'My CineQ Stats',
+              text: 'Check out my watch stats on CineQ!',
+              files: [file]
+            });
+            if (shareBtn) shareBtn.style.visibility = 'visible';
+            return;
+          } catch (error) {
+            console.log('Share canceled or failed', error);
+          }
+        }
+      }
+
+      // Fallback: Download image
       const link = document.createElement('a');
-      link.download = 'cineq-stats.png';
-      link.href = canvas.toDataURL('image/png');
+      link.download = 'CineQ-Stats.png';
+      link.href = URL.createObjectURL(blob);
       link.click();
-    }).catch(err => {
-      console.error("Export error", err);
-      showToast("Failed to export image");
-    });
-  } catch (err) {
-    console.error("Share error", err);
-    showToast("Failed to share stats");
-  }
+      
+      if (shareBtn) shareBtn.style.visibility = 'visible';
+    }, 'image/png');
+  }).catch(err => {
+    console.error("Export error", err);
+    showToast("Failed to generate image");
+    if (shareBtn) shareBtn.style.visibility = 'visible';
+  });
 }
 
 function toggleSearch() {}
