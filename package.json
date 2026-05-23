@@ -4,7 +4,7 @@
   "description": "<p align=\"center\">   <img src=\"assets/images/cineqLogoForDarkMode.png\" alt=\"CineQ Logo\" width=\"220\" /> </p>",
   "main": "index.js",
   "scripts": {
-    "build": "node build.js",
+    "build": "node scripts/build.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

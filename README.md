@@ -124,6 +124,9 @@ CineQ/
 ├── .gitignore                        # Git ignore rules
 ├── LICENSE                           # MIT License
 ├── README.md                         # Documentation
+├── scripts/
+│   ├── build.js                      # Build script to generate env.js
+│   └── test_csv.js                   # Development script for parsing CSV
 └── assets/
     ├── css/
     │   └── style.css                 # Complete styling with golden theme
