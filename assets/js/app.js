@@ -813,7 +813,7 @@ function updateStats() {
 }
 
 function shareStats() {
-  const node = document.getElementById('statsExportArea');
+  const node = document.getElementById('capture-target');
   const shareBtn = document.getElementById('shareBtn');
   if (!node) return;
   
