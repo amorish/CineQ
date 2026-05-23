@@ -739,7 +739,13 @@ function updateStats() {
   try {
     const ctx = document.getElementById('mediaChart');
     if (ctx && typeof window.Chart !== 'undefined') {
-      const ticketBgColor = '#1e293b'; // From user snippet
+      const style = getComputedStyle(document.body);
+      const elevatedColor= style.getPropertyValue('--elevated').trim() || '#1e293b';
+      const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
+      const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
+      const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
+      const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
+
       const colors = ['#818cf8', '#fb923c']; // Matches snippet theme colors for Movies / TV Shows
 
       // Always destroy first so theme colors are fully re-applied
@@ -756,7 +762,7 @@ function updateStats() {
             data: [moviePct, tvPct],
             backgroundColor: colors,
             borderWidth: 3,
-            borderColor: ticketBgColor,
+            borderColor: elevatedColor,
             borderRadius: 4,
             hoverOffset: 0
           }]
@@ -769,10 +775,10 @@ function updateStats() {
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#0f172a',
-              titleColor: '#f8fafc',
-              bodyColor: '#cbd5e1',
-              borderColor: '#334155',
+              backgroundColor: bgColor,
+              titleColor: textColor,
+              bodyColor: mutedColor,
+              borderColor: borderClr,
               borderWidth: 1,
               callbacks: {
                 label: function(context) { return ` ${context.label}: ${context.raw}%`; }

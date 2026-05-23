@@ -7,11 +7,15 @@
   padding: 10px; 
 }
 
+body.light-theme .ticket-wrapper {
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15));
+}
+
 /* Ticket Card Container with Transparent Side Cutouts */
-.card {
+.ticket-card {
   --r: 20px;
   --stub-h: 85px;
-  --bg: #1e293b;
+  --bg: var(--elevated); /* Responsive background */
 
   width: 100%;
   border-radius: 16px;
@@ -49,27 +53,27 @@
 
 .header h2 {
   font-size: 1.25rem;
-  color: #f8fafc;
+  color: var(--text);
   font-weight: 600;
   margin: 0;
 }
 
 .username-badge {
-  background: #334155;
-  color: #cbd5e1;
+  background: var(--bg);
+  color: var(--text-secondary);
   font-size: 0.75rem;
   padding: 4px 10px;
   border-radius: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  border: 1px solid #475569;
+  border: 1px solid var(--border);
 }
 
 .share-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,18 +83,18 @@
 }
 
 .share-btn:hover {
-  background: #334155;
-  color: #f8fafc;
+  background: var(--border);
+  color: var(--text);
 }
 
 /* Summary Stats */
 .stats-row {
   display: flex;
   gap: 24px;
-  background: #0f172a;
+  background: var(--bg);
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid #334155;
+  border: 1px solid var(--border);
 }
 
 .stat-item {
@@ -100,7 +104,7 @@
 
 .stat-label {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
@@ -109,7 +113,7 @@
 .stat-value {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text);
 }
 
 /* Chart Section */
@@ -123,7 +127,7 @@
 .chart-container h3 {
   align-self: flex-start;
   font-size: 0.9rem;
-  color: #cbd5e1;
+  color: var(--muted);
   font-weight: 500;
   margin: 0;
 }
@@ -148,9 +152,9 @@
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
-  color: #cbd5e1;
-  background: #1e293b;
-  border: 1px solid #475569;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border: 1px solid var(--border);
   padding: 4px 10px;
   border-radius: 20px;
 }
@@ -164,7 +168,7 @@
 /* Dashed Line separating main body and stub */
 .divider {
   margin: 0 20px;
-  border-bottom: 2px dashed #475569;
+  border-bottom: 2px dashed var(--border);
 }
 
 /* Bottom Stub (Footer) */
@@ -184,14 +188,14 @@
 
 .footer-brand {
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text);
   letter-spacing: 1px;
   text-transform: uppercase;
   margin: 0;
 }
 
 .footer-link {
-  color: #818cf8;
+  color: var(--accent);
   text-decoration: none;
   font-size: 0.8rem;
 }
@@ -202,11 +206,8 @@
 
 /* Decorative Barcode */
 .barcode {
-  width: 70px;
-  height: 32px;
-  background-image: repeating-linear-gradient(to right, #94a3b8 0, #94a3b8 3px, transparent 3px, transparent 5px),
-                    repeating-linear-gradient(to right, #94a3b8 0, #94a3b8 1px, transparent 1px, transparent 4px);
-  background-size: 20px 100%, 11px 100%;
-  background-position: 0 0, 15px 0;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
   opacity: 0.3;
 }
