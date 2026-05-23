@@ -1763,8 +1763,18 @@ async function saveSettings() {
 }
 
 function applySettings() {
-  if (userSettings.theme === 'light') document.body.classList.add('light-theme');
+  const isLight = userSettings.theme === 'light';
+  if (isLight) document.body.classList.add('light-theme');
   else document.body.classList.remove('light-theme');
+
+  // Swap logo in Stats footer based on theme
+  const statsLogo = document.getElementById('statsLogoImg');
+  if (statsLogo) {
+    statsLogo.src = isLight
+      ? 'assets/images/cineqLogoForLightMode.png'
+      : 'assets/images/cineqLogoForDarkMode.png';
+  }
+
   updateSettingsModalUI();
 }
 
