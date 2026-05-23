@@ -714,10 +714,8 @@ function updateStats() {
   const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 50;
   const tvPct = totalMedia > 0 ? 100 - moviePct : 50;
   
-  const mb = document.getElementById('statsMovieBar');
-  if (mb) mb.style.width = moviePct + '%';
-  const tb = document.getElementById('statsTvBar');
-  if (tb) tb.style.width = tvPct + '%';
+  const pc = document.getElementById('statsPieMovie');
+  if (pc) pc.setAttribute('stroke-dasharray', `${(moviePct / 100) * 100.5} 100.5`);
   const mp = document.getElementById('statsMoviePct');
   if (mp) mp.textContent = moviePct + '%';
   const tp = document.getElementById('statsTvPct');
@@ -1125,15 +1123,28 @@ async function openModal(id, mediaType, event) {
             <div class="detail-val">${detail.vote_count ? detail.vote_count.toLocaleString() : '-'}</div>
           </div>
           ${(inList && !existingItem.watched && type === 'tv') ? `
-          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
-            <div class="detail-label" style="margin: 0;">Episodes Watched</div>
-            <div class="progress-controls">
-              <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
-              <span class="progress-text" id="epProgressTextModal">${(() => {
-                const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
-                return `S${epInfo.season} EP${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}`;
-              })()}</span>
-              <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+          <div style="grid-column: 1 / -1; display:flex; flex-direction:column; gap:8px;">
+            <div style="background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+              <div class="detail-label" style="margin: 0;">Season</div>
+              <div class="progress-controls">
+                <button class="progress-btn" onclick="changeSeason(${id},-1,event)">−</button>
+                <span class="progress-text" id="seasonProgressTextModal">${(() => {
+                  const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
+                  return \`S\${epInfo.season}\`;
+                })()}</span>
+                <button class="progress-btn" onclick="changeSeason(${id},1,event)">+</button>
+              </div>
+            </div>
+            <div style="background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+              <div class="detail-label" style="margin: 0;">Episodes Watched</div>
+              <div class="progress-controls">
+                <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
+                <span class="progress-text" id="epProgressTextModal">${(() => {
+                  const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
+                  return \`\${epInfo.episode} / \${epInfo.seasonEpisodes || '?'}\`;
+                })()}</span>
+                <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+              </div>
             </div>
           </div>` : ''}
           ${(inList && existingItem.watched) ? `
@@ -1335,9 +1346,11 @@ async function updateProgress(id, change, event, skipSave = false) {
   const modal = document.getElementById('modalBackdrop');
   if (modal && modal.classList.contains('open') && currentModalTitle) {
     const textEl = document.getElementById('epProgressTextModal');
-    if (textEl) {
+    const seasonEl = document.getElementById('seasonProgressTextModal');
+    if (textEl && seasonEl) {
       const epInfo = calculateSeasonAndEpisode(item.episodesWatched, currentModalTitle.seasons);
-      textEl.textContent = `S${epInfo.season} EP${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}`;
+      seasonEl.textContent = `S${epInfo.season}`;
+      textEl.textContent = `${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}`;
     }
   }
   updateStats();
@@ -1903,7 +1916,7 @@ function changeSeason(id, change) {
     if (season.season_number < newS) {
       newEpisodesWatched += season.episode_count;
     } else if (season.season_number === newS) {
-      newEpisodesWatched += season.episode_count;
+      newEpisodesWatched += 1; // reset to 1st episode of the new season
     }
   }
   

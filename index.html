@@ -382,6 +382,9 @@
             <button class="settings-tab-btn" onclick="switchSettingsTab('watchlist', this)">
               <i data-lucide="list"></i><span>Watchlist</span>
             </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('stats', this)">
+              <i data-lucide="bar-chart-2"></i><span>Stats & Insights</span>
+            </button>
             <button class="settings-tab-btn" onclick="switchSettingsTab('appearance', this)">
               <i data-lucide="palette"></i><span>Appearance</span>
             </button>
@@ -433,6 +436,46 @@
           </div>
           
 
+
+          <!-- Stats Tab -->
+          <div class="settings-pane" id="pane-stats">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+              <h3 style="margin:0;">Stats & Insights</h3>
+              <button class="settings-action-btn secondary" onclick="shareStats()"><i data-lucide="share-2" style="width:14px;height:14px;margin-right:6px;"></i>Share Image</button>
+            </div>
+            <div id="statsExportArea" style="background:var(--elevated); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border);">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                <div class="logo" style="font-size: 20px;">CineQ</div>
+                <div style="font-size: 12px; color: var(--muted);">cine-q.vercel.app</div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                  <div style="font-size:24px; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</div>
+                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Total Watch Time</div>
+                </div>
+                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                  <div style="font-size:24px; font-weight:700; color:#22c55e;" id="statsCompletion">0%</div>
+                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Completion Rate</div>
+                </div>
+              </div>
+              
+              <div class="setting-group" style="margin-bottom:0;">
+                <label>Media Distribution</label>
+                <div style="display:flex; align-items:center; gap: 24px; margin-top:16px;">
+                  <div style="width:100px; height:100px; flex-shrink: 0; position: relative; border-radius: 50%; overflow: hidden;">
+                    <svg viewBox="0 0 32 32" style="width:100%; height:100%; transform: rotate(-90deg);">
+                      <circle r="16" cx="16" cy="16" fill="#3b82f6"></circle>
+                      <circle id="statsPieMovie" r="16" cx="16" cy="16" fill="transparent" stroke="var(--accent)" stroke-width="32" stroke-dasharray="0 100.5"></circle>
+                    </svg>
+                  </div>
+                  <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; font-weight:600; flex:1;">
+                    <span style="color:var(--accent); display:flex; align-items:center;"><div style="width:12px;height:12px;background:var(--accent);border-radius:2px;margin-right:8px;"></div><span id="statsMoviePct">50%</span> Movies</span>
+                    <span style="color:#3b82f6; display:flex; align-items:center;"><div style="width:12px;height:12px;background:#3b82f6;border-radius:2px;margin-right:8px;"></div><span id="statsTvPct">50%</span> TV Shows</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- Appearance Tab -->
           <div class="settings-pane" id="pane-appearance">
@@ -512,40 +555,7 @@
 
           <!-- Data Tab -->
           <div class="settings-pane" id="pane-data">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
-              <h3 style="margin:0;">Stats & Insights</h3>
-              <button class="settings-action-btn secondary" onclick="shareStats()"><i data-lucide="share-2" style="width:14px;height:14px;margin-right:6px;"></i>Share Image</button>
-            </div>
-            <div id="statsExportArea" style="background:var(--elevated); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border); margin-bottom:32px;">
-              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
-                <div class="logo" style="font-size: 20px;">CineQ</div>
-                <div style="font-size: 12px; color: var(--muted);">cine-q.vercel.app</div>
-              </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
-                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
-                  <div style="font-size:24px; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</div>
-                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Total Watch Time</div>
-                </div>
-                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
-                  <div style="font-size:24px; font-weight:700; color:#22c55e;" id="statsCompletion">0%</div>
-                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Completion Rate</div>
-                </div>
-              </div>
-              
-              <div class="setting-group" style="margin-bottom:0;">
-                <label>Media Distribution</label>
-                <div style="display:flex; height:24px; border-radius:4px; overflow:hidden; margin-top:8px;">
-                  <div id="statsMovieBar" style="background:var(--accent); width:50%; transition:width 0.5s;" title="Movies"></div>
-                  <div id="statsTvBar" style="background:#3b82f6; width:50%; transition:width 0.5s;" title="TV Series"></div>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; font-weight:600;">
-                  <span style="color:var(--accent);"><i data-lucide="film" style="width:12px;height:12px;margin-right:4px;"></i><span id="statsMoviePct">50%</span> Movies</span>
-                  <span style="color:#3b82f6;"><i data-lucide="tv" style="width:12px;height:12px;margin-right:4px;"></i><span id="statsTvPct">50%</span> TV Shows</span>
-                </div>
-              </div>
-            </div>
-
-            <h3 style="margin-bottom:16px;">Data Management</h3>
+            <h3>Data Management</h3>
             <div class="setting-group">
               <label>Export Watchlist</label>
               <p class="setting-description">Download your entire watchlist as a backup JSON file.</p>
