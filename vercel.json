@@ -2,6 +2,14 @@
   "version": 2,
   "routes": [
     {
+      "src": "/api/tmdb/(.*)",
+      "dest": "https://api.themoviedb.org/3/$1"
+    },
+    {
+      "src": "/images/tmdb/(.*)",
+      "dest": "https://image.tmdb.org/t/p/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

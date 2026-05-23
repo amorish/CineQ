@@ -20,9 +20,9 @@ let isSignupMode = false;
 
 // ===== TMDB API =====
 const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyY2EyZWYxM2Y4NWJmY2YwODc0YTdmNjJmZGM4OWY5NSIsIm5iZiI6MTc3MjEwMTM5My4zOCwic3ViIjoiNjlhMDFmMTExN2FmMmI2N2FjZjIwNGM1Iiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.2wW5LAadCteViThq_vmnujZgGOpg1eFE9y-ObGoF9lk';
-const TMDB_BASE = 'https://api.themoviedb.org/3';
-const TMDB_IMG  = 'https://image.tmdb.org/t/p/w500';
-const TMDB_IMG_LG = 'https://image.tmdb.org/t/p/w780';
+const TMDB_BASE = '/api/tmdb';
+const TMDB_IMG  = '/images/tmdb/w500';
+const TMDB_IMG_LG = '/images/tmdb/w780';
 
 function tmdbFetch(path) {
   return fetch(`${TMDB_BASE}${path}`, {
@@ -1866,7 +1866,7 @@ async function processImport(items, importState) {
           id: tmdbItem.id,
           media_type: mediaType,
           title: tmdbItem.title || tmdbItem.name,
-          poster: tmdbItem.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbItem.poster_path}` : null,
+          poster: tmdbItem.poster_path ? `/images/tmdb/w500${tmdbItem.poster_path}` : null,
           addedAt: new Date().toISOString(),
           watched: false
         });
