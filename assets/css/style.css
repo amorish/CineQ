@@ -242,6 +242,7 @@ body.light-theme .logo-light { display: block !important; }
   font-size:12px;
   font-weight:500;
   color:var(--muted);
+  line-height: 1;
 }
 .stat-label.highlight-label{
   color:rgba(234,179,8,.9);
@@ -251,6 +252,8 @@ body.light-theme .logo-light { display: block !important; }
   font-weight:700;
   color:#fff;
   font-family:var(--font-heading);
+  line-height: 1;
+  transform: translateY(1px);
 }
 .stat-value.highlight-value{
   color:var(--accent);
