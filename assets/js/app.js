@@ -814,7 +814,7 @@ function updateStats() {
     const name = (typeof currentUser !== 'undefined' && currentUser)
       ? (currentUser.displayName || currentUser.email)
       : 'cineq_user';
-    badge.textContent = `@${name}`;
+    badge.innerHTML = `<span style="position: relative; top: -1px;">@${name}</span>`;
   }
 }
 
