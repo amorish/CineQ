@@ -823,8 +823,8 @@ function shareStats() {
   const shareBtn = document.getElementById('shareBtn');
   if (!node) return;
   
-  if (typeof html2canvas === 'undefined') {
-    console.error("html2canvas is blocked or failed to load");
+  if (typeof htmlToImage === 'undefined') {
+    console.error("htmlToImage is blocked or failed to load");
     showToast("Share failed: Please disable ad-blockers for this site");
     return;
   }
@@ -836,13 +836,10 @@ function shareStats() {
   const style = getComputedStyle(document.body);
   const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
 
-  html2canvas(node, {
+  htmlToImage.toBlob(node, {
     backgroundColor: bgColor,
-    scale: 2,
-    logging: false,
-    useCORS: true
-  }).then(canvas => {
-    canvas.toBlob(async (blob) => {
+    pixelRatio: 2
+  }).then(async (blob) => {
       // Try native Web Share API first
       if (navigator.canShare) {
         const file = new File([blob], 'CineQ-Stats.png', { type: 'image/png' });
@@ -868,7 +865,6 @@ function shareStats() {
       link.click();
       
       if (shareBtn) shareBtn.style.visibility = 'visible';
-    }, 'image/png');
   }).catch(err => {
     console.error("Export error", err);
     showToast("Failed to generate image");
