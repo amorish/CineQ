@@ -50,7 +50,8 @@ let userSettings = {
   defaultView: 'list',
   defaultSort: 'added',
   defaultSortOrder: 'desc',
-  sfwFilter: true
+  sfwFilter: true,
+  customList: { name: '', position: '6' }
 };
 
 // ===== DISPOSABLE EMAIL BLOCKLIST =====
@@ -253,13 +254,15 @@ async function loadWatchlist() {
     if (docSnap.exists) {
       const data = docSnap.data();
       watchlist = data.items || [];
+      notifications = data.notifications || [];
       if (data.epCache) { epCache = { ...epCache, ...data.epCache }; saveEpCache(); }
       if (data.randomPickState) {
         const todayStr = todayDate();
         if (data.randomPickState.date === todayStr) localStorage.setItem('cineq_random_pick_state', JSON.stringify(data.randomPickState));
       }
-    } else { watchlist = []; }
+    } else { watchlist = []; notifications = []; }
     renderGrid();
+    renderNotifications();
   } catch (e) { console.error("Error loading watchlist", e); }
 }
 
@@ -275,6 +278,7 @@ let flowModeActive = false;
 let searchTimeout;
 let lastQuery = '';
 let recentlyDeletedItems = [];
+let notifications = [];
 let exploreLoaded = false;
 let currentModalTitle = null;
 let currentModalMediaType = 'movie';
@@ -639,6 +643,18 @@ async function toggleWatched(id, mediaType, event) {
   renderGrid();
 }
 
+async function toggleCustomList(id, mediaType, event) {
+  if (event) event.stopPropagation();
+  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  if (!item) return;
+  item.inCustomList = !item.inCustomList;
+  await save();
+  renderGrid();
+  // re-render modal
+  const modal = document.getElementById('modalBackdrop');
+  if (modal.classList.contains('open')) openModal(id, mediaType);
+}
+
 function todayDate() {
   const d = new Date();
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;
@@ -651,7 +667,7 @@ async function save() {
   try {
     let randomPickState = null;
     try { const stored = localStorage.getItem('cineq_random_pick_state'); if (stored) randomPickState = JSON.parse(stored); } catch(e) {}
-    await db.collection("cineq_watchlists").doc(currentUser.uid).set({ items: watchlist, epCache, randomPickState });
+    await db.collection("cineq_watchlists").doc(currentUser.uid).set({ items: watchlist, epCache, randomPickState, notifications });
   } catch (e) { console.error("Error saving watchlist", e); showToast("Failed to sync to database"); }
 }
 
@@ -659,23 +675,100 @@ async function save() {
 function updateStats() {
   const total = watchlist.length;
   const watched = watchlist.filter(w => w.watched).length;
-  document.getElementById('totalCount').textContent = total;
-  document.getElementById('watchedCount').textContent = watched;
-  document.getElementById('remainCount').textContent = total - watched;
+  const totalElem = document.getElementById('totalCount');
+  if (totalElem) totalElem.textContent = total;
+  const watchedElem = document.getElementById('watchedCount');
+  if (watchedElem) watchedElem.textContent = watched;
+  const remainElem = document.getElementById('remainCount');
+  if (remainElem) remainElem.textContent = total - watched;
+  
+  // Calculate Watch Time & Insights
+  let totalMinutes = 0;
+  let moviesCount = 0;
+  let tvCount = 0;
+  
+  watchlist.forEach(item => {
+    if (item.media_type === 'movie') {
+      moviesCount++;
+      if (item.watched && item.runtime) totalMinutes += item.runtime;
+    } else {
+      tvCount++;
+      if (item.episodesWatched > 0) {
+        // Assume 45 mins average runtime per episode if not provided natively
+        const epRuntime = item.runtime || 45;
+        totalMinutes += item.episodesWatched * epRuntime;
+      }
+    }
+  });
+  
+  const compRate = total > 0 ? Math.round((watched / total) * 100) : 0;
+  const compEl = document.getElementById('statsCompletion');
+  if (compEl) compEl.textContent = compRate + '%';
+  
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const timeEl = document.getElementById('statsTotalTime');
+  if (timeEl) timeEl.textContent = `${days}d ${hours}h`;
+  
+  const totalMedia = moviesCount + tvCount;
+  const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 50;
+  const tvPct = totalMedia > 0 ? 100 - moviePct : 50;
+  
+  const mb = document.getElementById('statsMovieBar');
+  if (mb) mb.style.width = moviePct + '%';
+  const tb = document.getElementById('statsTvBar');
+  if (tb) tb.style.width = tvPct + '%';
+  const mp = document.getElementById('statsMoviePct');
+  if (mp) mp.textContent = moviePct + '%';
+  const tp = document.getElementById('statsTvPct');
+  if (tp) tp.textContent = tvPct + '%';
+}
+
+function shareStats() {
+  const node = document.getElementById('statsExportArea');
+  if (!node) return;
+  showToast("Generating image...");
+  html2canvas(node, {
+    backgroundColor: getComputedStyle(document.body).backgroundColor,
+    scale: 2
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = 'cineq-stats.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => {
+    console.error("Export error", err);
+    showToast("Failed to export image");
+  });
 }
 
 function toggleSearch() {}
 
 function toggleProfileMenu() {
   const menu = document.getElementById('profileMenu');
+  const notifMenu = document.getElementById('notifMenu');
+  if (notifMenu) notifMenu.style.display = 'none';
+  menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+function toggleNotifMenu() {
+  const menu = document.getElementById('notifMenu');
+  const profileMenu = document.getElementById('profileMenu');
+  if (profileMenu) profileMenu.style.display = 'none';
   menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
 }
 
 document.addEventListener('click', (e) => {
-  const menu = document.getElementById('profileMenu');
-  const btn = document.getElementById('avatarBtn');
-  if (menu && menu.style.display !== 'none' && !menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.style.display = 'none';
+  const profileMenu = document.getElementById('profileMenu');
+  const avatarBtn = document.getElementById('avatarBtn');
+  if (profileMenu && profileMenu.style.display !== 'none' && !profileMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
+    profileMenu.style.display = 'none';
+  }
+  
+  const notifMenu = document.getElementById('notifMenu');
+  const notifBtn = document.getElementById('notifBtn');
+  if (notifMenu && notifMenu.style.display !== 'none' && !notifMenu.contains(e.target) && !notifBtn.contains(e.target)) {
+    notifMenu.style.display = 'none';
   }
 });
 
@@ -784,6 +877,7 @@ function renderGrid() {
   if (currentFilter === 'watched')  baseItems = baseItems.filter(w => w.watched && !w.archived);
   else if (currentFilter === 'watching') baseItems = baseItems.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
   else if (currentFilter === 'archive') baseItems = baseItems.filter(w => w.archived);
+  else if (currentFilter === 'custom') baseItems = baseItems.filter(w => w.inCustomList);
   else baseItems = baseItems.filter(w => !w.watched && !w.archived);
 
   let items = [...baseItems];
@@ -915,7 +1009,14 @@ async function openModal(id, mediaType, event) {
       if (!epCache[key] || epCache[key] !== detail.number_of_episodes) {
         epCache[key] = detail.number_of_episodes;
         saveEpCache();
-        if (wlItem) wlItem.episodes = detail.number_of_episodes;
+        if (wlItem) {
+          wlItem.episodes = detail.number_of_episodes;
+          // If the show was marked as watched but now has more episodes, move it to watching
+          if (wlItem.watched && (wlItem.episodesWatched || 0) < detail.number_of_episodes) {
+            wlItem.watched = false;
+            showToast(`New episodes available for ${getTitle(detail)}! Moved to Watching.`);
+          }
+        }
         save();
         const epText = document.getElementById(`ep-text-${id}`);
         if (epText) epText.textContent = `Ep ${wlItem ? (wlItem.episodesWatched || 0) : 0}/${detail.number_of_episodes}`;
@@ -948,6 +1049,10 @@ async function openModal(id, mediaType, event) {
     const typeLabel = type === 'tv' ? 'TV Series' : 'Movie';
     const typeTagClass = type === 'tv' ? 'tv-accent' : 'accent';
 
+    const isUpcoming = detail.status === 'Planned' || detail.status === 'In Production' || detail.status === 'Post Production' || (detail.release_date && new Date(detail.release_date) > new Date()) || (detail.first_air_date && new Date(detail.first_air_date) > new Date());
+    const isOngoing = detail.status === 'Returning Series';
+    const showNotify = isUpcoming || isOngoing;
+
     content.innerHTML = `
       <div class="modal-hero">
         <div class="modal-poster">
@@ -970,9 +1075,11 @@ async function openModal(id, mediaType, event) {
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               ${!inList ? `<button class="modal-add-btn" onclick="addTitleFromModal(this)">+ Add</button>` : ''}
               ${(!existingItem?.watched && !existingItem?.archived) ? `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>` : ''}
-              ${(inList && !existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="archive" style="width:12px;height:12px;"></i> Drop</button>` : ''}
+              ${(inList && !existingItem.archived && !existingItem.watched) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="archive" style="width:12px;height:12px;"></i> Drop</button>` : ''}
               ${(inList && existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="unarchive(${detail.id}, '${type}')"><i data-lucide="corner-up-left" style="width:12px;height:12px;"></i> Restore</button>` : ''}
+              ${(inList && userSettings.customList?.name) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);" onclick="toggleCustomList(${detail.id}, '${type}', event)"><i data-lucide="${existingItem.inCustomList ? 'check' : 'plus'}" style="width:12px;height:12px;"></i> ${existingItem.inCustomList ? 'In ' : 'Add to '}${escHtml(userSettings.customList.name)}</button>` : ''}
               <button class="modal-cal-btn" onclick="openSchedule(${detail.id})"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule</button>
+              ${showNotify ? (notifications.some(n => n.id === detail.id && n.mediaType === type) ? `<button class="modal-cal-btn" style="background:rgba(239,68,68,1);color:#fff;border-color:transparent;" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell-off" style="width:12px;height:12px;"></i> Cancel Notify</button>` : `<button class="modal-cal-btn" style="background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2);" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell" style="width:12px;height:12px;"></i> Notify Me</button>`) : ''}
             </div>
           </div>
         </div>
@@ -1018,22 +1125,15 @@ async function openModal(id, mediaType, event) {
             <div class="detail-val">${detail.vote_count ? detail.vote_count.toLocaleString() : '-'}</div>
           </div>
           ${(inList && !existingItem.watched && type === 'tv') ? `
-          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border);">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div class="detail-label" style="margin: 0;">Season</div>
-              <div class="progress-controls">
-                <button class="progress-btn" onclick="changeSeason(${id}, -1)">−</button>
-                <span class="progress-text" id="seasonProgressText">S${calculateCurrentSeason(existingItem.episodesWatched, detail.seasons)}</span>
-                <button class="progress-btn" onclick="changeSeason(${id}, 1)">+</button>
-              </div>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div class="detail-label" style="margin: 0;">Episodes Watched</div>
-              <div class="progress-controls">
-                <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
-                <span class="progress-text" id="epProgressTextModal">${existingItem.episodesWatched || 0} / ${detail.number_of_episodes || '?'}</span>
-                <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
-              </div>
+          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+            <div class="detail-label" style="margin: 0;">Episodes Watched</div>
+            <div class="progress-controls">
+              <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
+              <span class="progress-text" id="epProgressTextModal">${(() => {
+                const epInfo = calculateSeasonAndEpisode(existingItem.episodesWatched, detail.seasons);
+                return `S${epInfo.season} EP${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}`;
+              })()}</span>
+              <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
             </div>
           </div>` : ''}
           ${(inList && existingItem.watched) ? `
@@ -1233,11 +1333,12 @@ async function updateProgress(id, change, event, skipSave = false) {
   if (epText) epText.textContent = `Ep ${item.episodesWatched}/${epTotal}`;
   if (wasWatched !== item.watched && !skipSave) renderGrid();
   const modal = document.getElementById('modalBackdrop');
-  if (modal && modal.classList.contains('open')) {
+  if (modal && modal.classList.contains('open') && currentModalTitle) {
     const textEl = document.getElementById('epProgressTextModal');
-    if (textEl) textEl.textContent = `${item.episodesWatched} / ${epTotal}`;
-    const seasonTextEl = document.getElementById('seasonProgressText');
-    if (seasonTextEl && currentModalTitle) seasonTextEl.textContent = `S${calculateCurrentSeason(item.episodesWatched, currentModalTitle.seasons)}`;
+    if (textEl) {
+      const epInfo = calculateSeasonAndEpisode(item.episodesWatched, currentModalTitle.seasons);
+      textEl.textContent = `S${epInfo.season} EP${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}`;
+    }
   }
   updateStats();
 }
@@ -1602,6 +1703,53 @@ function updateSettingsModalUI() {
   if (defaultSortOrderSel) defaultSortOrderSel.value = userSettings.defaultSortOrder;
   const sfwFilterChk = document.getElementById('settingsSfwFilter');
   if (sfwFilterChk) sfwFilterChk.checked = userSettings.sfwFilter;
+  
+  const customName = document.getElementById('settingsCustomListName');
+  if (customName) customName.value = userSettings.customList?.name || '';
+  const customPos = document.getElementById('settingsCustomListPos');
+  if (customPos) customPos.value = userSettings.customList?.position || '6';
+  
+  // Inject Custom List tab dynamically
+  const normalFilters = document.getElementById('normalFilters');
+  const tabCustom = document.getElementById('tabCustom');
+  if (normalFilters && tabCustom) {
+    if (userSettings.customList && userSettings.customList.name) {
+      tabCustom.textContent = userSettings.customList.name;
+      tabCustom.style.display = 'block';
+      const pos = parseInt(userSettings.customList.position) || 6;
+      // standard buttons are 5 (list, watching, watched, archive, explore). 
+      // Flex spacer is child 5. Sort buttons are after.
+      // We'll insert at pos-1 index among the first 5 buttons.
+      const children = Array.from(normalFilters.children).filter(c => c.classList.contains('tab-btn') && c.id !== 'tabCustom');
+      if (pos - 1 < children.length) {
+        normalFilters.insertBefore(tabCustom, children[pos - 1]);
+      } else {
+        normalFilters.insertBefore(tabCustom, normalFilters.querySelector('div[style*="flex:1"]') || null);
+      }
+    } else {
+      tabCustom.style.display = 'none';
+      if (currentFilter === 'custom') {
+        const listBtn = document.getElementById('tabList');
+        if (listBtn) setFilter('list', listBtn);
+      }
+    }
+  }
+}
+
+function saveCustomListSettings() {
+  const nameInput = document.getElementById('settingsCustomListName');
+  const posInput = document.getElementById('settingsCustomListPos');
+  if (!nameInput || !posInput) return;
+  
+  const name = nameInput.value.trim();
+  const pos = posInput.value;
+  
+  if (name.length > 15) return showToast('Custom list name too long');
+  
+  userSettings.customList = { name, position: pos };
+  saveSettings();
+  applySettings();
+  showToast('Custom List updated');
 }
 
 // ===== ACCOUNT ACTIONS =====
@@ -1720,20 +1868,23 @@ function resetToHome() {
   spawnParticle();
 })();
 
-function calculateCurrentSeason(episodesWatched, seasons) {
-  if (!seasons || !Array.isArray(seasons)) return 1;
+function calculateSeasonAndEpisode(episodesWatched, seasons) {
+  if (!seasons || !Array.isArray(seasons)) return { season: 1, episode: episodesWatched || 0, totalSeasons: 1, seasonEpisodes: 0 };
   const regularSeasons = seasons.filter(s => s.season_number > 0).sort((a,b) => a.season_number - b.season_number);
+  if (regularSeasons.length === 0) return { season: 1, episode: episodesWatched || 0, totalSeasons: 1, seasonEpisodes: 0 };
+  
   let eps = episodesWatched || 0;
-  if (eps === 0) return 1;
-  let s = 1;
+  let s = regularSeasons[0].season_number;
+  let maxS = regularSeasons[regularSeasons.length - 1].season_number;
+  
   for (const season of regularSeasons) {
-    if (eps <= season.episode_count) {
-      return season.season_number;
+    if (eps <= season.episode_count || season === regularSeasons[regularSeasons.length - 1]) {
+      // If eps == 0, we are at EP0 of the first season.
+      return { season: season.season_number, episode: eps, totalSeasons: maxS, seasonEpisodes: season.episode_count || 0 };
     }
     eps -= season.episode_count;
-    s = season.season_number;
   }
-  return s;
+  return { season: s, episode: eps, totalSeasons: maxS, seasonEpisodes: regularSeasons[regularSeasons.length - 1].episode_count || 0 };
 }
 
 function changeSeason(id, change) {
@@ -1742,8 +1893,8 @@ function changeSeason(id, change) {
   const regularSeasons = currentModalTitle.seasons.filter(s => s.season_number > 0).sort((a,b) => a.season_number - b.season_number);
   if (regularSeasons.length === 0) return;
   
-  const currentS = calculateCurrentSeason(item.episodesWatched, currentModalTitle.seasons);
-  let newS = currentS + change;
+  const epInfo = calculateSeasonAndEpisode(item.episodesWatched, currentModalTitle.seasons);
+  let newS = epInfo.season + change;
   if (newS < 1) newS = 1;
   if (newS > regularSeasons[regularSeasons.length - 1].season_number) newS = regularSeasons[regularSeasons.length - 1].season_number;
   
@@ -1893,4 +2044,46 @@ async function processImport(items, importState) {
     await save(); renderGrid();
   }
   showToast(`Import complete! Added: ${added}, Skipped: ${skipped}, Failed: ${failed}`);
+}
+
+// ===== NOTIFICATIONS =====
+async function toggleNotify(id, mediaType, title) {
+  const existing = notifications.findIndex(n => n.id === id && n.mediaType === mediaType);
+  if (existing >= 0) {
+    notifications.splice(existing, 1);
+    showToast(`Removed notification for "${title}"`);
+  } else {
+    notifications.unshift({ id, mediaType, title, timestamp: Date.now() });
+    showToast(`We will notify you about "${title}"`);
+  }
+  await save();
+  renderNotifications();
+  // re-render the modal to toggle the button style
+  const modal = document.getElementById('modalBackdrop');
+  if (modal.classList.contains('open')) openModal(id, mediaType);
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  const badge = document.getElementById('notifBadge');
+  if (!list || !badge) return;
+  
+  if (notifications.length === 0) {
+    list.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No new notifications</div>`;
+    badge.style.display = 'none';
+    return;
+  }
+  
+  badge.style.display = 'block';
+  list.innerHTML = notifications.map(n => `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="openModal(${n.id}, '${n.mediaType}', event)">
+      <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;"></div>
+      <div style="flex-grow:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">${escHtml(n.title)}</div>
+        <div style="font-size:11px;color:var(--muted);">We'll notify you when it releases!</div>
+      </div>
+      <button class="icon-btn" style="flex-shrink:0;width:24px;height:24px;" onclick="toggleNotify(${n.id}, '${n.mediaType}', '${escHtml(n.title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
+    </div>
+  `).join('');
+  lucide.createIcons();
 }

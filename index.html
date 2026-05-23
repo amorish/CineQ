@@ -43,6 +43,7 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=2">
 </head>
 <body>
@@ -152,6 +153,10 @@
 
       <!-- RIGHT: Profile -->
       <div class="header-right">
+        <button class="icon-btn" id="notifBtn" onclick="toggleNotifMenu()" aria-label="Notifications" style="position:relative;">
+          <i data-lucide="bell"></i>
+          <span id="notifBadge" style="display:none;position:absolute;top:2px;right:4px;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span>
+        </button>
         <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile">
           <i data-lucide="user"></i>
         </button>
@@ -162,6 +167,14 @@
         <div class="user-info" id="userBadge"><span id="userEmail"></span></div>
         <button class="settings-btn-profile" onclick="openSettings()"><i data-lucide="settings" style="width:14px;height:14px;margin-right:8px;"></i>Settings</button>
         <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" style="width:14px;height:14px;margin-right:8px;"></i>Sign Out</button>
+      </div>
+      
+      <!-- Notifications dropdown -->
+      <div class="profile-menu" id="notifMenu" style="display:none;right:50px;width:300px;max-height:400px;overflow-y:auto;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-heading);font-weight:600;">Notifications</div>
+        <div id="notifList">
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No new notifications</div>
+        </div>
       </div>
     </div>
   </header>
@@ -194,6 +207,7 @@
         <button class="tab-btn" onclick="setFilter('watched', this)" id="tabWatched">Watched</button>
         <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Archive / Dropped"><i data-lucide="archive" style="width:18px;height:18px;vertical-align:middle;"></i></button>
         <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
+        <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom" style="display:none;"></button>
         <div style="flex:1"></div>
         <button class="icon-btn" id="advancedFilterBtn" onclick="toggleAdvancedFilter()" title="Advanced Filter" style="margin-bottom:8px;">
           <i data-lucide="filter"></i>
@@ -417,6 +431,8 @@
               </div>
             </div>
           </div>
+          
+
 
           <!-- Appearance Tab -->
           <div class="settings-pane" id="pane-appearance">
@@ -447,6 +463,22 @@
                 <option value="watched">Watched</option>
                 <option value="explore">Explore</option>
               </select>
+            </div>
+            <div class="setting-group">
+              <label>Custom List</label>
+              <p class="setting-description">Create your own custom tab (e.g. "Favorites") and place it anywhere in the top navigation.</p>
+              <div class="input-wrapper-settings" style="margin-bottom:12px;">
+                <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
+              </div>
+              <select id="settingsCustomListPos" class="settings-select">
+                <option value="1">Position 1 (First)</option>
+                <option value="2">Position 2</option>
+                <option value="3">Position 3</option>
+                <option value="4">Position 4</option>
+                <option value="5">Position 5</option>
+                <option value="6">Position 6 (Last)</option>
+              </select>
+              <button class="settings-action-btn" style="margin-top:12px;" onclick="saveCustomListSettings()">Save Custom List</button>
             </div>
             <div class="setting-group">
               <label for="settingsDefaultSort">Default Sort</label>
@@ -480,7 +512,40 @@
 
           <!-- Data Tab -->
           <div class="settings-pane" id="pane-data">
-            <h3>Data Management</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+              <h3 style="margin:0;">Stats & Insights</h3>
+              <button class="settings-action-btn secondary" onclick="shareStats()"><i data-lucide="share-2" style="width:14px;height:14px;margin-right:6px;"></i>Share Image</button>
+            </div>
+            <div id="statsExportArea" style="background:var(--elevated); padding:24px; border-radius:var(--radius-lg); border:1px solid var(--border); margin-bottom:32px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                <div class="logo" style="font-size: 20px;">CineQ</div>
+                <div style="font-size: 12px; color: var(--muted);">cine-q.vercel.app</div>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                  <div style="font-size:24px; font-weight:700; color:var(--accent);" id="statsTotalTime">0d 0h</div>
+                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Total Watch Time</div>
+                </div>
+                <div style="background:var(--bg); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                  <div style="font-size:24px; font-weight:700; color:#22c55e;" id="statsCompletion">0%</div>
+                  <div style="font-size:12px; color:var(--muted); margin-top:4px;">Completion Rate</div>
+                </div>
+              </div>
+              
+              <div class="setting-group" style="margin-bottom:0;">
+                <label>Media Distribution</label>
+                <div style="display:flex; height:24px; border-radius:4px; overflow:hidden; margin-top:8px;">
+                  <div id="statsMovieBar" style="background:var(--accent); width:50%; transition:width 0.5s;" title="Movies"></div>
+                  <div id="statsTvBar" style="background:#3b82f6; width:50%; transition:width 0.5s;" title="TV Series"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; font-weight:600;">
+                  <span style="color:var(--accent);"><i data-lucide="film" style="width:12px;height:12px;margin-right:4px;"></i><span id="statsMoviePct">50%</span> Movies</span>
+                  <span style="color:#3b82f6;"><i data-lucide="tv" style="width:12px;height:12px;margin-right:4px;"></i><span id="statsTvPct">50%</span> TV Shows</span>
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin-bottom:16px;">Data Management</h3>
             <div class="setting-group">
               <label>Export Watchlist</label>
               <p class="setting-description">Download your entire watchlist as a backup JSON file.</p>
