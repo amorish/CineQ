@@ -29,7 +29,7 @@ body.light-theme .ticket-wrapper {
   bottom: calc(var(--stub-h) - 20px);
   width: 40px;
   height: 40px;
-  background: var(--surface);
+  background: var(--bg);
   border-radius: 50%;
   z-index: 10;
 }
@@ -83,7 +83,6 @@ body.light-theme .ticket-wrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
 }
 
 .share-btn {
@@ -126,14 +125,12 @@ body.light-theme .ticket-wrapper {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 4px;
-  line-height: 1;
 }
 
 .stat-value {
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--text);
-  line-height: 1;
 }
 
 /* Chart Section */
@@ -177,7 +174,6 @@ body.light-theme .ticket-wrapper {
   border: 1px solid var(--border);
   padding: 4px 10px;
   border-radius: 20px;
-  line-height: 1;
 }
 
 .legend-color {
@@ -213,14 +209,12 @@ body.light-theme .ticket-wrapper {
   letter-spacing: 1px;
   text-transform: uppercase;
   margin: 0;
-  line-height: 1;
 }
 
 .footer-link {
   color: var(--accent);
   text-decoration: none;
   font-size: 0.8rem;
-  line-height: 1;
 }
 
 .footer-link:hover {

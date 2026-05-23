@@ -834,7 +834,7 @@ function shareStats() {
 
   // Ensure canvas background matches the theme
   const style = getComputedStyle(document.body);
-  const bgColor = style.getPropertyValue('--surface').trim() || '#141414';
+  const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
 
   html2canvas(node, {
     backgroundColor: bgColor,
