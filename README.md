@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://cineq.vercel.app/"><img src="https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-eab308?style=for-the-badge" alt="Live Demo" /></a>
+  <a href="https://cine-q.vercel.app/"><img src="https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-eab308?style=for-the-badge" alt="Live Demo" /></a>
   <img src="https://img.shields.io/badge/Firebase-Auth_%26_Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
   <br/>
   <img src="https://img.shields.io/badge/TMDB-API_v3-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white" alt="TMDB" />
