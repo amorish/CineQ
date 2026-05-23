@@ -8,3 +8,6 @@ Thumbs.db
 
 # Node (if added later)
 node_modules/
+
+# Secrets
+assets/js/env.js

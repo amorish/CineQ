@@ -1,6 +1,6 @@
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
-  apiKey: "REDACTED_API_KEY",
+  apiKey: window.ENV ? window.ENV.FIREBASE_API_KEY : "",
   authDomain: "cineq-92fea.firebaseapp.com",
   projectId: "cineq-92fea",
   storageBucket: "cineq-92fea.firebasestorage.app",
@@ -19,7 +19,7 @@ let currentUser = null;
 let isSignupMode = false;
 
 // ===== TMDB API =====
-const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyY2EyZWYxM2Y4NWJmY2YwODc0YTdmNjJmZGM4OWY5NSIsIm5iZiI6MTc3MjEwMTM5My4zOCwic3ViIjoiNjlhMDFmMTExN2FmMmI2N2FjZjIwNGM1Iiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.2wW5LAadCteViThq_vmnujZgGOpg1eFE9y-ObGoF9lk';
+const TMDB_TOKEN = window.ENV ? window.ENV.TMDB_TOKEN : "";
 const TMDB_BASE = '/api/tmdb';
 const TMDB_IMG  = '/images/tmdb/w500';
 const TMDB_IMG_LG = '/images/tmdb/w780';
