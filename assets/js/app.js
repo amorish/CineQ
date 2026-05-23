@@ -1235,6 +1235,24 @@ async function openModal(id, mediaType, event) {
               <button class="modal-cal-btn" onclick="openSchedule(${detail.id})"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule</button>
               ${showNotify ? (notifications.some(n => n.id === detail.id && n.mediaType === type) ? `<button class="modal-cal-btn" style="background:rgba(239,68,68,1);color:#fff;border-color:transparent;" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell-off" style="width:12px;height:12px;"></i> Cancel Notify</button>` : `<button class="modal-cal-btn" style="background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2);" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell" style="width:12px;height:12px;"></i> Notify Me</button>`) : ''}
             </div>
+            
+            ${uniqueStreams.length > 0 ? `
+            <div style="margin-top: 16px;">
+              <div style="font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;">Where to Watch</div>
+              <div class="streaming-providers-group">
+                ${uniqueStreams.map((p, i) => `
+                  <div class="streaming-provider-pill ${i >= 2 && uniqueStreams.length > 3 ? 'hidden-provider' : ''}" style="z-index: ${50 - i};" onclick="toggleStreamingName(this)">
+                    <img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${escHtml(p.provider_name)}" />
+                    <span class="streaming-provider-name">${escHtml(p.provider_name)}</span>
+                  </div>
+                `).join('')}
+                ${uniqueStreams.length > 3 ? `
+                  <div class="streaming-more-btn" onclick="expandStreamingGroup(this)">+${uniqueStreams.length - 2}</div>
+                ` : ''}
+              </div>
+            </div>
+            ` : ''}
+
           </div>
         </div>
       </div>
@@ -1322,21 +1340,6 @@ async function openModal(id, mediaType, event) {
           ${syn.length >= 180 ? '<div class="synopsis-fade"></div>' : ''}
         </div>
         ${syn.length >= 180 ? '<button class="read-more" onclick="toggleSynopsis()">Read more ↓</button>' : ''}
-
-        ${uniqueStreams.length > 0 ? `
-        <div class="section-label" style="margin-top:20px;">Where to Watch <span style="font-size:0.7rem;color:var(--muted);font-weight:400;margin-left:6px;">(Powered by JustWatch)</span></div>
-        <div class="streaming-providers-group">
-          ${uniqueStreams.map((p, i) => `
-            <div class="streaming-provider-pill ${i >= 2 && uniqueStreams.length > 3 ? 'hidden-provider' : ''}" style="z-index: ${50 - i};" onclick="toggleStreamingName(this)">
-              <img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${escHtml(p.provider_name)}" />
-              <span class="streaming-provider-name">${escHtml(p.provider_name)}</span>
-            </div>
-          `).join('')}
-          ${uniqueStreams.length > 3 ? `
-            <div class="streaming-more-btn" onclick="expandStreamingGroup(this)">+${uniqueStreams.length - 2}</div>
-          ` : ''}
-        </div>
-        ` : ''}
 
         ${collectionOrder.length > 1 ? `
         <div class="watch-order">
