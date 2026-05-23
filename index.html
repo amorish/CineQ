@@ -576,15 +576,19 @@
               <div class="input-wrapper-settings" style="margin-bottom:12px;">
                 <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
               </div>
-              <select id="settingsCustomListPos" class="settings-select">
-                <option value="1">Position 1 (First)</option>
-                <option value="2">Position 2</option>
-                <option value="3">Position 3</option>
-                <option value="4">Position 4</option>
-                <option value="5">Position 5</option>
-                <option value="6">Position 6 (Last)</option>
-              </select>
-              <button class="settings-action-btn" style="margin-top:12px;" onclick="saveCustomListSettings()">Save Custom List</button>
+              <div class="input-wrapper-settings" style="align-items: center;">
+                <select id="settingsCustomListPos" class="settings-select" style="flex: 1;">
+                  <option value="1">Position 1 (First)</option>
+                  <option value="2">Position 2</option>
+                  <option value="3">Position 3</option>
+                  <option value="4">Position 4</option>
+                  <option value="5">Position 5</option>
+                  <option value="6">Position 6 (Last)</option>
+                </select>
+                <button class="settings-action-btn" onclick="saveCustomListSettings()" style="gap: 6px; padding: 0 20px;">
+                  <i data-lucide="save" style="width:14px;height:14px;"></i> Save
+                </button>
+              </div>
             </div>
             <div class="setting-group">
               <label for="settingsDefaultSort">Default Sort</label>
