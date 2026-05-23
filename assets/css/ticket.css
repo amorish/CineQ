@@ -69,6 +69,7 @@ body.light-theme .ticket-wrapper {
   color: var(--text);
   font-weight: 600;
   margin: 0;
+  line-height: 1;
 }
 
 .username-badge {
@@ -180,6 +181,7 @@ body.light-theme .ticket-wrapper {
   width: 10px;
   height: 10px;
   border-radius: 2px;
+  transform: translateY(0.5px);
 }
 
 /* Dashed Line separating main body and stub */
