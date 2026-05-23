@@ -107,9 +107,9 @@ body.light-theme .ticket-wrapper {
 /* Summary Stats */
 .stats-row {
   display: flex;
-  gap: 24px;
+  justify-content: space-between;
   background: var(--bg);
-  padding: 16px;
+  padding: 16px 20px;
   border-radius: 12px;
   border: 1px solid var(--border);
 }
@@ -160,8 +160,8 @@ body.light-theme .ticket-wrapper {
 .custom-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
+  justify-content: space-between;
+  width: 100%;
   margin-top: 10px;
 }
 

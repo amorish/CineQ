@@ -45,8 +45,8 @@
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=5">
-  <link rel="stylesheet" href="assets/css/ticket.css?v=5">
+  <link rel="stylesheet" href="assets/css/style.css?v=6">
+  <link rel="stylesheet" href="assets/css/ticket.css?v=6">
 </head>
 <body>
   <!-- Inline script to load theme and prevent FOUC -->
@@ -461,17 +461,19 @@
                   <div class="header">
                     <div class="header-title-group">
                       <h2>Stats & Insights</h2>
-                      <span class="username-badge" id="statsUsernameBadge">@username</span> 
                     </div>
-                    <button class="share-btn" id="shareBtn" onclick="shareStats()" aria-label="Share">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="18" cy="5" r="3"></circle>
-                        <circle cx="6" cy="12" r="3"></circle>
-                        <circle cx="18" cy="19" r="3"></circle>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                      </svg>
-                    </button>
+                    <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
+                      <span class="username-badge" id="statsUsernameBadge">@username</span> 
+                      <button class="share-btn" id="shareBtn" onclick="shareStats()" aria-label="Share">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="18" cy="5" r="3"></circle>
+                          <circle cx="6" cy="12" r="3"></circle>
+                          <circle cx="18" cy="19" r="3"></circle>
+                          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
                   <div class="stats-row">
@@ -700,6 +702,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
-  <script src="assets/js/app.js?v=5"></script>
+  <script src="assets/js/app.js?v=6"></script>
 </body>
 </html>

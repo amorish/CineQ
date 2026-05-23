@@ -194,22 +194,31 @@ body.light-theme .logo-light { display: block !important; }
 .main-content{padding:76px 16px 32px;width:100%;max-width:1200px;margin:0 auto}
 
 /* ===== STATS STRIP ===== */
-.stats-card{
+.stats-card {
   margin: 8px 0 16px 0;
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:12px;
-  flex-wrap:wrap;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  padding-bottom: 4px;
 }
-.stat-pill{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:4px 14px 4px 4px;
-  background:rgba(255,255,255,0.03);
-  border-radius:30px;
-  border:1px solid rgba(255,255,255,0.06);
+.stats-card::-webkit-scrollbar {
+  display: none;
+}
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 4px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 30px;
+  border: 1px solid rgba(255,255,255,0.06);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .stat-pill.highlight-pill{
   background:rgba(234,179,8,.05);
