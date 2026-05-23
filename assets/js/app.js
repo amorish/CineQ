@@ -731,53 +731,52 @@ function updateStats() {
   const ctx = document.getElementById('mediaChart');
   if (ctx && window.Chart) {
     const style = getComputedStyle(document.body);
-    const accentColor = style.getPropertyValue('--accent').trim() || '#e11d48';
-    const elevatedColor = style.getPropertyValue('--elevated').trim() || '#1c1c1e';
-    const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
-    const textColor = style.getPropertyValue('--text').trim() || '#ffffff';
-    const mutedColor = style.getPropertyValue('--muted').trim() || '#a1a1aa';
-    const borderColor = style.getPropertyValue('--border').trim() || '#2d2d30';
-    
+    const accentColor  = style.getPropertyValue('--accent').trim()   || '#e11d48';
+    const surfaceColor = style.getPropertyValue('--surface').trim()  || '#ffffff';
+    const bgColor      = style.getPropertyValue('--bg').trim()       || '#0a0a0a';
+    const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
+    const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
+    const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
+
+    // Always destroy first so theme colors are fully re-applied
     if (window.mediaChartInstance) {
-      window.mediaChartInstance.data.datasets[0].data = [moviePct, tvPct];
-      window.mediaChartInstance.data.datasets[0].backgroundColor = [accentColor, '#3b82f6'];
-      window.mediaChartInstance.data.datasets[0].borderColor = elevatedColor;
-      window.mediaChartInstance.update();
-    } else {
-      window.mediaChartInstance = new Chart(ctx.getContext('2d'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Movies', 'TV Shows'],
-          datasets: [{
-            data: [moviePct, tvPct],
-            backgroundColor: [accentColor, '#3b82f6'],
-            borderWidth: 3, 
-            borderColor: elevatedColor, 
-            borderRadius: 4, 
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '45%', 
-          animation: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: bgColor,
-              titleColor: textColor,
-              bodyColor: mutedColor,
-              borderColor: borderColor,
-              borderWidth: 1,
-              callbacks: {
-                label: function(context) { return ` ${context.label}: ${context.raw}%`; }
-              }
+      window.mediaChartInstance.destroy();
+      window.mediaChartInstance = null;
+    }
+
+    window.mediaChartInstance = new Chart(ctx.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Movies', 'TV Shows'],
+        datasets: [{
+          data: [moviePct, tvPct],
+          backgroundColor: [accentColor, '#3b82f6'],
+          borderWidth: 3,
+          borderColor: surfaceColor,  // always match the card background for clean gaps
+          borderRadius: 4,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '45%',
+        animation: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: bgColor,
+            titleColor: textColor,
+            bodyColor: mutedColor,
+            borderColor: borderClr,
+            borderWidth: 1,
+            callbacks: {
+              label: function(context) { return ` ${context.label}: ${context.raw}%`; }
             }
           }
         }
-      });
-    }
+      }
+    });
 
     const legendContainer = document.getElementById('customLegend');
     if (legendContainer) {
