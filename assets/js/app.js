@@ -2132,9 +2132,31 @@ async function processImport(items, importState) {
       let tmdbItem = null;
       let mediaType = 'movie';
       if (it.type === 'letterboxd') {
-        const url = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&year='+it.year : ''}`;
-        const res = await fetch(url).then(r => r.json());
-        if (res.results && res.results.length > 0) tmdbItem = res.results[0];
+        // Step 1: Search movie with year
+        const url1 = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&year='+it.year : ''}`;
+        const res1 = await fetch(url1).then(r => r.json());
+        if (res1.results && res1.results.length > 0) {
+          tmdbItem = res1.results[0];
+          mediaType = 'movie';
+        }
+        // Step 2: Retry movie search WITHOUT year (year mismatch often causes misses)
+        if (!tmdbItem && it.year) {
+          const url2 = `${baseUrl}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(it.name)}`;
+          const res2 = await fetch(url2).then(r => r.json());
+          if (res2.results && res2.results.length > 0) {
+            tmdbItem = res2.results[0];
+            mediaType = 'movie';
+          }
+        }
+        // Step 3: Fallback to TV search (for anime, shows on Letterboxd)
+        if (!tmdbItem) {
+          const url3 = `${baseUrl}/search/tv?api_key=${apiKey}&query=${encodeURIComponent(it.name)}${it.year ? '&first_air_date_year='+it.year : ''}`;
+          const res3 = await fetch(url3).then(r => r.json());
+          if (res3.results && res3.results.length > 0) {
+            tmdbItem = res3.results[0];
+            mediaType = 'tv';
+          }
+        }
       } else if (it.type === 'imdb') {
         const url = `${baseUrl}/find/${it.id}?api_key=${apiKey}&external_source=imdb_id`;
         const res = await fetch(url).then(r => r.json());
@@ -2151,16 +2173,16 @@ async function processImport(items, importState) {
           id: tmdbItem.id,
           media_type: mediaType,
           title: tmdbItem.title || tmdbItem.name,
-          poster: tmdbItem.poster_path ? `/images/tmdb/w500${tmdbItem.poster_path}` : null,
+          poster: tmdbItem.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbItem.poster_path}` : null,
           addedAt: new Date().toISOString(),
           watched: false
         });
         added++;
       }
-    } catch (e) { failed++; }
+    } catch (e) { console.error('Import item error:', e); failed++; }
     
-    // throttle to avoid tmdb rate limits
-    if (i % 5 === 0 && i > 0) await new Promise(r => setTimeout(r, 200));
+    // throttle to avoid TMDB rate limits
+    if (i % 5 === 0 && i > 0) await new Promise(r => setTimeout(r, 300));
   }
   
   if (added > 0) {
