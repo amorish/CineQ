@@ -43,7 +43,7 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=2">
 </head>
 <body>
   <!-- Inline script to load theme and prevent FOUC -->
@@ -374,6 +374,9 @@
             <button class="settings-tab-btn" onclick="switchSettingsTab('data', this)">
               <i data-lucide="database"></i><span>Data</span>
             </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('guide', this)">
+              <i data-lucide="info"></i><span>Feature Guide</span>
+            </button>
           </nav>
         </aside>
 
@@ -498,6 +501,41 @@
               </div>
             </div>
           </div>
+
+          <!-- Guide Tab -->
+          <div class="settings-pane" id="pane-guide">
+            <h3>Feature Guide</h3>
+            
+            <div class="setting-group">
+              <label><i data-lucide="layers" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Advanced Filtering</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Click the Sliders icon next to the "Select" button to open the <strong>Advanced Filter</strong> panel. Here you can filter your lists by Movie/TV, Release Year (Decades), and Runtime Length.</p>
+            </div>
+
+            <div class="setting-group">
+              <label><i data-lucide="sparkles" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>FlowMode &amp; Sorting</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Inside the Sort Panel, you can click <strong>FlowMode</strong> to hide titles you've recently viewed, creating an ultra-clean UI. You can also sort your lists by Date Added, Name, Rating, and Year.</p>
+            </div>
+
+            <div class="setting-group">
+              <label><i data-lucide="tv" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>TV Series Season Tracking</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">When viewing the details of a TV show you are currently watching, use the <strong>Season + / -</strong> buttons to quickly mark an entire season as watched, jumping your episode count automatically.</p>
+            </div>
+
+            <div class="setting-group">
+              <label><i data-lucide="archive" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Archive &amp; Drop</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">If you decide to drop a show or movie but want to remember where you left off, click <strong>Drop</strong> in the detail modal. It will be moved to the hidden Archive tab (the box icon) where you can always restore it later.</p>
+            </div>
+
+            <div class="setting-group">
+              <label><i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Random Pick Generator</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Can't decide what to watch? Head over to the <strong>Explore</strong> tab and use the Random Pick feature to get smart, randomized suggestions from TMDB.</p>
+            </div>
+
+            <div class="setting-group" style="margin-bottom:24px;">
+              <label><i data-lucide="download" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Import &amp; Export Data</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">In the Data settings tab, you can back up your entire watchlist as a JSON file, or import your data directly from Letterboxd or IMDb CSV exports!</p>
+            </div>
+          </div>
         </main>
       </div>
     </div>
@@ -508,6 +546,6 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
-  <script src="assets/js/app.js"></script>
+  <script src="assets/js/app.js?v=2"></script>
 </body>
 </html>
