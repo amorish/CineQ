@@ -2154,7 +2154,8 @@ async function processImport(items, importState) {
         if (res1.results && res1.results.length > 0) {
           tmdbItem = res1.results[0];
           mediaType = 'movie';
-        }
+        } else if (!res1.results) console.warn("TMDB error on step 1:", res1);
+        
         // Step 2: Retry movie search WITHOUT year (year mismatch often causes misses)
         if (!tmdbItem && it.year) {
           const url2 = `/search/movie?query=${encodeURIComponent(it.name)}&include_adult=false&language=en-US`;
@@ -2162,7 +2163,7 @@ async function processImport(items, importState) {
           if (res2.results && res2.results.length > 0) {
             tmdbItem = res2.results[0];
             mediaType = 'movie';
-          }
+          } else if (!res2.results) console.warn("TMDB error on step 2:", res2);
         }
         // Step 3: Fallback to TV search (for anime, shows on Letterboxd)
         if (!tmdbItem) {
@@ -2171,7 +2172,7 @@ async function processImport(items, importState) {
           if (res3.results && res3.results.length > 0) {
             tmdbItem = res3.results[0];
             mediaType = 'tv';
-          }
+          } else if (!res3.results) console.warn("TMDB error on step 3:", res3);
         }
       } else if (it.type === 'imdb') {
         const url = `/find/${it.id}?external_source=imdb_id`;
@@ -2197,8 +2198,8 @@ async function processImport(items, importState) {
       }
     } catch (e) { console.error('Import item error:', e); failed++; }
     
-    // throttle to avoid TMDB rate limits
-    if (i % 5 === 0 && i > 0) await new Promise(r => setTimeout(r, 300));
+    // Constant 250ms delay per item to strictly avoid TMDB burst rate limits (50/s)
+    await new Promise(r => setTimeout(r, 250));
   }
   
   if (added > 0) {
