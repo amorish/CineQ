@@ -1325,13 +1325,16 @@ async function openModal(id, mediaType, event) {
 
         ${uniqueStreams.length > 0 ? `
         <div class="section-label" style="margin-top:20px;">Where to Watch <span style="font-size:0.7rem;color:var(--muted);font-weight:400;margin-left:6px;">(Powered by JustWatch)</span></div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          ${uniqueStreams.map(p => `
-            <div style="display:flex; align-items:center; gap:8px; background:var(--elevated); padding:6px 12px 6px 6px; border-radius:30px; border:1px solid var(--border);">
-              <img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${escHtml(p.provider_name)}" style="width:24px; height:24px; border-radius:50%;" />
-              <span style="font-size:0.8rem; color:var(--text); font-weight:500;">${escHtml(p.provider_name)}</span>
+        <div class="streaming-providers-group">
+          ${uniqueStreams.map((p, i) => `
+            <div class="streaming-provider-pill ${i >= 2 && uniqueStreams.length > 3 ? 'hidden-provider' : ''}" style="z-index: ${50 - i};" onclick="toggleStreamingName(this)">
+              <img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${escHtml(p.provider_name)}" />
+              <span class="streaming-provider-name">${escHtml(p.provider_name)}</span>
             </div>
           `).join('')}
+          ${uniqueStreams.length > 3 ? `
+            <div class="streaming-more-btn" onclick="expandStreamingGroup(this)">+${uniqueStreams.length - 2}</div>
+          ` : ''}
         </div>
         ` : ''}
 
@@ -2419,4 +2422,23 @@ async function sendFeedback() {
     lucide.createIcons();
   }
 }
+
+// ===== STREAMING PROVIDERS INTERACTION =====
+window.expandStreamingGroup = function(btn) {
+  const group = btn.closest('.streaming-providers-group');
+  if (group) group.classList.add('expanded');
+};
+
+window.toggleStreamingName = function(el) {
+  const group = el.closest('.streaming-providers-group');
+  if (!group) return;
+  const allLogos = group.querySelectorAll('.streaming-provider-pill');
+  const isAlreadyOpen = el.classList.contains('show-name');
+  
+  allLogos.forEach(logo => logo.classList.remove('show-name'));
+  
+  if (!isAlreadyOpen) {
+    el.classList.add('show-name');
+  }
+};
 

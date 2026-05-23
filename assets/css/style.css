@@ -1080,6 +1080,7 @@ body.light-theme .settings-tab-btn.active { color: var(--text) !important; backg
 .settings-pane h3 { font-size: 22px; font-weight: 700; font-family: var(--font-heading); color: var(--text); margin-bottom: 8px; }
 .setting-group { display: flex; flex-direction: column; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
 .setting-group:last-child { border-bottom: none; padding-bottom: 0; }
+.setting-group:has(+ .danger-zone) { border-bottom: none; }
 .setting-group label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .setting-description { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
 .input-wrapper-settings { display: flex; gap: 12px; max-width: 420px; }
@@ -1182,3 +1183,99 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
   align-self: center; margin-top: 4px; margin-bottom: 4px;
 }
 .explore-card-wrap:hover .explore-card-rank { background: var(--accent); color: #000; }
+
+/* Streaming Providers Avatar Stack */
+.streaming-providers-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.streaming-provider-pill {
+  display: flex;
+  align-items: center;
+  background: var(--elevated);
+  border: 2px solid var(--bg);
+  border-radius: 30px;
+  margin-left: -10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  max-width: 32px;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.streaming-provider-pill:first-child {
+  margin-left: 0;
+}
+
+.streaming-provider-pill:hover {
+  z-index: 20 !important;
+  transform: translateY(-2px);
+}
+
+.streaming-provider-pill.show-name {
+  max-width: 200px;
+  padding-right: 12px;
+  z-index: 15 !important;
+}
+
+.streaming-provider-pill img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.streaming-provider-name {
+  font-size: 0.8rem;
+  color: var(--text);
+  font-weight: 500;
+  margin-left: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.streaming-provider-pill.show-name .streaming-provider-name {
+  opacity: 1;
+  transition-delay: 0.1s;
+}
+
+.streaming-more-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--elevated);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 2px solid var(--bg);
+  margin-left: -10px;
+  cursor: pointer;
+  z-index: 1;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.streaming-more-btn:hover {
+  background: var(--border);
+  z-index: 20;
+}
+
+.streaming-provider-pill.hidden-provider {
+  display: none;
+}
+
+.streaming-providers-group.expanded .hidden-provider {
+  display: flex;
+}
+
+.streaming-providers-group.expanded .streaming-more-btn {
+  display: none;
+}
