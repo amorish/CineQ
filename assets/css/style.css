@@ -1049,11 +1049,16 @@ body.light-theme .settings-btn-profile:hover { background: rgba(0, 0, 0, 0.02); 
 /* ===== SETTINGS MODAL ===== */
 .settings-modal {
   max-width: 800px !important; height: 600px !important;
-  border-radius: var(--radius-lg) !important; overflow: hidden !important;
-  background: var(--surface) !important; border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-elevated) !important;
+  border-radius: var(--radius-lg) !important; overflow: visible !important;
+  background: transparent !important; border: none !important;
+  box-shadow: none !important; position: relative;
 }
-.settings-container { display: flex; width: 100%; height: 100%; }
+.settings-container { 
+  display: flex; width: 100%; height: 100%; 
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow-elevated);
+}
 .settings-sidebar {
   width: 220px; background: rgba(255, 255, 255, 0.01);
   border-right: 1px solid var(--border); padding: 24px 16px;
