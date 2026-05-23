@@ -395,6 +395,9 @@
             <button class="settings-tab-btn" onclick="switchSettingsTab('guide', this)">
               <i data-lucide="info"></i><span>Feature Guide</span>
             </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('feedback', this)">
+              <i data-lucide="message-square"></i><span>Report Bug / Feedback</span>
+            </button>
           </nav>
         </aside>
 
@@ -623,6 +626,31 @@
             <div class="setting-group" style="margin-bottom:24px;">
               <label><i data-lucide="download" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Import &amp; Export Data</label>
               <p class="setting-description" style="margin-top:4px;color:var(--text-main);">In the Data settings tab, you can back up your entire watchlist as a JSON file, or import your data directly from Letterboxd or IMDb CSV exports!</p>
+            </div>
+          </div>
+
+          <!-- Feedback Tab -->
+          <div class="settings-pane" id="pane-feedback">
+            <h3 style="margin-bottom: 24px;">Report Bug / Feedback</h3>
+            
+            <div class="setting-group" style="background:var(--elevated); padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border);">
+              <p class="setting-description" style="margin-bottom:20px;">Found a bug or have a suggestion? Send a message directly to the developer! (Limit: 1 message per 24 hours).</p>
+              
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <label style="font-size:12px; margin-bottom:8px; display:block;">Your Message <span style="color:var(--danger, #ef4444);">*</span></label>
+                  <textarea id="feedbackMessage" rows="5" placeholder="Describe the issue or feedback..." style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; color:var(--text); font-family:inherit; resize:vertical;"></textarea>
+                </div>
+                
+                <div>
+                  <label style="font-size:12px; margin-bottom:8px; display:block;">Attachment (Optional, max 2MB)</label>
+                  <input type="file" id="feedbackAttachment" accept="image/*,.pdf" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px; color:var(--text); font-size:13px;" />
+                </div>
+
+                <button class="settings-action-btn" id="sendFeedbackBtn" onclick="sendFeedback()" style="align-self:flex-start; margin-top:8px;">
+                  <i data-lucide="send" style="width:14px;height:14px;margin-right:6px;"></i>Send Message
+                </button>
+              </div>
             </div>
           </div>
         </main>

@@ -2184,3 +2184,88 @@ function renderNotifications() {
   `).join('');
   lucide.createIcons();
 }
+
+// ===== FEEDBACK & BUG REPORT =====
+async function sendFeedback() {
+  const btn = document.getElementById('sendFeedbackBtn');
+  const msgInput = document.getElementById('feedbackMessage');
+  const fileInput = document.getElementById('feedbackAttachment');
+  
+  const msg = msgInput.value.trim();
+  if (!msg) return showToast('Please enter a message first.');
+  
+  // Rate limit: 24 hours check via localStorage
+  const lastSent = localStorage.getItem('cineq_last_feedback');
+  if (lastSent && (Date.now() - parseInt(lastSent)) < 86400000) {
+    return showToast('You can only send one message per 24 hours to prevent spam.');
+  }
+
+  // Double check rate limit via Firestore (more secure)
+  if (currentUser) {
+    try {
+      const doc = await db.collection('cineq_users').doc(currentUser.uid).get();
+      if (doc.exists) {
+        const dbLastSent = doc.data().lastFeedbackTime;
+        if (dbLastSent && (Date.now() - dbLastSent) < 86400000) {
+          localStorage.setItem('cineq_last_feedback', dbLastSent);
+          return showToast('You can only send one message per 24 hours.');
+        }
+      }
+    } catch(e) {}
+  }
+
+  const file = fileInput.files[0];
+  let base64File = null;
+  let filename = null;
+  
+  if (file) {
+    if (file.size > 2 * 1024 * 1024) return showToast('Attachment must be under 2MB.');
+    try {
+      base64File = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      filename = file.name;
+    } catch (e) {
+      return showToast('Failed to read attachment.');
+    }
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = `<img src="assets/images/blocks_shuffle_loading.svg" style="width:14px;height:14px;margin-right:6px;">Sending...`;
+
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: currentUser ? currentUser.email : 'Anonymous',
+        message: msg,
+        attachment: base64File,
+        filename: filename
+      })
+    });
+
+    if (res.ok) {
+      showToast('Feedback sent successfully! Thank you.');
+      msgInput.value = '';
+      fileInput.value = '';
+      localStorage.setItem('cineq_last_feedback', Date.now());
+      if (currentUser) {
+        db.collection('cineq_users').doc(currentUser.uid).set({ lastFeedbackTime: Date.now() }, { merge: true });
+      }
+    } else {
+      const err = await res.json();
+      showToast(err.message || 'Failed to send feedback.');
+    }
+  } catch (e) {
+    showToast('Network error. Failed to send feedback.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="send" style="width:14px;height:14px;margin-right:6px;"></i>Send Message`;
+    lucide.createIcons();
+  }
+}
+
