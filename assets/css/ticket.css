@@ -120,7 +120,7 @@ body.light-theme .ticket-wrapper {
   justify-content: center;
 }
 
-.stat-label {
+.ticket-wrapper .stat-label {
   font-size: 0.75rem;
   color: var(--muted);
   text-transform: uppercase;
@@ -130,7 +130,7 @@ body.light-theme .ticket-wrapper {
   top: -1px;
 }
 
-.stat-value {
+.ticket-wrapper .stat-value {
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--text);
