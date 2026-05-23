@@ -1135,8 +1135,8 @@ async function openModal(id, mediaType, event) {
 
   try {
     const endpoint = type === 'tv'
-      ? `/tv/${id}?append_to_response=credits`
-      : `/movie/${id}?append_to_response=credits,belongs_to_collection`;
+      ? `/tv/${id}?append_to_response=credits,watch/providers`
+      : `/movie/${id}?append_to_response=credits,belongs_to_collection,watch/providers`;
 
     const res = await tmdbFetch(endpoint);
     const detail = await res.json();
@@ -1184,6 +1184,20 @@ async function openModal(id, mediaType, event) {
     let collectionOrder = [];
     if (type === 'movie' && detail.belongs_to_collection) {
       collectionOrder = await buildCollectionOrder(detail.belongs_to_collection.id, detail);
+    }
+
+    // Streaming Providers
+    const watchData = detail['watch/providers']?.results || {};
+    const regionObj = watchData['US'] || watchData['IN'] || watchData['GB'] || Object.values(watchData)[0] || {};
+    const streamOptions = [...(regionObj.flatrate || []), ...(regionObj.ads || []), ...(regionObj.free || [])];
+    
+    const uniqueStreams = [];
+    const seenProviders = new Set();
+    for (const p of streamOptions) {
+      if (!seenProviders.has(p.provider_id)) {
+        seenProviders.add(p.provider_id);
+        uniqueStreams.push(p);
+      }
     }
 
     const typeLabel = type === 'tv' ? 'TV Series' : 'Movie';
@@ -1308,6 +1322,18 @@ async function openModal(id, mediaType, event) {
           ${syn.length >= 180 ? '<div class="synopsis-fade"></div>' : ''}
         </div>
         ${syn.length >= 180 ? '<button class="read-more" onclick="toggleSynopsis()">Read more ↓</button>' : ''}
+
+        ${uniqueStreams.length > 0 ? `
+        <div class="section-label" style="margin-top:20px;">Where to Watch <span style="font-size:0.7rem;color:var(--muted);font-weight:400;margin-left:6px;">(Powered by JustWatch)</span></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          ${uniqueStreams.map(p => `
+            <div style="display:flex; align-items:center; gap:8px; background:var(--elevated); padding:6px 12px 6px 6px; border-radius:30px; border:1px solid var(--border);">
+              <img src="https://image.tmdb.org/t/p/w45${p.logo_path}" alt="${escHtml(p.provider_name)}" style="width:24px; height:24px; border-radius:50%;" />
+              <span style="font-size:0.8rem; color:var(--text); font-weight:500;">${escHtml(p.provider_name)}</span>
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
 
         ${collectionOrder.length > 1 ? `
         <div class="watch-order">
