@@ -934,37 +934,6 @@ function updateStats() {
       : 'cineq_user';
     badge.innerHTML = `<span style="position: relative; top: -1px;">@${name}</span>`;
   }
-  
-  // Load custom ticket background if available
-  try {
-    const bg = localStorage.getItem('cineq_ticket_bg');
-    if (bg) {
-      document.querySelector('.ticket-card').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bg})`;
-      const clearBtn = document.getElementById('clearTicketBgBtn');
-      if (clearBtn) clearBtn.style.display = 'inline-flex';
-    }
-  } catch(e) {}
-}
-
-function setTicketBg(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const base64 = evt.target.result;
-    document.querySelector('.ticket-card').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${base64})`;
-    try { localStorage.setItem('cineq_ticket_bg', base64); } catch(err) { console.warn("Image too large to cache", err); }
-    document.getElementById('clearTicketBgBtn').style.display = 'inline-flex';
-    showToast("Ticket background updated!");
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearTicketBg() {
-  document.querySelector('.ticket-card').style.backgroundImage = '';
-  localStorage.removeItem('cineq_ticket_bg');
-  document.getElementById('clearTicketBgBtn').style.display = 'none';
-  document.getElementById('ticketBgInput').value = '';
 }
 
 function shareStats() {
