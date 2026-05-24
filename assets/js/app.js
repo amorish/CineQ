@@ -955,11 +955,13 @@ function setFilter(f, btn) {
   const exploreSection = document.getElementById('exploreSection');
   const sortFilterBtn = document.getElementById('sortFilterBtn');
   const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
+  const advancedFilterBtn = document.getElementById('advancedFilterBtn');
   if (f === 'explore') {
     gridWrap.style.display = 'none';
     exploreSection.style.display = 'block';
     if (sortFilterBtn) sortFilterBtn.style.display = 'none';
     if (selectModeToggleBtn) selectModeToggleBtn.style.display = 'none';
+    if (advancedFilterBtn) advancedFilterBtn.style.display = 'none';
     if (!exploreLoaded) loadExplore();
   } else {
     if (f === 'watched' && flowModeActive) { flowModeActive = false; currentSort = userSettings.defaultSort || 'added'; currentSortOrder = userSettings.defaultSortOrder || 'desc'; }
@@ -967,6 +969,7 @@ function setFilter(f, btn) {
     exploreSection.style.display = 'none';
     if (sortFilterBtn) sortFilterBtn.style.display = '';
     if (selectModeToggleBtn) selectModeToggleBtn.style.display = '';
+    if (advancedFilterBtn) advancedFilterBtn.style.display = '';
     renderGrid();
   }
 }
@@ -1685,12 +1688,56 @@ async function fetchRandomTitle(forceNew = false) {
   if (btn) btn.classList.add('loading');
   lucide.createIcons();
   try {
-    const page = Math.floor(Math.random() * 50) + 1;
+    const typeSelect = document.getElementById('randomPickType');
+    const genreSelect = document.getElementById('randomPickGenre');
+    const ratingSelect = document.getElementById('randomPickRating');
+    
+    let typeVal = typeSelect ? typeSelect.value : 'all';
+    let genreVal = genreSelect ? genreSelect.value : 'all';
+    let ratingVal = ratingSelect ? ratingSelect.value : 'all';
+    
+    let isFilterActive = typeVal !== 'all' || genreVal !== 'all' || ratingVal !== 'all';
+    
+    const page = isFilterActive ? (Math.floor(Math.random() * 3) + 1) : (Math.floor(Math.random() * 50) + 1);
     const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
-    const useTV = Math.random() > 0.5;
+    
+    let useTV = Math.random() > 0.5;
+    if (typeVal === 'movie' || typeVal === 'documentary') useTV = false;
+    if (typeVal === 'tv' || typeVal === 'anime') useTV = true;
+
+    let filterParams = '';
+    
+    if (ratingVal !== 'all') {
+      filterParams += `&vote_average.gte=${ratingVal}`;
+    } else {
+      filterParams += `&vote_average.gte=${useTV ? 6.8 : 6.5}`;
+    }
+
+    let genres = [];
+    let keywords = [];
+
+    if (typeVal === 'anime') { genres.push(16); filterParams += '&with_original_language=ja'; }
+    if (typeVal === 'documentary') genres.push(99);
+
+    if (genreVal !== 'all') {
+      const genreMap = {
+        'mystery': 9648, 'horror': 27, 'drama': 18, 'animation': 16,
+        'scifi': useTV ? 10765 : 878,
+        'action': useTV ? 10759 : 28,
+        'adventure': useTV ? 10759 : 12
+      };
+      if (genreMap[genreVal]) genres.push(genreMap[genreVal]);
+      if (genreVal === 'bio') { if (!useTV) genres.push(36); else keywords.push(3205); }
+      if (genreVal === 'sports') keywords.push(9840);
+    }
+
+    if (genres.length > 0) filterParams += `&with_genres=${genres.join(',')}`;
+    if (keywords.length > 0) filterParams += `&with_keywords=${keywords.join(',')}`;
+
     const path = useTV
-      ? `/discover/tv?sort_by=popularity.desc&vote_average.gte=6.8&vote_count.gte=200&page=${page}${adult}`
-      : `/discover/movie?sort_by=popularity.desc&vote_average.gte=6.5&vote_count.gte=500&page=${page}${adult}`;
+      ? `/discover/tv?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`
+      : `/discover/movie?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`;
+      
     const res = await tmdbFetch(path);
     if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
@@ -1711,14 +1758,24 @@ async function fetchRandomTitle(forceNew = false) {
         if (!newItems.some(ex => ex.id === a.id)) { a._mediaType = mediaType; newItems.push(a); }
       }
     }
-    if (newItems.length >= 3) {
-      if (forceNew) state.count++;
-      state.items = newItems.slice(0, 3);
+    
+    if (newItems.length === 0) {
+      container.innerHTML = `<div class="explore-loading" style="grid-column:1/-1;">No titles found. Try adjusting filters.</div>`;
+      return;
+    }
+
+    if (forceNew) state.count++;
+    state.items = newItems.slice(0, 3);
+    
+    if (isFilterActive && forceNew) {
+      // Don't save strictly filtered lists to local storage so they don't block normal daily view later
+    } else {
       localStorage.setItem('cineq_random_pick_state', JSON.stringify(state));
-      renderRandomPicks(state.items);
-      updateRandomLimit(state.count);
       save();
-    } else { throw new Error('Not enough items'); }
+    }
+    
+    renderRandomPicks(state.items);
+    updateRandomLimit(state.count);
   } catch(e) {
     container.innerHTML = `<div class="explore-loading" style="grid-column:1/-1;">Failed to fetch suggestions.</div>`;
   } finally { if (btn) btn.classList.remove('loading'); }

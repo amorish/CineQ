@@ -264,6 +264,34 @@
             <h2>Random Pick</h2>
             <p>Don't know what to watch?</p>
           </div>
+          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px;">
+            <select id="randomPickType" class="random-filter-select" onchange="fetchRandomTitle(true)">
+              <option value="all">Type: All</option>
+              <option value="movie">Movie</option>
+              <option value="tv">TV Series</option>
+              <option value="anime">Anime</option>
+              <option value="documentary">Documentary</option>
+            </select>
+            <select id="randomPickGenre" class="random-filter-select" onchange="fetchRandomTitle(true)">
+              <option value="all">Genre: All</option>
+              <option value="mystery">Mystery</option>
+              <option value="horror">Horror</option>
+              <option value="scifi">Sci-Fi</option>
+              <option value="action">Action</option>
+              <option value="adventure">Adventure</option>
+              <option value="drama">Drama</option>
+              <option value="bio">Bio</option>
+              <option value="sports">Sports</option>
+              <option value="animation">Animation</option>
+            </select>
+            <select id="randomPickRating" class="random-filter-select" onchange="fetchRandomTitle(true)">
+              <option value="all">Rating: All</option>
+              <option value="6">6+</option>
+              <option value="7">7+</option>
+              <option value="8">8+</option>
+              <option value="9">9+</option>
+            </select>
+          </div>
           <button class="random-action-btn" id="randomPickBtn" onclick="fetchRandomTitle(true)">
             <svg class="shuffle-custom-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><g stroke-width="1.5"><path stroke="currentColor" stroke-linecap="round" d="M15.473 8.41a5 5 0 10.939 5.952"/><path fill="currentColor" stroke="currentColor" d="M17.195 10.373l-2.308-.347a.065.065 0 01-.018-.005.023.023 0 01-.007-.005.056.056 0 01-.015-.024.056.056 0 01-.002-.03.03.03 0 01.002-.007.069.069 0 01.013-.015l1.995-1.964a.066.066 0 01.015-.012.027.027 0 01.007-.003.056.056 0 01.029.003c.012.004.02.01.024.015a.027.027 0 01.005.007.069.069 0 01.004.019l.313 2.312a.047.047 0 01-.002.023.053.053 0 01-.013.02.053.053 0 01-.02.012.046.046 0 01-.022.001z"/></g></svg> Suggest Another <span id="randomLimitText"></span>
           </button>
@@ -571,8 +599,8 @@
             <button class="settings-tab-btn" onclick="switchSettingsTab('guide', this)">
               <i data-lucide="info"></i><span>Feature Guide</span>
             </button>
-            <button class="settings-tab-btn" onclick="switchSettingsTab('feedback', this)">
-              <i data-lucide="message-square"></i><span>Report Bug / Feedback</span>
+            <button class="settings-tab-btn" id="reportBugTab" onclick="switchSettingsTab('feedback', this)">
+              <i data-lucide="bug"></i><span>Report Bug / Feedback</span>
             </button>
           </nav>
         </aside>
@@ -812,35 +840,42 @@
           <!-- Guide Tab -->
           <div class="settings-pane" id="pane-guide">
             <h3>Feature Guide</h3>
+            <p style="margin-bottom: 24px; color: var(--text-secondary);"><i>*written how user can use it best way and what user must do for best performance*</i></p>
             
-            <div class="setting-group">
-              <label><i data-lucide="layers" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Advanced Filtering</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Click the Sliders icon next to the "Select" button to open the <strong>Advanced Filter</strong> panel. Here you can filter your lists by Movie/TV, Release Year (Decades), and Runtime Length.</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">01.</span>Advanced Filtering</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Click the Sliders icon next to the "Select" button to open the <strong>Advanced Filter</strong> panel. Here you can filter your lists by Movie/TV, Release Year (Decades), and Runtime Length.</p>
+              <img src="assets/images/Feature Guide/1AdvanceFilter.png" alt="Advanced Filter" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
 
-            <div class="setting-group">
-              <label><i data-lucide="sparkles" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>FlowMode &amp; Sorting</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Inside the Sort Panel, you can click <strong>FlowMode</strong> to hide titles you've recently viewed, creating an ultra-clean UI. You can also sort your lists by Date Added, Name, Rating, and Year.</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">02.</span>FlowMode &amp; Sorting</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Inside the Sort Panel, you can click <strong>FlowMode</strong> to hide titles you've recently viewed, creating an ultra-clean UI. You can also sort your lists by Date Added, Name, Rating, and Year.</p>
+              <img src="assets/images/Feature Guide/2FlowMode&Sorting.png" alt="FlowMode and Sorting" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
 
-            <div class="setting-group">
-              <label><i data-lucide="tv" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>TV Series Season Tracking</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">When viewing the details of a TV show you are currently watching, use the <strong>Season + / -</strong> buttons to quickly mark an entire season as watched, jumping your episode count automatically.</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">03.</span>TV Series Season Tracking</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">When viewing the details of a TV show you are currently watching, use the <strong>Season + / -</strong> buttons to quickly mark an entire season as watched, jumping your episode count automatically.</p>
+              <img src="assets/images/Feature Guide/3SeriesTracking.png" alt="TV Series Tracking" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
 
-            <div class="setting-group">
-              <label><i data-lucide="archive" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Archive &amp; Drop</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">If you decide to drop a show or movie but want to remember where you left off, click <strong>Drop</strong> in the detail modal. It will be moved to the hidden Archive tab (the box icon) where you can always restore it later.</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">04.</span>Archive &amp; Drop</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">If you decide to drop a show or movie but want to remember where you left off, click <strong>Drop</strong> in the detail modal. It will be moved to the hidden Archive tab (the box icon) where you can always restore it later.</p>
+              <img src="assets/images/Feature Guide/4Dropped.png" alt="Archive and Drop" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
 
-            <div class="setting-group">
-              <label><i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Random Pick Generator</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">Can't decide what to watch? Head over to the <strong>Explore</strong> tab and use the Random Pick feature to get smart, randomized suggestions from TMDB.</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">05.</span>Random Pick Generator</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Can't decide what to watch? Head over to the <strong>Explore</strong> tab and use the Random Pick feature to get smart, randomized suggestions from TMDB.</p>
+              <img src="assets/images/Feature Guide/5RandomPick.png" alt="Random Pick" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
 
-            <div class="setting-group" style="margin-bottom:24px;">
-              <label><i data-lucide="download" style="width:14px;height:14px;display:inline-block;margin-right:6px;vertical-align:middle;color:var(--accent);"></i>Import &amp; Export Data</label>
-              <p class="setting-description" style="margin-top:4px;color:var(--text-main);">In the Data settings tab, you can back up your entire watchlist as a JSON file, or import your data directly from Letterboxd or IMDb CSV exports!</p>
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">06.</span>Import &amp; Export Data</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">In the Data settings tab, you can back up your entire watchlist as a JSON file, or import your data directly from Letterboxd or IMDb CSV exports!</p>
+              <img src="assets/images/Feature Guide/6ExportDataImportBeta.png" alt="Import and Export Data" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
             </div>
           </div>
 
