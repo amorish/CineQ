@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>CineQ | Discover What to Watch &amp; Smart Recommendations</title>
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
   <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
   <meta name="description" content="CineQ is an intelligent movie and TV series recommendation engine. Discover what to watch next with FlowMode, smart random suggestions, and manage your watchlist." />
@@ -920,5 +922,16 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
   <script src="assets/js/env.js"></script>
   <script src="assets/js/app.js?v=15"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('ServiceWorker registered successfully.');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
 </body>
 </html>

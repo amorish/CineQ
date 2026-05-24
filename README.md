@@ -172,7 +172,7 @@ CineQ/
 - [ ] Google Sign-In (one-click login)
 - [x] Statistics dashboard & ticket export
 - [ ] Friend system & shared watchlists
-- [ ] PWA support (install on phone)
+- [x] PWA support (install on phone)
 - [ ] Import from Letterboxd / IMDb
 - [x] Light/Dark mode toggle
 - [x] Episode-by-episode progress tracking

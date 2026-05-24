@@ -1,0 +1,21 @@
+{
+  "name": "CineQ",
+  "short_name": "CineQ",
+  "description": "A sleek movie & TV series watchlist to share with your friends.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/assets/images/cineqFavicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/cineqFavicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
