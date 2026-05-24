@@ -32,13 +32,16 @@
 | ![Google Calendar icon](https://api.iconify.design/lucide/calendar.svg?color=white) **Google Calendar** | Schedule watch times directly to your Google Calendar |
 | ![Random Pick icon](https://api.iconify.design/lucide/dices.svg?color=white) **Random Pick** | Get 3 diverse, high-quality movie/TV suggestions instantly (6/day limit) |
 | ![Live Stats icon](https://api.iconify.design/lucide/bar-chart-2.svg?color=white) **Live Stats** | Track total, watched, and remaining titles at a glance |
+| ![Ticket icon](https://api.iconify.design/lucide/ticket.svg?color=white) **Ticket Export** | Generate and share a customized, beautifully designed ticket with your watch stats |
 | ![Rich Details icon](https://api.iconify.design/lucide/clapperboard.svg?color=white) **Rich Details** | Click any card to see synopsis, collection watch order, director, studio, cast, and more |
+| ![Streaming icon](https://api.iconify.design/lucide/play-circle.svg?color=white) **Where to Watch** | Find out exactly which streaming platforms have the movies & TV series you want to watch |
 | ![Filter & Sort icon](https://api.iconify.design/lucide/sliders-horizontal.svg?color=white) **Filter & Sort** | Quick filter between List / Watching / Watched views with 4 sort modes |
 | ![FlowMode icon](https://api.iconify.design/lucide/zap.svg?color=white) **FlowMode** | Intelligent algorithm sequences your unwatched list to optimise engagement and prevent fatigue |
 | ![Episode Tracking icon](https://api.iconify.design/lucide/tv.svg?color=white) **Episode Tracking** | Track episode progress for TV series directly from the card |
 | ![Collection Order icon](https://api.iconify.design/lucide/list-ordered.svg?color=white) **Collection Order** | For movie franchises, CineQ shows the correct chronological watch order automatically |
 | ![Themes icon](https://api.iconify.design/lucide/palette.svg?color=white) **Themes** | Toggle between premium Dark and Light modes |
 | ![Settings icon](https://api.iconify.design/lucide/settings.svg?color=white) **Settings** | Account management, username, theme, watchlist preferences, and JSON data backup |
+| ![Feedback icon](https://api.iconify.design/lucide/message-square-warning.svg?color=white) **In-App Feedback** | Send bug reports and feedback securely with attachments directly from the app |
 
 ---
 
@@ -113,6 +116,8 @@ Vercel auto-deploys on every `git push` to `main`.
 | **Lucide Icons** | Beautiful SVG icon set |
 | **Google Fonts** | Outfit (headings) + Inter (body) |
 | **Google Calendar API** | Schedule watch events |
+| **Vercel Serverless** | Secure API proxy and backend email processing |
+| **Nodemailer** | Sending secure emails for verification and feedback |
 
 ---
 
@@ -124,20 +129,24 @@ CineQ/
 ├── robots.txt                        # SEO crawler rules
 ├── sitemap.xml                       # SEO sitemap
 ├── vercel.json                       # Vercel deployment config
+├── package.json                      # Node dependencies & scripts
 ├── .gitignore                        # Git ignore rules
 ├── LICENSE                           # MIT License
 ├── README.md                         # Documentation
+├── api/                              # Vercel Serverless Functions
+│   ├── feedback.js                   # Handles bug reports & feedback
+│   ├── send-verification.js          # Handles email verification
+│   └── tmdb.js                       # Secure TMDB API proxy
 ├── scripts/
 │   ├── build.js                      # Build script to generate env.js
 │   └── test_csv.js                   # Development script for parsing CSV
 └── assets/
     ├── css/
-    │   └── style.css                 # Complete styling with golden theme
+    │   ├── style.css                 # Complete styling with golden theme
+    │   └── ticket.css                # Styling for the ticket export feature
     ├── js/
     │   └── app.js                    # App logic, TMDB API, Firebase, UI
-    └── images/
-        ├── cineqLogo.png             # Logo for both themes
-        └── blocks_shuffle_loading.svg # Golden loading spinner
+    └── images/                       # App logos, posters, and icons
 ```
 
 ---
@@ -147,6 +156,8 @@ CineQ/
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Firebase Authentication with friendly error handling
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Per-user data isolation (users can only access their own watchlist)
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) XSS protection (`escHtml`) on all user-facing content
+- ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Server-side TMDB API proxy to securely hide API tokens
+- ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Email verification layer to prevent unverified accounts from exploiting storage
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Disposable/temporary email blocklist on signup
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) SFW filter enabled by default for search & explore
 - ![check icon](https://api.iconify.design/lucide/check-circle-2.svg?color=white) Firestore security rules enforce server-side access control
@@ -159,7 +170,7 @@ CineQ/
 - [ ] Personal ratings (1-10 stars)
 - [ ] Search within your own watchlist
 - [ ] Google Sign-In (one-click login)
-- [ ] Statistics dashboard (hours watched, genre breakdown)
+- [x] Statistics dashboard & ticket export
 - [ ] Friend system & shared watchlists
 - [ ] PWA support (install on phone)
 - [ ] Import from Letterboxd / IMDb
