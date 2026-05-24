@@ -665,73 +665,125 @@
               </button>
             </div>
             
-            <!-- Stats Export Area (Ticket Design) -->
-            <div class="ticket-wrapper" id="capture-target">
-              <div class="ticket-card">
-                
-                <div class="ticket-top">
-                  <div class="header">
-                    <div class="header-title-group">
-                      <h2 style="white-space: nowrap;">Stats & Insights</h2>
-                      <div id="statsTicketPeriod" style="font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600;">Total</div>
+            <!-- Stats Export Area (3D Flip Ticket) -->
+            <div class="card-wrapper" id="capture-target" style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+              <button class="nav-arrow" id="prevBtn" aria-label="Flip Card Left">
+                <i data-lucide="chevron-left" style="width:24px;height:24px;"></i>
+              </button>
+
+              <div class="flip-card" id="statsCard">
+                <div class="flip-card-inner">
+                  
+                  <!-- FRONT SIDE -->
+                  <div class="ticket-face flip-card-front ticket-card">
+                    <div class="glare"></div>
+                    <div class="ticket-top">
+                      <div class="header">
+                        <div class="header-title-group">
+                          <h2 style="white-space: nowrap;">Stats & Insights</h2>
+                          <div id="statsTicketPeriod" style="font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600;">Total</div>
+                        </div>
+                        <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
+                          <span class="username-badge" id="statsUsernameBadge">@username</span> 
+                        </div>
+                      </div>
+
+                      <div class="stats-row">
+                        <div class="stat-item">
+                          <span class="stat-label">Total Watch Time</span>
+                          <span class="stat-value" id="statsTotalTime">0d 0h</span>
+                        </div>
+                        <div style="border-left: 2px dotted var(--border);"></div>
+                        <div class="stat-item" style="text-align: right; align-items: flex-end;">
+                          <span class="stat-label">Titles Watched</span>
+                          <span class="stat-value" id="statsTitlesWatched">0</span>
+                        </div>
+                      </div>
+
+                      <div class="chart-container">
+                        <h3>Media Distribution</h3>
+                        <div class="canvas-wrapper">
+                          <canvas id="mediaChart"></canvas>
+                        </div>
+                        <div class="custom-legend" id="customLegend"></div>
+                      </div>
                     </div>
-                    <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
-                      <span class="username-badge" id="statsUsernameBadge">@username</span> 
+
+                    <div class="divider"></div>
+
+                    <div class="ticket-bottom">
+                      <div class="footer-info">
+                        <div class="footer-brand">CineQ</div>
+                        <div class="footer-link">cine-q.vercel.app</div>
+                      </div>
+                      <div class="barcode">
+                        <svg width="70" height="32" viewBox="0 0 70 32" preserveAspectRatio="none">
+                          <g fill="currentColor">
+                            <rect x="0" width="3" height="32" />
+                            <rect x="5" width="2" height="32" />
+                            <rect x="10" width="4" height="32" />
+                            <rect x="16" width="1" height="32" />
+                            <rect x="20" width="3" height="32" />
+                            <rect x="25" width="2" height="32" />
+                            <rect x="30" width="5" height="32" />
+                            <rect x="37" width="1" height="32" />
+                            <rect x="40" width="3" height="32" />
+                            <rect x="45" width="2" height="32" />
+                            <rect x="50" width="4" height="32" />
+                            <rect x="56" width="1" height="32" />
+                            <rect x="60" width="3" height="32" />
+                            <rect x="65" width="2" height="32" />
+                          </g>
+                        </svg>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="stats-row">
-                    <div class="stat-item">
-                      <span class="stat-label">Total Watch Time</span>
-                      <span class="stat-value" id="statsTotalTime">0d 0h</span>
+                  <!-- BACK SIDE -->
+                  <div class="ticket-face flip-card-back ticket-card">
+                    <div class="glare"></div>
+                    <div class="ticket-top">
+                      <div class="header" style="margin-bottom: 12px;">
+                        <div class="header-title-group">
+                          <h2 style="white-space: nowrap;">Media Breakdown</h2>
+                          <div style="font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600;">Radar Distribution by Genre</div>
+                        </div>
+                        <div class="header-actions">
+                          <i data-lucide="radar" style="color: var(--text-secondary); width: 20px; height: 20px;"></i>
+                        </div>
+                      </div>
+
+                      <div class="chart-container" style="min-height: 220px; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+                        <canvas id="backRadarChart" style="width: 100%; height: 100%; max-height: 250px;"></canvas>
+                      </div>
                     </div>
-                    <div style="border-left: 2px dotted var(--border);"></div>
-                    <div class="stat-item" style="text-align: right; align-items: flex-end;">
-                      <span class="stat-label">Titles Watched</span>
-                      <span class="stat-value" id="statsTitlesWatched">0</span>
+
+                    <div class="divider"></div>
+
+                    <div class="ticket-bottom">
+                      <div class="back-stub-stats" style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                        <div class="stub-stat-item" style="display: flex; flex-direction: column; align-items: center;">
+                          <div class="stub-label" style="font-size: 11px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-bottom: 4px;"><div class="stub-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #818cf8;"></div>Movies</div>
+                          <div class="stub-value" id="radarMoviesTime" style="font-size: 18px; font-weight: 900; line-height: 1; color: var(--text);">0<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span></div>
+                        </div>
+                        <div class="stub-stat-item" style="display: flex; flex-direction: column; align-items: center;">
+                          <div class="stub-label" style="font-size: 11px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-bottom: 4px;"><div class="stub-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #fb923c;"></div>TV Shows</div>
+                          <div class="stub-value" id="radarTvTime" style="font-size: 18px; font-weight: 900; line-height: 1; color: var(--text);">0<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span></div>
+                        </div>
+                        <div class="stub-stat-item" style="display: flex; flex-direction: column; align-items: center;">
+                          <div class="stub-label" style="font-size: 11px; font-weight: 700; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-bottom: 4px;"><div class="stub-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #f43f5e;"></div>Anime</div>
+                          <div class="stub-value" id="radarAnimeTime" style="font-size: 18px; font-weight: 900; line-height: 1; color: var(--text);">0<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span></div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div class="chart-container">
-                    <h3>Media Distribution</h3>
-                    <div class="canvas-wrapper">
-                      <canvas id="mediaChart"></canvas>
-                    </div>
-                    <div class="custom-legend" id="customLegend"></div>
-                  </div>
                 </div>
-
-                <div class="divider"></div>
-
-                <div class="ticket-bottom">
-                  <div class="footer-info">
-                    <div class="footer-brand">CineQ</div>
-                    <div class="footer-link">cine-q.vercel.app</div>
-                  </div>
-                  <div class="barcode">
-                    <!-- Inline SVG for html2canvas compatibility -->
-                    <svg width="70" height="32" viewBox="0 0 70 32" preserveAspectRatio="none">
-                      <g fill="currentColor">
-                        <rect x="0" width="3" height="32" />
-                        <rect x="5" width="2" height="32" />
-                        <rect x="10" width="4" height="32" />
-                        <rect x="16" width="1" height="32" />
-                        <rect x="20" width="3" height="32" />
-                        <rect x="25" width="2" height="32" />
-                        <rect x="30" width="5" height="32" />
-                        <rect x="37" width="1" height="32" />
-                        <rect x="40" width="3" height="32" />
-                        <rect x="45" width="2" height="32" />
-                        <rect x="50" width="4" height="32" />
-                        <rect x="56" width="1" height="32" />
-                        <rect x="60" width="3" height="32" />
-                        <rect x="65" width="2" height="32" />
-                      </g>
-                    </svg>
-                  </div>
-                </div>
-
               </div>
+
+              <button class="nav-arrow" id="nextBtn" aria-label="Flip Card Right">
+                <i data-lucide="chevron-right" style="width:24px;height:24px;"></i>
+              </button>
             </div>
           </div>
 
