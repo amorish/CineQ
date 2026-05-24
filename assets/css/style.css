@@ -46,6 +46,11 @@ button, a, .clickable, select, input[type="checkbox"] {font-family:inherit;curso
     box-shadow: none;
   }
 }
+@media (max-width: 768px) {
+  .theater-background {
+    background-attachment: scroll;
+  }
+}
 
 /* ===== APP HEADER ===== */
 .app-header{
@@ -1001,6 +1006,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   display: flex; gap: 12px; overflow-x: auto;
   scroll-snap-type: x mandatory; padding-bottom: 12px;
   scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 .explore-carousel::-webkit-scrollbar { height: 6px; }
 .explore-carousel::-webkit-scrollbar-track { background: transparent; }
