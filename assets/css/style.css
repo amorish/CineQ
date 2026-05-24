@@ -477,8 +477,15 @@ body.light-theme #tabArchive.active { color: #111112; }
 .card:active{transform:scale(.97)}
 .card.watched{opacity:.5}
 .card.watched .poster-img{filter:grayscale(.8) brightness(.45)}
+.card.watched:hover{opacity:1}
+.card.watched:hover .poster-img{filter:none}
 
-.poster-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.card.dropped{opacity:.7}
+.card.dropped .poster-img{filter:grayscale(.5) brightness(.7)}
+.card.dropped:hover{opacity:1}
+.card.dropped:hover .poster-img{filter:none}
+
+.poster-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s ease, filter .4s ease}
 .card:hover .poster-img{transform:scale(1.04)}
 
 .card-gradient{

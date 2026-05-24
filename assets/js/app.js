@@ -1207,7 +1207,7 @@ function renderGrid() {
     const epCount = isTV ? epDisplay(a) : null;
     return `
     <div class="card-wrapper">
-      <article class="card ${a.watched ? 'watched' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
+      <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
         <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
