@@ -21,11 +21,20 @@ body.light-theme .ticket-wrapper {
   display: flex;
   flex-direction: column;
   position: relative;
-  background:
-    radial-gradient(circle at 0 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
-    radial-gradient(circle at 100% 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
-    radial-gradient(circle at 0 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
-    radial-gradient(circle at 100% 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
+  background-color: var(--bg);
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  -webkit-mask:
+    radial-gradient(circle at 0 100%, transparent var(--r), black calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--r), black calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 0 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
+  mask:
+    radial-gradient(circle at 0 100%, transparent var(--r), black calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--r), black calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 0 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
 }
 
 /* Top Section of Ticket */

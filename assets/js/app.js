@@ -555,7 +555,7 @@ function renderDropdown(results) {
     const inList = watchlist.some(w => w.id === a.id && w.media_type === mediaType);
     return `
     <div class="drop-item" data-idx="${idx}" data-id="${a.id}" data-type="${mediaType}">
-      <img class="drop-poster" src="${escHtml(getPosterUrl(a.poster_path))}" alt="" onerror="this.style.background='#222';this.src=''" draggable="false" oncontextmenu="return false"/>
+      <img class="drop-poster img-loading" src="${escHtml(getPosterUrl(a.poster_path))}" alt="" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.style.background='#222';this.src=''" draggable="false" oncontextmenu="return false"/>
       <div class="drop-info">
         <div class="drop-title">${escHtml(title)}</div>
         <div class="drop-meta"><span class="drop-type-badge ${typeClass}">${typeLabel}</span>${escHtml(year)} · ★ ${a.vote_average ? a.vote_average.toFixed(1) : 'N/A'}</div>
@@ -934,6 +934,37 @@ function updateStats() {
       : 'cineq_user';
     badge.innerHTML = `<span style="position: relative; top: -1px;">@${name}</span>`;
   }
+  
+  // Load custom ticket background if available
+  try {
+    const bg = localStorage.getItem('cineq_ticket_bg');
+    if (bg) {
+      document.querySelector('.ticket-card').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bg})`;
+      const clearBtn = document.getElementById('clearTicketBgBtn');
+      if (clearBtn) clearBtn.style.display = 'inline-flex';
+    }
+  } catch(e) {}
+}
+
+function setTicketBg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const base64 = evt.target.result;
+    document.querySelector('.ticket-card').style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${base64})`;
+    try { localStorage.setItem('cineq_ticket_bg', base64); } catch(err) { console.warn("Image too large to cache", err); }
+    document.getElementById('clearTicketBgBtn').style.display = 'inline-flex';
+    showToast("Ticket background updated!");
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearTicketBg() {
+  document.querySelector('.ticket-card').style.backgroundImage = '';
+  localStorage.removeItem('cineq_ticket_bg');
+  document.getElementById('clearTicketBgBtn').style.display = 'none';
+  document.getElementById('ticketBgInput').value = '';
 }
 
 function shareStats() {
@@ -1208,7 +1239,7 @@ function renderGrid() {
     return `
     <div class="card-wrapper">
       <article class="card ${a.watched ? 'watched' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
-        <img class="poster-img" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onerror="this.src=''" draggable="false" oncontextmenu="return false" />
+        <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
         ${!a.watched ? `
@@ -1331,7 +1362,7 @@ async function openModal(id, mediaType, event) {
     content.innerHTML = `
       <div class="modal-hero">
         <div class="modal-poster">
-          <img src="${escHtml(getPosterUrl(detail.poster_path, true))}" alt="" onerror="this.src=''" draggable="false" oncontextmenu="return false" />
+          <img src="${escHtml(getPosterUrl(detail.poster_path, true))}" class="img-loading" alt="" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
           <button class="modal-poster-expand" onclick="openLightbox('${escHtml(getPosterUrl(detail.poster_path, true))}')" title="View poster">
             <i data-lucide="maximize-2"></i>
           </button>
@@ -1739,7 +1770,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
         return `
           <div class="explore-card-wrap" onclick="openModal(${a.id}, '${mediaType}', event)">
             <div class="explore-card">
-              <img class="explore-card-img" src="${escHtml(poster)}" loading="lazy" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
+              <img class="explore-card-img img-loading" src="${escHtml(poster)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
             </div>
             <div class="explore-card-rank">${idx + 1}</div>
             <div class="explore-card-title">${escHtml(title)}</div>
@@ -1889,7 +1920,7 @@ function renderRandomPicks(items) {
     return `
     <div class="explore-card" style="width:100%;flex-shrink:1;" onclick="openModal(${a.id}, '${mediaType}', event)">
       <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;position:relative;margin-bottom:8px;">
-        <img class="explore-card-img" src="${escHtml(poster)}" loading="lazy" onerror="this.src=''" alt="" draggable="false" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
+        <img class="explore-card-img img-loading" src="${escHtml(poster)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" alt="" draggable="false" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
       </div>
       <div class="explore-card-title" style="font-size:14px;">${escHtml(title)}</div>
       <div class="explore-card-meta" style="font-size:12px;">${typeLabel} · ★ ${score}</div>

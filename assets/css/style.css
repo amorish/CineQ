@@ -1041,6 +1041,11 @@ body.light-theme #tabArchive.active { color: #111112; }
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s infinite linear;
 }
+.img-loading {
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shimmer) 50%, var(--skeleton-base) 75%) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.5s infinite linear !important;
+}
 .skeleton-rank {
   align-self: center; width: 24px; height: 24px; border-radius: 50%;
   margin-top: 4px; margin-bottom: 4px;
