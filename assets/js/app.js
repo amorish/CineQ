@@ -2635,6 +2635,7 @@ window.toggleStreamingName = function(el) {
   
   if (!isAlreadyOpen) {
     el.classList.add('show-name');
+  }
 };
 
 // ===== VANILLA TILT PARALLAX AUTO-INITIALIZER =====
