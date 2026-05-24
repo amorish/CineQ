@@ -978,7 +978,16 @@ body.light-theme #tabArchive.active { color: #111112; }
 .random-action-btn.loading svg { animation: spin 1s linear infinite; }
 #randomLimitText { color: var(--muted); font-size: 11px; font-weight: 500; }
 .explore-random-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-@media(max-width:600px) { .explore-random-grid { grid-template-columns: 1fr; } }
+@media(max-width:600px) {
+  .explore-random-grid { grid-template-columns: 1fr; }
+  .explore-random-header { flex-direction: column; align-items: stretch; gap: 12px; }
+  .explore-random-header > div:first-child { display: flex; justify-content: space-between; align-items: baseline; width: 100%; }
+  .explore-random-header > div:first-child h2 { font-size: 16px; }
+  .explore-random-header > div:first-child p { margin: 0; }
+  .explore-random-header > div:nth-child(2) { width: 100%; margin: 0 !important; justify-content: space-between; }
+  .explore-random-header > div:nth-child(2) select { flex: 1; min-width: 0; padding: 6px 4px; font-size: 12px; }
+  .explore-random-header .random-action-btn { width: 100%; justify-content: center; }
+}
 .random-pick-card { width: 100%; aspect-ratio: 2/3; border-radius: var(--radius-md); overflow: hidden; position: relative; background: var(--elevated); border: 1px solid var(--border); cursor: pointer; transition: transform .3s ease; }
 .random-pick-card:hover { transform: scale(1.02); }
 .explore-loading { display: flex; align-items: center; justify-content: height: 100px; color: var(--muted); font-size: 13px; }
