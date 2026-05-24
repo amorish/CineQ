@@ -20,10 +20,36 @@ img{display:block;max-width:100%}
 button, a, .clickable, select, input[type="checkbox"] {font-family:inherit;cursor:pointer;}
 .scrollbar-hide::-webkit-scrollbar{display:none}
 .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+/* ===== THEATER BACKGROUND LAYOUT ===== */
+.theater-background {
+  background-image: 
+    linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.85)),
+    url('../images/cinema%20theatre%20bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+}
+.main-app-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: var(--bg);
+  box-shadow: 0 0 120px 100px var(--bg);
+  position: relative;
+}
+@media (max-width: 1300px) {
+  .main-app-content {
+    width: 100%;
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
 
 /* ===== APP HEADER ===== */
 .app-header{
-  position:fixed;top:0;left:0;right:0;z-index:100;
+  position:fixed;top:0;left:0;right:0;margin:0 auto;max-width:1200px;z-index:100;
   height:64px;display:flex;align-items:center;
   background:rgba(10,10,10,.88);
   backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
@@ -685,8 +711,8 @@ body.light-theme #tabArchive.active { color: #111112; }
 }
 
 /* --- ANIMATIONS --- */
-.bg-column.up .bg-scroll-track { animation: bg-scroll-up 45s linear infinite; }
-.bg-column.down .bg-scroll-track { animation: bg-scroll-down 45s linear infinite; }
+.bg-column.up .bg-scroll-track { animation: bg-scroll-up 150s linear infinite; }
+.bg-column.down .bg-scroll-track { animation: bg-scroll-down 150s linear infinite; }
 
 @keyframes bg-scroll-up {
   0% { transform: translateY(0); }
@@ -710,7 +736,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   backdrop-filter:blur(40px);
   border-radius:var(--radius-md);
   width:100%;max-width:400px;text-align:center;
-  box-shadow:0 24px 48px rgba(0,0,0,.6);position:relative;z-index:2;
+  filter:drop-shadow(0 24px 48px rgba(0,0,0,.6));position:relative;z-index:2;
   display: flex;
   flex-direction: column;
   background:
