@@ -329,15 +329,88 @@
 
   <!-- ===== AUTH OVERLAY ===== -->
   <div class="auth-overlay" id="authOverlay" style="display:none;">
-    <div class="auth-bg-gradient"></div>
-    <div class="auth-particles" id="authParticles"></div>
-    <div class="auth-card">
-      <div class="auth-logo-wrap">
-        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
-        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+    <div class="bg-grid-container">
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+        </div>
       </div>
-      <h2 id="authTitle">Sign In</h2>
-      <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+        </div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-main">
+        <div class="auth-logo-wrap">
+          <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+          <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+        </div>
+        <h2 id="authTitle">Sign In</h2>
+        <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
         <div class="input-group" id="authUsernameGroup" style="display:none;">
           <label for="authUsername">Username</label>
           <div class="input-wrapper"><i data-lucide="user" class="input-icon"></i><input type="text" id="authUsername" placeholder="Choose a username" maxlength="15" /></div>
@@ -356,7 +429,9 @@
           <div class="forgot-link-wrapper" id="forgotLinkWrapper"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
         </div>
         <button class="auth-btn" id="authActionBtn" type="submit">Sign In</button>
-      </form>
+        </form>
+      </div>
+      <div class="ticket-divider"></div>
       <div class="auth-footer">
         <span class="auth-footer-text" id="authFooterText">New here?</span>
         <button class="auth-toggle-inline" onclick="toggleAuthMode()" id="authToggleBtn">Sign Up</button>
@@ -366,14 +441,88 @@
 
   <!-- ===== EMAIL VERIFICATION OVERLAY ===== -->
   <div class="auth-overlay" id="verifyOverlay" style="display:none">
-    <div class="auth-bg-gradient"></div>
-    <div class="auth-card">
-      <div class="auth-logo-wrap">
-        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
-        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+    <div class="bg-grid-container">
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+        </div>
       </div>
-      <div class="verify-icon"><i data-lucide="mail" style="width:40px;height:40px;color:var(--accent);"></i></div>
-      <h2>Verify Your Email</h2>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+        </div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-main">
+        <div class="auth-logo-wrap">
+          <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+          <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+        </div>
+        <div class="verify-icon"><i data-lucide="mail" style="width:40px;height:40px;color:var(--accent);"></i></div>
+        <h2>Verify Your Email</h2>
       <p class="verify-hint">We sent a verification link to:</p>
       <p class="verify-email-display" id="verifyEmail"></p>
       <p class="verify-hint">Click the link in the email, then press below.</p>
@@ -381,10 +530,12 @@
         <strong style="color: rgba(234, 179, 8, 1); display: block; margin-bottom: 4px;">Didn't receive the email?</strong>
         Please check your <strong>Spam / Junk</strong> folder.
       </div>
-      <div class="auth-form" style="margin-top:12px;">
-        <button class="auth-btn" onclick="checkVerification()">I've Verified - Let Me In</button>
-        <button class="auth-btn verify-resend-btn" id="resendBtn" onclick="resendVerification()">Resend Email</button>
+        <div class="auth-form" style="margin-top:12px;">
+          <button class="auth-btn" onclick="checkVerification()">I've Verified - Let Me In</button>
+          <button class="auth-btn verify-resend-btn" id="resendBtn" onclick="resendVerification()">Resend Email</button>
+        </div>
       </div>
+      <div class="ticket-divider"></div>
       <div class="auth-footer"><button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button></div>
     </div>
   </div>
