@@ -1769,6 +1769,18 @@ async function fetchRandomTitle(forceNew = false) {
     
     if (isFilterActive && forceNew) {
       // Don't save strictly filtered lists to local storage so they don't block normal daily view later
+      let tempState = { count: state.count, date: state.date, items: [] };
+      try {
+        const stored = localStorage.getItem('cineq_random_pick_state');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.date === state.date) {
+            tempState.items = parsed.items || [];
+          }
+        }
+      } catch(e) {}
+      localStorage.setItem('cineq_random_pick_state', JSON.stringify(tempState));
+      save();
     } else {
       localStorage.setItem('cineq_random_pick_state', JSON.stringify(state));
       save();

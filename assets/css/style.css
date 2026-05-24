@@ -768,7 +768,8 @@ body.light-theme #tabArchive.active { color: #111112; }
   flex-direction: column;
 }
 .ticket-divider {
-  display: none;
+  margin: 0 20px;
+  border-bottom: 2px dashed var(--border);
 }
 .auth-logo-wrap { margin-bottom:16px; }
 .auth-logo { height:32px !important; margin:0 auto; }
