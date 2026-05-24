@@ -703,6 +703,7 @@ body.light-theme #tabArchive.active { color: #111112; }
 .random-filter-select:hover { border-color: var(--border-hover); }
 #reportBugTab { background: #141414 !important; color: #a8a6a5 !important; }
 #reportBugTab i { color: #a8a6a5 !important; }
+#reportBugTab:hover { background: #000000 !important; }
 #reportBugTab.active { background: #a8a6a5 !important; color: #141414 !important; }
 #reportBugTab.active i { color: #141414 !important; }
 #sendFeedbackBtn { background: var(--elevated) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
