@@ -274,6 +274,43 @@ async function forgotPassword() {
 
 function logout() { firebase.auth().signOut(); }
 
+// ===== WATCHLIST RECLASSIFICATION & MIGRATION =====
+function reclassifyWatchlistItems() {
+  if (!watchlist || watchlist.length === 0) return;
+  let changed = false;
+  
+  watchlist.forEach(item => {
+    const orig = (item.original_title || item.title || '').toLowerCase();
+    const hasAsianText = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(item.original_title || item.title || '');
+    const isJapaneseOrKorean = item.original_language === 'ja' || item.original_language === 'ko';
+    
+    // Explicit title matches or language/script checks
+    const matchesAnime = isJapaneseOrKorean || hasAsianText || 
+                          orig.includes('look back') || 
+                          orig.includes('takopi') || 
+                          orig.includes('100 meters') || 
+                          orig.includes('100m');
+                          
+    if (!item.isAnime && matchesAnime) {
+      // Check if it's a TV KDrama (Korean drama Live action)
+      const isKDrama = item.media_type === 'tv' && item.original_language === 'ko';
+      if (isKDrama) {
+        if (!item.isKDrama) {
+          item.isKDrama = true;
+          changed = true;
+        }
+      } else {
+        item.isAnime = true;
+        changed = true;
+      }
+    }
+  });
+
+  if (changed) {
+    save();
+  }
+}
+
 // ===== WATCHLIST LOAD =====
 async function loadWatchlist() {
   if (!db || !currentUser) return;
@@ -289,6 +326,7 @@ async function loadWatchlist() {
         if (data.randomPickState.date === todayStr) localStorage.setItem('cineq_random_pick_state', JSON.stringify(data.randomPickState));
       }
     } else { watchlist = []; notifications = []; }
+    reclassifyWatchlistItems();
     renderGrid();
     renderNotifications();
   } catch (e) { console.error("Error loading watchlist", e); }
