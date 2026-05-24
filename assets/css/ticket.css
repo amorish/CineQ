@@ -13,33 +13,19 @@ body.light-theme .ticket-wrapper {
 
 /* Ticket Card Container with Transparent Side Cutouts */
 .ticket-card {
+  --r: 20px;
   --stub-h: 70px;
+  --bg: var(--elevated);
   width: 100%;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  background: var(--elevated);
   position: relative;
-  overflow: hidden;
-}
-
-.ticket-card::before, .ticket-card::after {
-  content: '';
-  position: absolute;
-  bottom: calc(var(--stub-h) - 20px);
-  width: 40px;
-  height: 40px;
-  background: var(--bg);
-  border-radius: 50%;
-  z-index: 10;
-}
-
-.ticket-card::before {
-  left: -20px;
-}
-
-.ticket-card::after {
-  right: -20px;
+  background:
+    radial-gradient(circle at 0 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 100% 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
+    radial-gradient(circle at 0 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
+    radial-gradient(circle at 100% 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
 }
 
 /* Top Section of Ticket */

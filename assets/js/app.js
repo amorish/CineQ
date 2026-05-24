@@ -604,9 +604,16 @@ function addTitle(id, itemData, btn, mediaType) {
   const title = getTitle(itemData);
   const year = getYear(itemData);
   const poster = getPosterUrl(itemData.poster_path);
+  
+  const isAnime = itemData.original_language === 'ja' && (
+    (itemData.genres && itemData.genres.some(g => g.id === 16)) || 
+    (itemData.genre_ids && itemData.genre_ids.includes(16))
+  );
+
   const item = {
     id: itemData.id,
     media_type: type,
+    isAnime: !!isAnime,
     title,
     poster,
     year: year ? parseInt(year) : null,
@@ -747,33 +754,47 @@ function updateStats() {
   let totalMinutes = 0;
   let moviesCount = 0;
   let tvCount = 0;
+  let animeCount = 0;
+  const animeStudios = ['Bones', 'MAPPA', 'Madhouse', 'Kyoto Animation', 'ufotable', 'Toei Animation', 'Studio Ghibli', 'CoMix Wave Films', 'A-1 Pictures', 'CloverWorks', 'WIT STUDIO', 'Production I.G', 'Pierrot', 'J.C.Staff', 'TMS Entertainment'];
   
   listToUse.forEach(item => {
-    if (item.media_type === 'movie') {
+    let isAnime = item.isAnime;
+    if (isAnime === undefined) {
+      isAnime = item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+    }
+
+    if (isAnime) {
+      animeCount++;
+      if (item.episodesWatched > 0) {
+        const epRuntime = item.runtime || 24;
+        totalMinutes += item.episodesWatched * epRuntime;
+      } else if (item.media_type === 'movie' && item.watched && item.runtime) {
+        totalMinutes += item.runtime;
+      }
+    } else if (item.media_type === 'movie') {
       moviesCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else {
       tvCount++;
       if (item.episodesWatched > 0) {
-        // Assume 45 mins average runtime per episode if not provided natively
         const epRuntime = item.runtime || 45;
         totalMinutes += item.episodesWatched * epRuntime;
       }
     }
   });
   
-  const compRate = total > 0 ? Math.round((watched / total) * 100) : 0;
-  const compEl = document.getElementById('statsCompletion');
-  if (compEl) compEl.textContent = compRate + '%';
+  const watchedEl = document.getElementById('statsTitlesWatched');
+  if (watchedEl) watchedEl.textContent = watched;
   
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const timeEl = document.getElementById('statsTotalTime');
   if (timeEl) timeEl.textContent = `${days}d ${hours}h`;
   
-  const totalMedia = moviesCount + tvCount;
-  const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 50;
-  const tvPct = totalMedia > 0 ? 100 - moviePct : 50;
+  const totalMedia = moviesCount + tvCount + animeCount;
+  const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 0;
+  const animePct = totalMedia > 0 ? Math.round((animeCount / totalMedia) * 100) : 0;
+  const tvPct = totalMedia > 0 ? 100 - moviePct - animePct : 0;
   
   try {
     const ctx = document.getElementById('mediaChart');
@@ -785,7 +806,7 @@ function updateStats() {
       const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
       const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
 
-      const colors = ['#818cf8', '#fb923c']; // Matches snippet theme colors for Movies / TV Shows
+      const colors = ['#818cf8', '#fb923c', '#f43f5e']; // Matches snippet theme colors for Movies / TV Shows / Anime
 
       // Always destroy first so theme colors are fully re-applied
       if (window.mediaChartInstance) {
@@ -796,9 +817,9 @@ function updateStats() {
       window.mediaChartInstance = new window.Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['Movies', 'TV Shows'],
+          labels: ['Movies', 'TV Shows', 'Anime'],
           datasets: [{
-            data: [moviePct, tvPct],
+            data: [moviePct, tvPct, animePct],
             backgroundColor: colors,
             borderWidth: 3,
             borderColor: elevatedColor,
@@ -830,9 +851,10 @@ function updateStats() {
       const legendContainer = document.getElementById('customLegend');
       if (legendContainer) {
         legendContainer.innerHTML = '';
-        const labels = ['Movies', 'TV Shows'];
-        const dataValues = [moviePct, tvPct];
+        const labels = ['Movies', 'TV Shows', 'Anime'];
+        const dataValues = [moviePct, tvPct, animePct];
         labels.forEach((label, index) => {
+          if (dataValues[index] === 0) return;
           const legendItem = document.createElement('div');
           legendItem.className = 'legend-item';
           const colorBox = document.createElement('div');
