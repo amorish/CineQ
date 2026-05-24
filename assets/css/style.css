@@ -472,6 +472,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   border:1px solid var(--border);
   transition:all .3s cubic-bezier(.4,0,.2,1);
   cursor:pointer;
+  transform-style: preserve-3d;
 }
 .card:active{transform:scale(.97)}
 .card.watched{opacity:.5}
@@ -543,6 +544,7 @@ body.light-theme #tabArchive.active { color: #111112; }
 .card-content{
   position:absolute;bottom:0;left:0;right:0;
   padding:10px;z-index:2;
+  transform: translateZ(30px);
 }
 .card-meta{display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap}
 .type-pill{
@@ -701,8 +703,9 @@ body.light-theme #tabArchive.active { color: #111112; }
 }
 .random-filter-select { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 13px; cursor: pointer; outline: none; }
 .random-filter-select:hover { border-color: var(--border-hover); }
-#reportBugTab { background: #141414 !important; color: #a8a6a5 !important; }
-#reportBugTab i { color: #a8a6a5 !important; }
+#reportBugTab { background: #141414 !important; color: #a8a6a5 !important; transition: all 0.2s; }
+#reportBugTab i { color: #a8a6a5 !important; transition: all 0.2s; }
+#reportBugTab:hover { background: #000000 !important; color: #a8a6a5 !important; }
 #reportBugTab.active { background: #a8a6a5 !important; color: #141414 !important; }
 #reportBugTab.active i { color: #141414 !important; }
 #sendFeedbackBtn { background: var(--elevated) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
@@ -1307,9 +1310,10 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
 /* ===== EXPLORE CAROUSEL RANK BADGE ===== */
 .explore-card-wrap {
   flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer;
-  position: relative; display: flex; flex-direction: column;
+  position: relative; transform-style: preserve-3d;
 }
 .explore-card-wrap .explore-card { width: 120px; position: relative; flex-shrink: 0; margin-bottom: 2px; }
+.explore-card-wrap .card-title, .explore-card-wrap .card-meta { transform: translateZ(20px); }
 .explore-card-rank {
   width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
   background: #3f4752; border-radius: 50%; font-size: 11px; font-weight: 700;

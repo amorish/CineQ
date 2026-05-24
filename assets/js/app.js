@@ -2635,6 +2635,43 @@ window.toggleStreamingName = function(el) {
   
   if (!isAlreadyOpen) {
     el.classList.add('show-name');
-  }
 };
 
+// ===== VANILLA TILT PARALLAX AUTO-INITIALIZER =====
+const tiltObserver = new MutationObserver((mutations) => {
+  if (typeof VanillaTilt === 'undefined') return;
+  const newCards = [];
+  mutations.forEach(m => {
+    m.addedNodes.forEach(node => {
+      if (node.nodeType === 1) {
+        if (node.matches && node.matches('.card, .explore-card-wrap, .explore-card')) newCards.push(node);
+        if (node.querySelectorAll) {
+          const children = node.querySelectorAll('.card, .explore-card-wrap, .explore-card');
+          children.forEach(c => newCards.push(c));
+        }
+      }
+    });
+  });
+  if (newCards.length > 0) {
+    VanillaTilt.init(newCards, {
+      max: 15,
+      speed: 400,
+      glare: true,
+      "max-glare": 0.2,
+      scale: 1.05
+    });
+  }
+});
+tiltObserver.observe(document.body, { childList: true, subtree: true });
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof VanillaTilt !== 'undefined') {
+    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card'), {
+      max: 15,
+      speed: 400,
+      glare: true,
+      "max-glare": 0.2,
+      scale: 1.05
+    });
+  }
+});
