@@ -1,5 +1,6 @@
 export const config = {
   runtime: 'edge',
+  regions: ['iad1'], // Force execution in US (Washington DC) to bypass regional API blocks
 };
 
 export default async function handler(req) {

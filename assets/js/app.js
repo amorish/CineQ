@@ -2673,7 +2673,8 @@ const tiltObserver = new MutationObserver((mutations) => {
       speed: 400,
       glare: true,
       "max-glare": 0.2,
-      scale: 1.05
+      scale: 1.05,
+      gyroscope: false // Disable motion sensors to prevent browser warnings
     });
   }
 });
