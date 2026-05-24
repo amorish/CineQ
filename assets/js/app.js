@@ -20,18 +20,28 @@ let isSignupMode = false;
 
 // ===== TMDB API =====
 const TMDB_BASE = '/api/tmdb';
-const TMDB_IMG  = '/images/tmdb/w500';
-const TMDB_IMG_LG = '/images/tmdb/w780';
 
 // ===== API HELPERS =====
-function tmdbFetch(path) {
-  return fetch(`${TMDB_BASE}${path}`, {
+const apiCache = new Map();
+async function tmdbFetch(path, retries = 2) {
+  if (apiCache.has(path)) return apiCache.get(path);
+  const res = await fetch(`${TMDB_BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' }
   });
+  if (res.status === 429 && retries > 0) {
+    await new Promise(r => setTimeout(r, 1000));
+    return tmdbFetch(path, retries - 1);
+  }
+  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+  const data = await res.json();
+  apiCache.set(path, data);
+  return data;
 }
-function getPosterUrl(posterPath, large = false) {
+function getPosterUrl(posterPath, size = 'w342') {
   if (!posterPath) return '';
-  return `${large ? TMDB_IMG_LG : TMDB_IMG}${posterPath}`;
+  if (size === true) size = 'w780';
+  if (size === false) size = 'w342';
+  return `/images/tmdb/${size}${posterPath}`;
 }
 function getTitle(item) { return item.title || item.name || ''; }
 function getYear(item) {
@@ -120,6 +130,10 @@ firebase.auth().onAuthStateChanged(async (user) => {
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('verifyOverlay').style.display = 'none';
     document.getElementById('userBadge').style.display = 'none';
+    
+    // Purge deprecated storage items
+    localStorage.removeItem('cineq_ticket_bg');
+    
     renderGrid();
     hideSplash();
   }
@@ -555,7 +569,7 @@ function renderDropdown(results) {
     const inList = watchlist.some(w => w.id === a.id && w.media_type === mediaType);
     return `
     <div class="drop-item" data-idx="${idx}" data-id="${a.id}" data-type="${mediaType}">
-      <img class="drop-poster img-loading" src="${escHtml(getPosterUrl(a.poster_path))}" alt="" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.style.background='#222';this.src=''" draggable="false" oncontextmenu="return false"/>
+      <img class="drop-poster img-loading" src="${escHtml(getPosterUrl(a.poster_path, 'w154'))}" alt="" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.style.background='#222';this.src=''" draggable="false" oncontextmenu="return false"/>
       <div class="drop-info">
         <div class="drop-title">${escHtml(title)}</div>
         <div class="drop-meta"><span class="drop-type-badge ${typeClass}">${typeLabel}</span>${escHtml(year)} · ★ ${a.vote_average ? a.vote_average.toFixed(1) : 'N/A'}</div>
@@ -1733,7 +1747,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
       container.innerHTML = items.map((a, idx) => {
         const mediaType = defaultMediaType || a.media_type || 'movie';
         const title = getTitle(a);
-        const poster = getPosterUrl(a.poster_path);
+        const poster = getPosterUrl(a.poster_path, 'w185');
         const score = a.vote_average ? a.vote_average.toFixed(1) : 'N/A';
         const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
         return `
@@ -1883,7 +1897,7 @@ function renderRandomPicks(items) {
   container.innerHTML = items.map(a => {
     const mediaType = a._mediaType || a.media_type || 'movie';
     const title = getTitle(a);
-    const poster = getPosterUrl(a.poster_path);
+    const poster = getPosterUrl(a.poster_path, 'w185');
     const score = a.vote_average ? a.vote_average.toFixed(1) : 'N/A';
     const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
     return `
@@ -2471,7 +2485,7 @@ async function processImport(items, importState) {
           id: tmdbItem.id,
           media_type: mediaType,
           title: tmdbItem.title || tmdbItem.name,
-          poster: tmdbItem.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbItem.poster_path}` : null,
+          poster: getPosterUrl(tmdbItem.poster_path),
           addedAt: new Date().toISOString(),
           watched: false
         });
