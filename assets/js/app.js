@@ -609,11 +609,23 @@ function addTitle(id, itemData, btn, mediaType) {
     (itemData.genres && itemData.genres.some(g => g.id === 16)) || 
     (itemData.genre_ids && itemData.genre_ids.includes(16))
   );
+  
+  const isKDrama = type === 'tv' && itemData.original_language === 'ko';
+  const isDoc = (itemData.genres && itemData.genres.some(g => g.id === 99)) || (itemData.genre_ids && itemData.genre_ids.includes(99));
+  const isReality = type === 'tv' && (
+    (itemData.genres && itemData.genres.some(g => g.id === 10764 || g.id === 10767)) || 
+    (itemData.genre_ids && itemData.genre_ids.some(id => id === 10764 || id === 10767))
+  );
+  const isShortFilm = type === 'movie' && itemData.runtime > 0 && itemData.runtime < 40;
 
   const item = {
     id: itemData.id,
     media_type: type,
     isAnime: !!isAnime,
+    isKDrama: !!isKDrama,
+    isDoc: !!isDoc,
+    isReality: !!isReality,
+    isShortFilm: !!isShortFilm,
     title,
     poster,
     year: year ? parseInt(year) : null,
@@ -755,31 +767,52 @@ function updateStats() {
   let moviesCount = 0;
   let tvCount = 0;
   let animeCount = 0;
+  let kdramaCount = 0;
+  let docCount = 0;
+  let shortCount = 0;
+  let realityCount = 0;
+  
   const animeStudios = ['Bones', 'MAPPA', 'Madhouse', 'Kyoto Animation', 'ufotable', 'Toei Animation', 'Studio Ghibli', 'CoMix Wave Films', 'A-1 Pictures', 'CloverWorks', 'WIT STUDIO', 'Production I.G', 'Pierrot', 'J.C.Staff', 'TMS Entertainment'];
+  const kdramaStudios = ['Studio Dragon', 'tvN', 'JTBC', 'SBS', 'KBS', 'MBC'];
+  const docStudios = ['National Geographic', 'BBC', 'Discovery', 'History'];
   
   listToUse.forEach(item => {
     let isAnime = item.isAnime;
+    let isKDrama = item.isKDrama;
+    let isDoc = item.isDoc;
+    let isShortFilm = item.isShortFilm;
+    let isReality = item.isReality;
+
     if (isAnime === undefined) {
       isAnime = item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      isKDrama = item.media_type === 'tv' && item.studio && kdramaStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      isDoc = item.studio && docStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      isShortFilm = item.media_type === 'movie' && item.runtime > 0 && item.runtime < 40;
     }
 
-    if (isAnime) {
+    if (isDoc) {
+      docCount++;
+      if (item.watched && item.runtime) totalMinutes += item.runtime;
+      else if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
+    } else if (isShortFilm) {
+      shortCount++;
+      if (item.watched && item.runtime) totalMinutes += item.runtime;
+    } else if (isAnime) {
       animeCount++;
-      if (item.episodesWatched > 0) {
-        const epRuntime = item.runtime || 24;
-        totalMinutes += item.episodesWatched * epRuntime;
-      } else if (item.media_type === 'movie' && item.watched && item.runtime) {
-        totalMinutes += item.runtime;
-      }
+      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 24);
+      else if (item.media_type === 'movie' && item.watched && item.runtime) totalMinutes += item.runtime;
+    } else if (isKDrama) {
+      kdramaCount++;
+      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 60);
+    } else if (isReality) {
+      realityCount++;
+      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     } else if (item.media_type === 'movie') {
       moviesCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else {
       tvCount++;
-      if (item.episodesWatched > 0) {
-        const epRuntime = item.runtime || 45;
-        totalMinutes += item.episodesWatched * epRuntime;
-      }
+      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     }
   });
   
@@ -791,10 +824,34 @@ function updateStats() {
   const timeEl = document.getElementById('statsTotalTime');
   if (timeEl) timeEl.textContent = `${days}d ${hours}h`;
   
-  const totalMedia = moviesCount + tvCount + animeCount;
-  const moviePct = totalMedia > 0 ? Math.round((moviesCount / totalMedia) * 100) : 0;
-  const animePct = totalMedia > 0 ? Math.round((animeCount / totalMedia) * 100) : 0;
-  const tvPct = totalMedia > 0 ? 100 - moviePct - animePct : 0;
+  const totalMedia = moviesCount + tvCount + animeCount + kdramaCount + docCount + shortCount + realityCount;
+  const getPct = (count) => totalMedia > 0 ? Math.round((count / totalMedia) * 100) : 0;
+  
+  let moviePct = getPct(moviesCount);
+  let tvPct = getPct(tvCount);
+  let animePct = getPct(animeCount);
+  let kdramaPct = getPct(kdramaCount);
+  let docPct = getPct(docCount);
+  let shortPct = getPct(shortCount);
+  let realityPct = getPct(realityCount);
+
+  if (totalMedia > 0) {
+    const totalPct = moviePct + tvPct + animePct + kdramaPct + docPct + shortPct + realityPct;
+    if (totalPct !== 100) {
+      const pcts = [
+        {name: 'movie', val: moviePct}, {name: 'tv', val: tvPct}, {name: 'anime', val: animePct}, 
+        {name: 'kdrama', val: kdramaPct}, {name: 'doc', val: docPct}, {name: 'short', val: shortPct}, {name: 'reality', val: realityPct}
+      ].sort((a,b) => b.val - a.val);
+      pcts[0].val += (100 - totalPct);
+      moviePct = pcts.find(p=>p.name==='movie').val;
+      tvPct = pcts.find(p=>p.name==='tv').val;
+      animePct = pcts.find(p=>p.name==='anime').val;
+      kdramaPct = pcts.find(p=>p.name==='kdrama').val;
+      docPct = pcts.find(p=>p.name==='doc').val;
+      shortPct = pcts.find(p=>p.name==='short').val;
+      realityPct = pcts.find(p=>p.name==='reality').val;
+    }
+  }
   
   try {
     const ctx = document.getElementById('mediaChart');
@@ -806,7 +863,7 @@ function updateStats() {
       const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
       const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
 
-      const colors = ['#818cf8', '#fb923c', '#f43f5e']; // Matches snippet theme colors for Movies / TV Shows / Anime
+      const colors = ['#818cf8', '#fb923c', '#f43f5e', '#a78bfa', '#10b981', '#38bdf8', '#fbbf24']; // Movies, TV, Anime, KDrama, Doc, Short, Reality
 
       // Always destroy first so theme colors are fully re-applied
       if (window.mediaChartInstance) {
@@ -817,9 +874,9 @@ function updateStats() {
       window.mediaChartInstance = new window.Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['Movies', 'TV Shows', 'Anime'],
+          labels: ['Movies', 'TV Shows', 'Anime', 'K-Dramas', 'Documentaries', 'Short Films', 'Reality TV'],
           datasets: [{
-            data: [moviePct, tvPct, animePct],
+            data: [moviePct, tvPct, animePct, kdramaPct, docPct, shortPct, realityPct],
             backgroundColor: colors,
             borderWidth: 3,
             borderColor: elevatedColor,
@@ -851,8 +908,8 @@ function updateStats() {
       const legendContainer = document.getElementById('customLegend');
       if (legendContainer) {
         legendContainer.innerHTML = '';
-        const labels = ['Movies', 'TV Shows', 'Anime'];
-        const dataValues = [moviePct, tvPct, animePct];
+        const labels = ['Movies', 'TV Shows', 'Anime', 'K-Dramas', 'Documentaries', 'Short Films', 'Reality TV'];
+        const dataValues = [moviePct, tvPct, animePct, kdramaPct, docPct, shortPct, realityPct];
         labels.forEach((label, index) => {
           if (dataValues[index] === 0) return;
           const legendItem = document.createElement('div');
