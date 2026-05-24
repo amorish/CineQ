@@ -277,38 +277,7 @@ async function loadWatchlist() {
     } else { watchlist = []; notifications = []; }
     renderGrid();
     renderNotifications();
-    setTimeout(syncMissingGenres, 1000);
   } catch (e) { console.error("Error loading watchlist", e); }
-}
-
-async function syncMissingGenres() {
-  let modified = false;
-  const itemsToSync = watchlist.filter(w => w.watched && (!w.genre_ids || w.genre_ids.length === 0));
-  if (itemsToSync.length === 0) return;
-  
-  console.log(`Syncing genres for ${itemsToSync.length} items...`);
-  for (const item of itemsToSync) {
-    try {
-      const endpoint = item.media_type === 'tv' ? `tv/${item.id}` : `movie/${item.id}`;
-      const res = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${TMDB_API_KEY}`);
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data.genres) {
-        item.genre_ids = data.genres.map(g => g.id);
-        modified = true;
-      }
-    } catch (e) {
-      console.warn('Failed to sync genres for', item.title, e);
-    }
-    await new Promise(r => setTimeout(r, 200));
-  }
-  
-  if (modified) {
-    save();
-    if (document.getElementById('pane-stats').classList.contains('active')) {
-      updateStats();
-    }
-  }
 }
 
 // ===== STATE =====
@@ -665,7 +634,6 @@ function addTitle(id, itemData, btn, mediaType) {
     runtime: type === 'movie' ? (itemData.runtime || null) : null,
     status: itemData.status || null,
     studio: (itemData.production_companies || [])[0]?.name || null,
-    genre_ids: itemData.genre_ids || (itemData.genres ? itemData.genres.map(g => g.id) : []),
     watched: false,
     episodesWatched: 0,
     addedAt: Date.now()
@@ -960,84 +928,6 @@ function updateStats() {
   } catch (err) {
     console.error("Chart initialization error:", err);
   }
-
-  // --- Radar Chart Calculation ---
-  let r_movies = [0,0,0,0,0]; // Action, Comedy, Drama, Sci-Fi, Thriller
-  let r_tv = [0,0,0,0,0];
-  let r_anime = [0,0,0,0,0];
-  let mTime = 0, tTime = 0, aTime = 0;
-
-  listToUse.forEach(item => {
-    if (!item.genre_ids) return;
-    const isAct = item.genre_ids.some(g=>[28,10759].includes(g));
-    const isCom = item.genre_ids.includes(35);
-    const isDra = item.genre_ids.includes(18);
-    const isSci = item.genre_ids.some(g=>[878,10765].includes(g));
-    const isThr = item.genre_ids.includes(53);
-
-    const time = item.watched && item.runtime ? item.runtime : (item.episodesWatched > 0 ? item.episodesWatched * (item.runtime || 45) : 0);
-    
-    let arr = null;
-    if (item.isAnime) { arr = r_anime; aTime += time; }
-    else if (item.media_type === 'tv') { arr = r_tv; tTime += time; }
-    else if (item.media_type === 'movie') { arr = r_movies; mTime += time; }
-
-    if (arr) {
-      if (isAct) arr[0]++;
-      if (isCom) arr[1]++;
-      if (isDra) arr[2]++;
-      if (isSci) arr[3]++;
-      if (isThr) arr[4]++;
-    }
-  });
-
-  const radarMoviesTimeEl = document.getElementById('radarMoviesTime');
-  if (radarMoviesTimeEl) radarMoviesTimeEl.innerHTML = `${Math.floor(mTime/60)}<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span>`;
-  const radarTvTimeEl = document.getElementById('radarTvTime');
-  if (radarTvTimeEl) radarTvTimeEl.innerHTML = `${Math.floor(tTime/60)}<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span>`;
-  const radarAnimeTimeEl = document.getElementById('radarAnimeTime');
-  if (radarAnimeTimeEl) radarAnimeTimeEl.innerHTML = `${Math.floor(aTime/60)}<span style="font-size: 12px; font-weight: normal; color: var(--muted);">h</span>`;
-
-  try {
-    const radarCtx = document.getElementById('backRadarChart');
-    if (radarCtx && typeof window.Chart !== 'undefined') {
-      if (window.radarChartInstance) {
-        window.radarChartInstance.destroy();
-        window.radarChartInstance = null;
-      }
-      
-      const isLightTheme = document.body.classList.contains('light-theme');
-      const gridColor = isLightTheme ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
-      const labelColor = isLightTheme ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)';
-
-      window.radarChartInstance = new window.Chart(radarCtx.getContext('2d'), {
-        type: 'radar',
-        data: {
-          labels: ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Thriller'],
-          datasets: [
-            { label: 'Movies', data: r_movies, backgroundColor: 'rgba(129, 140, 248, 0.3)', borderColor: '#818cf8', pointBackgroundColor: '#818cf8', borderWidth: 2, pointRadius: 2 },
-            { label: 'TV Shows', data: r_tv, backgroundColor: 'rgba(251, 146, 60, 0.3)', borderColor: '#fb923c', pointBackgroundColor: '#fb923c', borderWidth: 2, pointRadius: 2 },
-            { label: 'Anime', data: r_anime, backgroundColor: 'rgba(244, 63, 94, 0.3)', borderColor: '#f43f5e', pointBackgroundColor: '#f43f5e', borderWidth: 2, pointRadius: 2 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
-          scales: {
-            r: {
-              angleLines: { color: gridColor },
-              grid: { color: gridColor },
-              pointLabels: { color: labelColor, font: { family: 'Outfit, sans-serif', size: 11, weight: '600' } },
-              ticks: { display: false }
-            }
-          },
-          plugins: { legend: { display: false }, tooltip: { enabled: true } }
-        }
-      });
-    }
-  } catch (err) {
-    console.error("Radar initialization error:", err);
-  }
-
   if (badge) {
     const name = (typeof currentUser !== 'undefined' && currentUser)
       ? (currentUser.displayName || currentUser.email)
@@ -1047,10 +937,9 @@ function updateStats() {
 }
 
 function shareStats() {
-  const wrapper = document.getElementById('capture-target');
-  const card = document.getElementById('statsCard');
+  const node = document.getElementById('capture-target');
   const shareBtn = document.getElementById('shareBtn');
-  if (!wrapper || !card) return;
+  if (!node) return;
   
   if (typeof htmlToImage === 'undefined') {
     console.error("htmlToImage is blocked or failed to load");
@@ -1061,30 +950,11 @@ function shareStats() {
   showToast("Generating image...");
   if (shareBtn) shareBtn.style.visibility = 'hidden';
 
-  const isFlipped = card.classList.contains('flipped');
-  const front = card.querySelector('.flip-card-front');
-  const back = card.querySelector('.flip-card-back');
-  const arrows = wrapper.querySelectorAll('.nav-arrow');
-
-  // Temporarily flatten for screenshot
-  const origTransform = card.style.transform;
-  card.style.transform = 'none';
-  card.style.transition = 'none';
-  card.classList.remove('flipped');
-  
-  if (isFlipped) {
-    front.style.display = 'none';
-    back.style.transform = 'none';
-  } else {
-    back.style.display = 'none';
-  }
-  arrows.forEach(a => a.style.display = 'none');
-
   // Ensure canvas background matches the theme
   const style = getComputedStyle(document.body);
   const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
 
-  htmlToImage.toBlob(card, {
+  htmlToImage.toBlob(node, {
     backgroundColor: bgColor,
     pixelRatio: 2,
     style: {
@@ -1092,18 +962,6 @@ function shareStats() {
       transform: 'none'
     }
   }).then(async (blob) => {
-      // Restore styles immediately
-      card.style.transform = origTransform;
-      card.style.transition = '';
-      if (isFlipped) {
-        card.classList.add('flipped');
-        front.style.display = '';
-        back.style.transform = '';
-      } else {
-        back.style.display = '';
-      }
-      arrows.forEach(a => a.style.display = '');
-
       // Try native Web Share API first
       if (navigator.canShare) {
         const file = new File([blob], 'CineQ-Stats.png', { type: 'image/png' });
@@ -2779,53 +2637,4 @@ window.toggleStreamingName = function(el) {
     el.classList.add('show-name');
   }
 };
-
-// --- Ticket Flip & Glare Logic ---
-function initTicketInteractions() {
-  const card = document.getElementById('statsCard');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
-  if (!card) return;
-
-  function toggleFlip() { card.classList.toggle('flipped'); }
-  
-  if (prevBtn) prevBtn.addEventListener('click', toggleFlip);
-  if (nextBtn) nextBtn.addEventListener('click', toggleFlip);
-
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    let xPercent = (x / rect.width) * 100;
-    let yPercent = (y / rect.height) * 100;
-    let backXPercent = card.classList.contains('flipped') ? 100 - xPercent : xPercent;
-
-    const glares = card.querySelectorAll('.glare');
-    if (glares.length >= 2) {
-      glares[0].style.setProperty('--mouse-x', `${xPercent}%`);
-      glares[0].style.setProperty('--mouse-y', `${yPercent}%`);
-      glares[1].style.setProperty('--mouse-x', `${backXPercent}%`);
-      glares[1].style.setProperty('--mouse-y', `${yPercent}%`);
-    }
-
-    const rotateY = ((x / rect.width) - 0.5) * 15; 
-    const rotateX = ((y / rect.height) - 0.5) * -15; 
-    
-    card.style.transition = 'none';
-    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-  });
-
-  card.addEventListener('mouseleave', () => {
-    card.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
-    card.style.transform = `perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-
-    const glares = card.querySelectorAll('.glare');
-    glares.forEach(g => {
-      g.style.setProperty('--mouse-x', `20%`);
-      g.style.setProperty('--mouse-y', `0%`);
-    });
-  });
-}
-document.addEventListener('DOMContentLoaded', initTicketInteractions);
 
