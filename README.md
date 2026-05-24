@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/cineqLogoForDarkMode.png" alt="CineQ Logo" width="220" />
+  <img src="assets/images/cineqLogo.png" alt="CineQ Logo" width="220" />
 </p>
 
 <p align="center">
@@ -133,8 +133,7 @@ CineQ/
     ├── js/
     │   └── app.js                    # App logic, TMDB API, Firebase, UI
     └── images/
-        ├── cineqLogoForDarkMode.png  # Logo for dark theme
-        ├── cineqLogoForLightMode.png # Logo for light theme
+        ├── cineqLogo.png             # Logo for both themes
         └── blocks_shuffle_loading.svg # Golden loading spinner
 ```
 

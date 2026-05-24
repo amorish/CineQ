@@ -1860,9 +1860,7 @@ function applySettings() {
   // Swap logo in Stats footer based on theme
   const statsLogo = document.getElementById('statsLogoImg');
   if (statsLogo) {
-    statsLogo.src = isLight
-      ? 'assets/images/cineqLogoForLightMode.png'
-      : 'assets/images/cineqLogoForDarkMode.png';
+    statsLogo.src = 'assets/images/cineqLogo.png';
   }
 
   updateSettingsModalUI();
