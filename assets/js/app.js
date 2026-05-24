@@ -453,8 +453,7 @@ async function activateFlowMode() {
     await Promise.allSettled(toFetch.map(async item => {
       try {
         const endpoint = item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
-        const res = await tmdbFetch(endpoint);
-        const data = await res.json();
+        const data = await tmdbFetch(endpoint);
         item._genres = (data.genres || []).map(g => g.name);
         item._aniScore = (data.vote_average || 0) * 10;
         if (item.media_type === 'tv' && data.number_of_episodes) item.episodes = data.number_of_episodes;
@@ -543,8 +542,7 @@ async function fetchSearch(q) {
   lastQuery = q;
   try {
     const adult = userSettings.sfwFilter ? 'false' : 'true';
-    const res = await tmdbFetch(`/search/multi?query=${encodeURIComponent(q)}&include_adult=${adult}&language=en-US&page=1`);
-    const data = await res.json();
+    const data = await tmdbFetch(`/search/multi?query=${encodeURIComponent(q)}&include_adult=${adult}&language=en-US&page=1`);
     if (q !== lastQuery) return;
     const results = (data.results || []).filter(r => r.media_type !== 'person' && r.poster_path);
     renderDropdown(results);
@@ -1273,8 +1271,7 @@ async function openModal(id, mediaType, event) {
       ? `/tv/${id}?append_to_response=credits,watch/providers`
       : `/movie/${id}?append_to_response=credits,belongs_to_collection,watch/providers`;
 
-    const res = await tmdbFetch(endpoint);
-    const detail = await res.json();
+    const detail = await tmdbFetch(endpoint);
     currentModalTitle = detail;
     currentModalMediaType = type;
 
@@ -1497,8 +1494,7 @@ async function openModal(id, mediaType, event) {
 
 async function buildCollectionOrder(collectionId, currentDetail) {
   try {
-    const res = await tmdbFetch(`/collection/${collectionId}`);
-    const data = await res.json();
+    const data = await tmdbFetch(`/collection/${collectionId}`);
     const parts = (data.parts || []).sort((a, b) => (a.release_date || '').localeCompare(b.release_date || ''));
     return parts.map(p => ({
       name: p.title || p.name,
@@ -1737,9 +1733,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
-      const res = await tmdbFetch(path + (path.includes('?') ? adult : '?' + adult.slice(1)));
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await tmdbFetch(path + (path.includes('?') ? adult : '?' + adult.slice(1)));
       const items = (data.results || []).filter(a => {
         if (defaultMediaType) return a.poster_path;
         return a.media_type !== 'person' && a.poster_path;
@@ -1831,9 +1825,7 @@ async function fetchRandomTitle(forceNew = false) {
       ? `/discover/tv?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`
       : `/discover/movie?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`;
       
-    const res = await tmdbFetch(path);
-    if (!res.ok) throw new Error('Failed to fetch');
-    const data = await res.json();
+    const data = await tmdbFetch(path);
     const mediaType = useTV ? 'tv' : 'movie';
     let candidates = (data.results || []).filter(a => a.poster_path && !watchlist.some(w => w.id === a.id && w.media_type === mediaType));
     candidates = candidates.sort(() => 0.5 - Math.random());
