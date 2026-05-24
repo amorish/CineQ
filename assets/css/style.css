@@ -347,7 +347,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   padding: 2px;
   gap: 0;
   position: relative;
-  height: 38px;
+  height: 32px;
   margin-bottom: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
@@ -363,7 +363,7 @@ body.light-theme .icon-pill-group {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  width: 36px;
   height: 100%;
   background: none;
   border: none;
@@ -384,8 +384,8 @@ body.light-theme .pill-btn:hover {
 }
 
 .pill-btn svg, .pill-btn i {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   transition: transform 0.2s ease, color 0.2s ease;
 }
 
@@ -409,7 +409,7 @@ body.light-theme #selectModeToggleBtn.active {
 
 .pill-divider {
   width: 1px;
-  height: 16px;
+  height: 12px;
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -423,6 +423,16 @@ body.light-theme .pill-divider {
   border: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--text-secondary);
   transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#advancedFilterBtn svg, #advancedFilterBtn i {
+  width: 14px;
+  height: 14px;
 }
 
 #advancedFilterBtn:hover {
