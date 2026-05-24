@@ -2645,9 +2645,9 @@ const tiltObserver = new MutationObserver((mutations) => {
   mutations.forEach(m => {
     m.addedNodes.forEach(node => {
       if (node.nodeType === 1) {
-        if (node.matches && node.matches('.card, .explore-card-wrap, .explore-card')) newCards.push(node);
+        if (node.matches && node.matches('.card, .explore-card-wrap, .explore-card, .ticket-wrapper')) newCards.push(node);
         if (node.querySelectorAll) {
-          const children = node.querySelectorAll('.card, .explore-card-wrap, .explore-card');
+          const children = node.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper');
           children.forEach(c => newCards.push(c));
         }
       }
@@ -2667,7 +2667,7 @@ tiltObserver.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('DOMContentLoaded', () => {
   if (typeof VanillaTilt !== 'undefined') {
-    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card'), {
+    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'), {
       max: 15,
       speed: 400,
       glare: true,

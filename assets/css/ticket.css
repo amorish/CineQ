@@ -11,6 +11,10 @@ body.light-theme .ticket-wrapper {
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.15));
 }
 
+.ticket-wrapper {
+  transform-style: preserve-3d;
+}
+
 /* Ticket Card Container with Transparent Side Cutouts */
 .ticket-card {
   --r: 20px;
@@ -21,6 +25,7 @@ body.light-theme .ticket-wrapper {
   display: flex;
   flex-direction: column;
   position: relative;
+  transform-style: preserve-3d;
   background-color: var(--bg);
   background-size: cover;
   background-position: center;
@@ -35,6 +40,7 @@ body.light-theme .ticket-wrapper {
     radial-gradient(circle at 100% 100%, transparent var(--r), black calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
     radial-gradient(circle at 0 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
     radial-gradient(circle at 100% 0, transparent var(--r), black calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
+  transform-style: preserve-3d;
 }
 
 /* Top Section of Ticket */
@@ -43,6 +49,7 @@ body.light-theme .ticket-wrapper {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  transform: translateZ(30px);
 }
 
 /* Header & Username */
@@ -192,6 +199,7 @@ body.light-theme .ticket-wrapper {
 .divider {
   margin: 0 20px;
   border-bottom: 2px dashed var(--border);
+  transform: translateZ(30px);
 }
 
 /* Bottom Stub (Footer) */
@@ -201,6 +209,7 @@ body.light-theme .ticket-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transform: translateZ(30px);
 }
 
 .footer-info {
