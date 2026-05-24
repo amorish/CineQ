@@ -65,7 +65,7 @@ button, a, .clickable, select, input[type="checkbox"] {font-family:inherit;curso
   position: relative;
 }
 .logo-wrap { display:flex; align-items:center; flex-shrink:0; }
-.app-header .logo-img{height:32px;width:auto;display:block;filter:drop-shadow(0 0 8px rgba(234,179,8,.25));flex-shrink:0;object-fit:contain;}
+.app-header .logo-img{height:38px;width:auto;display:block;filter:drop-shadow(0 0 8px rgba(234,179,8,.25));flex-shrink:0;object-fit:contain;}
 .logo-dark { display: block !important; }
 .logo-light { display: none !important; }
 body.light-theme .logo-dark { display: none !important; }
@@ -658,7 +658,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   transform:translateX(-50%) translateY(80px);
   background:var(--elevated);border:1px solid var(--border);color:var(--text);
   padding:12px 24px;border-radius:var(--radius-sm);font-size:14px;z-index:9999;
-  transition:.3s;pointer-events:none;white-space:nowrap;
+  transition:.3s;pointer-events:auto;white-space:nowrap;
   box-shadow:var(--shadow-elevated);
 }
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -815,14 +815,14 @@ body.light-theme #tabArchive.active { color: #111112; }
   .modal-backdrop{align-items:center;padding:24px}
   .modal-poster{width:180px}
   .modal-poster img{height:260px}
-  .app-header .logo-img{height:40px}
+  .app-header .logo-img{height:38px}
 }
 /* ===== RESPONSIVE: DESKTOP ===== */
 @media(min-width:900px){
   .grid{grid-template-columns:repeat(4,1fr)}
   .app-header{height:64px}
   .header-container{padding:0 32px;gap:20px}
-  .app-header .logo-img{height:44px}
+  .app-header .logo-img{height:38px}
   .main-content{padding:84px 32px 40px}
   .profile-menu{top:calc(64px + 8px);right:32px;}
   .card:hover{transform:translateY(-4px);border-color:var(--border-hover);box-shadow:0 12px 32px rgba(0,0,0,.4)}
@@ -1304,7 +1304,7 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
   display: flex;
   align-items: center;
   background: transparent;
-  border: 2px solid #141414;
+  border: 2px solid var(--bg);
   border-radius: 30px;
   margin-left: -10px;
   cursor: pointer;
