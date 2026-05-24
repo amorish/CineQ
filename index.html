@@ -211,12 +211,9 @@
           <span class="stat-value" id="remainCount">0</span>
         </div>
       </div>
-      <div style="margin-left: auto; display: flex; gap: 8px;">
-        <button class="icon-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
-          <i data-lucide="sliders-horizontal"></i>
-        </button>
-        <button class="icon-btn" id="selectModeToggleBtn" onclick="toggleSelectMode()" title="Select">
-          <i data-lucide="list-checks"></i>
+      <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+        <button class="icon-btn" id="advancedFilterBtn" onclick="toggleAdvancedFilter()" title="Advanced Filter">
+          <i data-lucide="filter"></i>
         </button>
       </div>
     </section>
@@ -231,9 +228,15 @@
         <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
         <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom" style="display:none;"></button>
         <div style="flex:1"></div>
-        <button class="icon-btn" id="advancedFilterBtn" onclick="toggleAdvancedFilter()" title="Advanced Filter" style="margin-bottom:8px;">
-          <i data-lucide="filter"></i>
-        </button>
+        <div class="icon-pill-group" id="sortSelectPillGroup">
+          <button class="pill-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
+            <i data-lucide="sliders-horizontal"></i>
+          </button>
+          <div class="pill-divider"></div>
+          <button class="pill-btn" id="selectModeToggleBtn" onclick="toggleSelectMode()" title="Select">
+            <i data-lucide="list-checks"></i>
+          </button>
+        </div>
       </div>
       <div class="tabs-container select-bar" id="selectFilters" style="display:none;align-items:center;gap:8px;">
         <span style="font-size:13px;color:var(--accent);font-weight:600;flex:1;" id="selectCountText">0 Selected</span>

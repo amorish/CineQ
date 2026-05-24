@@ -326,7 +326,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   background: var(--accent); border-radius: 50%; box-shadow: 0 0 4px var(--accent);
 }
 
-#sortFilterBtn, #selectModeToggleBtn, .sel-close-btn {
+.sel-close-btn {
   flex-shrink: 0; position: sticky; right: 0;
   background: var(--bg); z-index: 10;
   border-radius: 8px;
@@ -334,9 +334,129 @@ body.light-theme #tabArchive.active { color: #111112; }
   background-color: #161616;
   border: 1px solid #2a2a2a;
   box-shadow: -8px 0 12px var(--bg);
+  margin-left: 8px;
 }
-#selectModeToggleBtn, .sel-close-btn { right: 0; margin-left: 8px; }
-#sortFilterBtn { right: 40px; margin-left: auto; }
+
+/* ===== ICON PILL GROUP (SORT + SELECT) ===== */
+.icon-pill-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  gap: 0;
+  position: relative;
+  height: 38px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+body.light-theme .icon-pill-group {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 100%;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  padding: 0;
+  cursor: pointer;
+}
+
+.pill-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body.light-theme .pill-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.pill-btn svg, .pill-btn i {
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.pill-btn:active svg, .pill-btn:active i {
+  transform: scale(0.88);
+}
+
+/* Highlight state for active Sort / Select buttons */
+.pill-btn.sort-filter-btn.active,
+#selectModeToggleBtn.active {
+  color: var(--accent);
+  background: rgba(234, 179, 8, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(234, 179, 8, 0.2);
+}
+
+body.light-theme .pill-btn.sort-filter-btn.active,
+body.light-theme #selectModeToggleBtn.active {
+  background: rgba(234, 179, 8, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(234, 179, 8, 0.3);
+}
+
+.pill-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.light-theme .pill-divider {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ===== ADVANCED FILTER BUTTON (CIRCULAR DESIGN) ===== */
+#advancedFilterBtn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+#advancedFilterBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+#advancedFilterBtn:active {
+  transform: scale(0.9);
+}
+
+#advancedFilterBtn.active {
+  color: var(--accent);
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.3);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+body.light-theme #advancedFilterBtn {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+body.light-theme #advancedFilterBtn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme #advancedFilterBtn.active {
+  background: rgba(234, 179, 8, 0.12);
+  border-color: rgba(234, 179, 8, 0.4);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+}
 
 /* ===== SORT FILTER BUTTON ===== */
 .sort-filter-btn svg { width: 16px; height: 16px; }
@@ -1122,8 +1242,7 @@ body.light-theme #tabArchive.active { color: #111112; }
   .stat-icon-wrap svg { width: 13px; height: 13px; }
   .stat-label { font-size: 11px; }
   .stat-value { font-size: 13px; }
-  #sortFilterBtn { width: 32px; height: 32px; }
-  #selectModeToggleBtn { width: 32px; height: 32px; }
+
   .sort-filter-btn svg { width: 16px; height: 16px; }
 }
 
@@ -1161,8 +1280,6 @@ body.light-theme .main-app-content { box-shadow: none; }
 body.light-theme .theater-background { background-image: none; background-color: var(--bg); }
 body.light-theme .sort-panel-backdrop,
 body.light-theme .modal-backdrop { background: rgba(0, 0, 0, 0.4); }
-body.light-theme #sortFilterBtn,
-body.light-theme #selectModeToggleBtn,
 body.light-theme .sel-close-btn {
   background-color: #eaeaea; border-color: #d2d2d6; box-shadow: -8px 0 12px #f5f5f7;
 }

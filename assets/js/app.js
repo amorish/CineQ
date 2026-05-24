@@ -380,12 +380,15 @@ function toggleSortPanel() {
 function toggleAdvancedFilter() {
   const panel = document.getElementById('advFilterPanel');
   const backdrop = document.getElementById('advFilterBackdrop');
+  const btn = document.getElementById('advancedFilterBtn');
   if (panel.style.display === 'none' || panel.style.display === '') {
     panel.style.display = 'block';
     backdrop.style.display = 'block';
+    if (btn) btn.classList.add('active');
     setTimeout(() => panel.classList.add('open'), 10);
   } else {
     panel.classList.remove('open');
+    if (btn) btn.classList.remove('active');
     setTimeout(() => {
       panel.style.display = 'none';
       backdrop.style.display = 'none';
@@ -1057,12 +1060,14 @@ function setFilter(f, btn) {
   const sortFilterBtn = document.getElementById('sortFilterBtn');
   const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
   const advancedFilterBtn = document.getElementById('advancedFilterBtn');
+  const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
   if (f === 'explore') {
     gridWrap.style.display = 'none';
     exploreSection.style.display = 'block';
     if (sortFilterBtn) sortFilterBtn.style.display = 'none';
     if (selectModeToggleBtn) selectModeToggleBtn.style.display = 'none';
     if (advancedFilterBtn) advancedFilterBtn.style.display = 'none';
+    if (sortSelectPillGroup) sortSelectPillGroup.style.display = 'none';
     if (!exploreLoaded) loadExplore();
   } else {
     if (f === 'watched' && flowModeActive) { flowModeActive = false; currentSort = userSettings.defaultSort || 'added'; currentSortOrder = userSettings.defaultSortOrder || 'desc'; }
@@ -1071,6 +1076,7 @@ function setFilter(f, btn) {
     if (sortFilterBtn) sortFilterBtn.style.display = '';
     if (selectModeToggleBtn) selectModeToggleBtn.style.display = '';
     if (advancedFilterBtn) advancedFilterBtn.style.display = '';
+    if (sortSelectPillGroup) sortSelectPillGroup.style.display = '';
     renderGrid();
   }
 }
@@ -1192,9 +1198,17 @@ function renderGrid() {
 
   const sortFilterBtn = document.getElementById('sortFilterBtn');
   const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
+  const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
+  const pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
   const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all';
-  if (sortFilterBtn) sortFilterBtn.style.display = (baseItems.length <= 1 && !hasAdvFilter && !flowModeActive) ? 'none' : '';
-  if (selectModeToggleBtn) selectModeToggleBtn.style.display = items.length === 0 ? 'none' : '';
+  
+  let showSort = !(baseItems.length <= 1 && !hasAdvFilter && !flowModeActive);
+  let showSelect = items.length > 0;
+
+  if (sortFilterBtn) sortFilterBtn.style.display = showSort ? '' : 'none';
+  if (selectModeToggleBtn) selectModeToggleBtn.style.display = showSelect ? '' : 'none';
+  if (pillDivider) pillDivider.style.display = (showSort && showSelect) ? '' : 'none';
+  if (sortSelectPillGroup) sortSelectPillGroup.style.display = (showSort || showSelect) ? '' : 'none';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
