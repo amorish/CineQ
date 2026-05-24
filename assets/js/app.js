@@ -789,6 +789,9 @@ function updateStats() {
   const docStudios = ['National Geographic', 'BBC', 'Discovery', 'History'];
   
   listToUse.forEach(item => {
+    const isWatchedContent = item.watched || (item.episodesWatched && item.episodesWatched > 0);
+    if (!isWatchedContent) return;
+
     let isAnime = item.isAnime;
     let isKDrama = item.isKDrama;
     let isDoc = item.isDoc;
@@ -828,8 +831,13 @@ function updateStats() {
     }
   });
   
+  const colors = ['#818cf8', '#fb923c', '#f43f5e', '#a78bfa', '#10b981', '#38bdf8', '#fbbf24']; // Movies, TV, Anime, KDrama, Doc, Short, Reality
   const watchedEl = document.getElementById('statsTitlesWatched');
-  if (watchedEl) watchedEl.textContent = watched;
+  if (watchedEl) {
+    const countsArr = [moviesCount, tvCount, animeCount, kdramaCount, docCount, shortCount, realityCount];
+    const parts = countsArr.map((c, i) => c > 0 ? `<span style="color: ${colors[i]}; font-weight: 700;">${c}</span>` : null).filter(Boolean);
+    watchedEl.innerHTML = parts.length > 0 ? parts.join(' + ') : '0';
+  }
   
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
@@ -874,8 +882,6 @@ function updateStats() {
       const textColor    = style.getPropertyValue('--text').trim()     || '#111112';
       const mutedColor   = style.getPropertyValue('--muted').trim()    || '#a1a1aa';
       const borderClr    = style.getPropertyValue('--border').trim()   || 'rgba(0,0,0,0.08)';
-
-      const colors = ['#818cf8', '#fb923c', '#f43f5e', '#a78bfa', '#10b981', '#38bdf8', '#fbbf24']; // Movies, TV, Anime, KDrama, Doc, Short, Reality
 
       // Always destroy first so theme colors are fully re-applied
       if (window.mediaChartInstance) {
