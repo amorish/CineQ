@@ -695,8 +695,47 @@ function updateStats() {
     badge.textContent = `@${name}`;
   }
 
-  const total = watchlist.length;
-  const watched = watchlist.filter(w => w.watched).length;
+  const filterSelect = document.getElementById('statsFilter');
+  const period = filterSelect ? filterSelect.value : 'total';
+  let listToUse = watchlist;
+
+  const ticketPeriodEl = document.getElementById('statsTicketPeriod');
+  if (period !== 'total') {
+    const now = new Date();
+    const yearStr = now.getFullYear().toString();
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = period === 'monthly' ? `${yearStr}-${monthStr}` : yearStr;
+
+    if (ticketPeriodEl) {
+      if (period === 'yearly') ticketPeriodEl.textContent = yearStr;
+      else if (period === 'monthly') ticketPeriodEl.textContent = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+    }
+
+    listToUse = watchlist.filter(w => {
+      let watchedMatch = false;
+      if (w.watched && w.watchedAt) {
+        watchedMatch = w.watchedAt.startsWith(prefix);
+      }
+      let addedMatch = false;
+      if (w.addedAt) {
+        let addedDate;
+        if (typeof w.addedAt === 'number') addedDate = new Date(w.addedAt);
+        else addedDate = new Date(w.addedAt);
+        if (!isNaN(addedDate.getTime())) {
+          const aYear = addedDate.getFullYear().toString();
+          const aMonth = String(addedDate.getMonth() + 1).padStart(2, '0');
+          if (period === 'monthly') addedMatch = (`${aYear}-${aMonth}` === prefix);
+          else addedMatch = (aYear === prefix);
+        }
+      }
+      return watchedMatch || addedMatch;
+    });
+  } else if (ticketPeriodEl) {
+    ticketPeriodEl.textContent = 'Total';
+  }
+
+  const total = listToUse.length;
+  const watched = listToUse.filter(w => w.watched).length;
   const totalElem = document.getElementById('totalCount');
   if (totalElem) totalElem.textContent = total;
   const watchedElem = document.getElementById('watchedCount');
@@ -709,7 +748,7 @@ function updateStats() {
   let moviesCount = 0;
   let tvCount = 0;
   
-  watchlist.forEach(item => {
+  listToUse.forEach(item => {
     if (item.media_type === 'movie') {
       moviesCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
@@ -1860,7 +1899,9 @@ function applySettings() {
   // Swap logo in Stats footer based on theme
   const statsLogo = document.getElementById('statsLogoImg');
   if (statsLogo) {
-    statsLogo.src = 'assets/images/cineqLogo.png';
+    statsLogo.src = isLight
+      ? 'assets/images/cineqLogoLightmode.png'
+      : 'assets/images/cineqLogoDarkmode.png';
   }
 
   updateSettingsModalUI();

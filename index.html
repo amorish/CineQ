@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>CineQ | Beautiful Movie &amp; TV Series Tracker, Watchlist &amp; Recommendations</title>
-  <link rel="icon" href="assets/images/cineqFavicon.png" type="image/png" sizes="64x64" />
+  <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
   <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
   <meta name="description" content="CineQ is a premium, ad-free movie and TV series watchlist tracker. Get dynamic personal recommendations, smart random suggestions, and collection guides that tell you what to watch first." />
   <meta name="keywords" content="movies, tv series, watchlist, movie tracker, tv tracker, recommendations, what to watch, CineQ, film tracker" />
@@ -138,7 +138,8 @@
     <div class="header-container">
       <!-- LEFT: Logo -->
       <div class="logo-wrap" onclick="resetToHome()" style="cursor:pointer;display:flex;align-items:center;">
-        <img src="assets/images/cineqLogo.png" alt="CineQ" class="logo-img" draggable="false" oncontextmenu="return false" />
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img logo-dark" draggable="false" oncontextmenu="return false" />
+        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img logo-light" draggable="false" oncontextmenu="return false" />
       </div>
 
       <!-- MIDDLE: Inline search bar -->
@@ -332,7 +333,8 @@
     <div class="auth-particles" id="authParticles"></div>
     <div class="auth-card">
       <div class="auth-logo-wrap">
-        <img src="assets/images/cineqLogo.png" alt="CineQ" class="logo-img auth-logo" draggable="false" oncontextmenu="return false">
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
       </div>
       <h2 id="authTitle">Sign In</h2>
       <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
@@ -367,7 +369,8 @@
     <div class="auth-bg-gradient"></div>
     <div class="auth-card">
       <div class="auth-logo-wrap">
-        <img src="assets/images/cineqLogo.png" alt="CineQ" class="logo-img auth-logo" draggable="false" oncontextmenu="return false">
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
       </div>
       <div class="verify-icon"><i data-lucide="mail" style="width:40px;height:40px;color:var(--accent);"></i></div>
       <h2>Verify Your Email</h2>
@@ -461,8 +464,15 @@
 
           <!-- Stats Tab -->
           <div class="settings-pane" id="pane-stats">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3>Your Stats</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="margin: 0; white-space: nowrap;">Stats & Insights</h3>
+                <select id="statsFilter" class="settings-select" style="width: auto; padding: 4px 8px; font-size: 13px;" onchange="updateStats()">
+                  <option value="total">Total</option>
+                  <option value="yearly">This Year</option>
+                  <option value="monthly">This Month</option>
+                </select>
+              </div>
               <button class="settings-action-btn secondary" id="shareBtn" onclick="shareStats()">
                 <i data-lucide="share-2" style="width:16px;height:16px;margin-right:8px;display:inline-block;vertical-align:middle;"></i><span style="vertical-align:middle;">Share Ticket</span>
               </button>
@@ -475,7 +485,8 @@
                 <div class="ticket-top">
                   <div class="header">
                     <div class="header-title-group">
-                      <h2>Stats & Insights</h2>
+                      <h2 style="white-space: nowrap;">Stats & Insights</h2>
+                      <div id="statsTicketPeriod" style="font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600;">Total</div>
                     </div>
                     <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
                       <span class="username-badge" id="statsUsernameBadge">@username</span> 

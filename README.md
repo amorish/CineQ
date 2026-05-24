@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/images/cineqLogo.png" alt="CineQ Logo" width="220" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/images/cineqLogoDarkmode.png">
+    <img src="assets/images/cineqLogoLightmode.png" alt="CineQ Logo" width="220" />
+  </picture>
 </p>
 
 <p align="center">
