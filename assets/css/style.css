@@ -71,6 +71,12 @@ button, a, .clickable, select, input[type="checkbox"] {font-family:inherit;curso
 body.light-theme .logo-dark { display: none !important; }
 body.light-theme .logo-light { display: block !important; }
 
+.logo-mobile { display: none !important; }
+@media (max-width: 600px) {
+  .logo-wrap .logo-desktop, body.light-theme .logo-wrap .logo-desktop { display: none !important; }
+  .logo-wrap .logo-mobile { display: block !important; }
+}
+
 .header-left,.header-right{display:flex;align-items:center;gap:8px}
 
 /* Inline header search */

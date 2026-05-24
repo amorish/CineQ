@@ -2088,10 +2088,16 @@ async function unarchive(id, mediaType) {
 }
 // ===== HEADER LOGO CLICK RESET =====
 function resetToHome() {
-  clearSearch();
+  if (searchInput) searchInput.value = '';
+  if (dropdown) dropdown.innerHTML = '';
+  if (searchStatus) searchStatus.textContent = '';
+  if (headerSearchClear) headerSearchClear.style.display = 'none';
+  closeDropdown();
+  
   if (deleteMode) toggleSelectMode();
   const tabList = document.getElementById('tabList');
   if (tabList) setFilter('list', tabList);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ===== FLOWMODE SPARKLE PARTICLES =====
