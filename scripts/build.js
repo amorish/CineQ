@@ -3,8 +3,7 @@ const path = require('path');
 
 const envFileContent = `
 window.ENV = {
-  FIREBASE_API_KEY: "${process.env.FIREBASE_API_KEY || ''}",
-  TMDB_TOKEN: "${process.env.TMDB_TOKEN || ''}"
+  FIREBASE_API_KEY: "${process.env.FIREBASE_API_KEY || ''}"
 };
 `;
 

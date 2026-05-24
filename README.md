@@ -54,7 +54,7 @@ cd CineQ
 1. Create a free account at [themoviedb.org](https://www.themoviedb.org)
 2. Go to **Settings → API → Create → Developer**
 3. Copy your **Read Access Token** (the long Bearer token)
-4. Paste it into `assets/js/app.js` at the `TMDB_TOKEN` constant
+4. Set it as an Environment Variable named `TMDB_TOKEN` in your Vercel project settings.
 
 ### 3. Set Up Firebase (Free)
 1. Go to [Firebase Console](https://console.firebase.google.com/) and create a new project

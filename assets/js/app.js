@@ -19,14 +19,14 @@ let currentUser = null;
 let isSignupMode = false;
 
 // ===== TMDB API =====
-const TMDB_TOKEN = window.ENV ? window.ENV.TMDB_TOKEN : "";
 const TMDB_BASE = '/api/tmdb';
 const TMDB_IMG  = '/images/tmdb/w500';
 const TMDB_IMG_LG = '/images/tmdb/w780';
 
+// ===== API HELPERS =====
 function tmdbFetch(path) {
   return fetch(`${TMDB_BASE}${path}`, {
-    headers: { 'Authorization': `Bearer ${TMDB_TOKEN}`, 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' }
   });
 }
 function getPosterUrl(posterPath, large = false) {

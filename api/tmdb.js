@@ -15,9 +15,8 @@ export default async function handler(req) {
     }
   };
 
-  const authHeader = req.headers.get('authorization');
-  if (authHeader) {
-    options.headers['Authorization'] = authHeader;
+  if (process.env.TMDB_TOKEN) {
+    options.headers['Authorization'] = `Bearer ${process.env.TMDB_TOKEN}`;
   }
 
   try {
