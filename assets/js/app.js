@@ -617,10 +617,10 @@ function addTitle(id, itemData, btn, mediaType) {
   const year = getYear(itemData);
   const poster = getPosterUrl(itemData.poster_path);
   
-  const isAnime = itemData.original_language === 'ja' && (
-    (itemData.genres && itemData.genres.some(g => g.id === 16)) || 
-    (itemData.genre_ids && itemData.genre_ids.includes(16))
-  );
+  const orig = itemData.original_title || itemData.original_name || '';
+  const hasAsianText = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(orig);
+  const isAnim = (itemData.genres && itemData.genres.some(g => g.id === 16)) || (itemData.genre_ids && itemData.genre_ids.includes(16));
+  const isAnime = isAnim && (itemData.original_language === 'ja' || itemData.original_language === 'ko' || hasAsianText);
   
   const isKDrama = type === 'tv' && itemData.original_language === 'ko';
   const isDoc = (itemData.genres && itemData.genres.some(g => g.id === 99)) || (itemData.genre_ids && itemData.genre_ids.includes(99));
@@ -645,6 +645,8 @@ function addTitle(id, itemData, btn, mediaType) {
     episodes: type === 'tv' ? (itemData.number_of_episodes || null) : null,
     runtime: type === 'movie' ? (itemData.runtime || null) : null,
     status: itemData.status || null,
+    original_title: orig,
+    original_language: itemData.original_language || null,
     studio: (itemData.production_companies || [])[0]?.name || null,
     watched: false,
     episodesWatched: 0,
@@ -799,34 +801,36 @@ function updateStats() {
     let isReality = item.isReality;
 
     if (isAnime === undefined) {
-      isAnime = item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      const origText = item.original_title || item.title || '';
+      const hasAsian = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(origText);
+      isAnime = hasAsian || (item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase())));
       isKDrama = item.media_type === 'tv' && item.studio && kdramaStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
       isDoc = item.studio && docStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
       isShortFilm = item.media_type === 'movie' && item.runtime > 0 && item.runtime < 40;
     }
 
     if (isDoc) {
-      docCount++;
+      if (item.watched) docCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
       else if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     } else if (isShortFilm) {
-      shortCount++;
+      if (item.watched) shortCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else if (isAnime) {
-      animeCount++;
+      if (item.watched) animeCount++;
       if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 24);
       else if (item.media_type === 'movie' && item.watched && item.runtime) totalMinutes += item.runtime;
     } else if (isKDrama) {
-      kdramaCount++;
+      if (item.watched) kdramaCount++;
       if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 60);
     } else if (isReality) {
-      realityCount++;
+      if (item.watched) realityCount++;
       if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     } else if (item.media_type === 'movie') {
-      moviesCount++;
+      if (item.watched) moviesCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else {
-      tvCount++;
+      if (item.watched) tvCount++;
       if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     }
   });
@@ -836,7 +840,7 @@ function updateStats() {
   if (watchedEl) {
     const countsArr = [moviesCount, tvCount, animeCount, kdramaCount, docCount, shortCount, realityCount];
     const parts = countsArr.map((c, i) => c > 0 ? `<span style="color: ${colors[i]}; font-weight: 700;">${c}</span>` : null).filter(Boolean);
-    watchedEl.innerHTML = parts.length > 0 ? parts.join(' + ') : '0';
+    watchedEl.innerHTML = parts.length > 0 ? parts.join('+') : '0';
   }
   
   const days = Math.floor(totalMinutes / 1440);
@@ -936,7 +940,7 @@ function updateStats() {
           colorBox.className = 'legend-color';
           colorBox.style.backgroundColor = colors[index];
           const text = document.createElement('span');
-          text.innerText = `${label} (${dataValues[index]}%)`;
+          text.innerText = label;
           legendItem.appendChild(colorBox);
           legendItem.appendChild(text);
           legendContainer.appendChild(legendItem);

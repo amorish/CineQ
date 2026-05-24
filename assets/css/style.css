@@ -1157,6 +1157,8 @@ body.light-theme {
   --skeleton-shimmer: #f3f4f6;
 }
 body.light-theme .app-header { background: rgba(245, 245, 247, 0.88); }
+body.light-theme .main-app-content { box-shadow: none; }
+body.light-theme .theater-background { background-image: none; background-color: var(--bg); }
 body.light-theme .sort-panel-backdrop,
 body.light-theme .modal-backdrop { background: rgba(0, 0, 0, 0.4); }
 body.light-theme #sortFilterBtn,
@@ -1167,9 +1169,14 @@ body.light-theme .sel-close-btn {
 body.light-theme .tab-btn.active { color: #111112; }
 body.light-theme .stat-pill { background: rgba(0, 0, 0, 0.02); border-color: rgba(0, 0, 0, 0.05); }
 body.light-theme .stat-value { color: #111112; }
-body.light-theme .card-title, body.light-theme .modal-title { color: #111112; }
-body.light-theme .card-sl { background: #eaeaea; color: #5a5a62; border-color: #f5f5f7; }
-body.light-theme .auth-card { --bg: #ffffff; }
+body.light-theme .modal-title { color: #111112; }
+body.light-theme .card-sl { background: #111112; color: #ffffff; border-color: #000000; }
+body.light-theme .auth-card, body.light-theme .ticket-card { --bg: #ffffff; }
+body.light-theme #reportBugTab { background: rgba(0, 0, 0, 0.05) !important; color: var(--text-secondary) !important; }
+body.light-theme #reportBugTab i { color: var(--text-secondary) !important; }
+body.light-theme #reportBugTab:hover { background: rgba(0, 0, 0, 0.08) !important; color: var(--text) !important; }
+body.light-theme #reportBugTab.active { background: rgba(0, 0, 0, 0.1) !important; color: var(--text) !important; }
+body.light-theme #reportBugTab.active i { color: var(--text) !important; }
 body.light-theme .auth-card h2, body.light-theme .auth-card p { color: #111112; }
 body.light-theme .auth-card p { color: #5a5a62; }
 body.light-theme .input-wrapper input { background: rgba(0, 0, 0, 0.03); }
