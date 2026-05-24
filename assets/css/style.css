@@ -1105,8 +1105,8 @@ body.light-theme #tabArchive.active { color: #111112; }
   .stat-icon-wrap svg { width: 13px; height: 13px; }
   .stat-label { font-size: 11px; }
   .stat-value { font-size: 13px; }
-  #sortFilterBtn { right: 36px; margin-left: 4px; width: 32px; height: 32px; }
-  #selectModeToggleBtn { margin-left: 4px; width: 32px; height: 32px; }
+  #sortFilterBtn { width: 32px; height: 32px; }
+  #selectModeToggleBtn { width: 32px; height: 32px; }
   .sort-filter-btn svg { width: 16px; height: 16px; }
 }
 
