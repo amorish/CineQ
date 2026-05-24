@@ -44,8 +44,37 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network First for HTML (Navigation requests) so users always get the latest version if online
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for CSS/JS/Images
+  // Serves instantly from cache, then updates the cache in the background
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.match(event.request).then((cachedResponse) => {
+        const fetchPromise = fetch(event.request).then((networkResponse) => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        }).catch(() => {
+          // Ignore network errors when updating cache in background
+        });
+        
+        return cachedResponse || fetchPromise;
+      });
+    })
   );
 });
