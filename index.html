@@ -448,6 +448,9 @@
           <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
           <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
         </div>
+        <p style="text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; font-weight: 500; padding: 0 10px;">
+          A sleek movie & TV series watchlist to track what you're watching, discover new titles, and share list progress with friends.
+        </p>
         <h2 id="authTitle">Sign In</h2>
         <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
         <div class="input-group" id="authUsernameGroup" style="display:none;">
@@ -481,9 +484,14 @@
         </button>
       </div>
       <div class="ticket-divider"></div>
-      <div class="auth-footer">
-        <span class="auth-footer-text" id="authFooterText">New here?</span>
-        <button class="auth-toggle-inline" onclick="toggleAuthMode()" id="authToggleBtn">Sign Up</button>
+      <div class="auth-footer" style="flex-direction: column; gap: 8px;">
+        <div>
+          <span class="auth-footer-text" id="authFooterText">New here?</span>
+          <button class="auth-toggle-inline" onclick="toggleAuthMode()" id="authToggleBtn">Sign Up</button>
+        </div>
+        <div style="font-size: 11px; margin-top: 4px;">
+          <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s;">Privacy Policy</a>
+        </div>
       </div>
     </div>
   </div>
@@ -585,7 +593,12 @@
         </div>
       </div>
       <div class="ticket-divider"></div>
-      <div class="auth-footer"><button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button></div>
+      <div class="auth-footer" style="flex-direction: column; gap: 8px;">
+        <button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button>
+        <div style="font-size: 11px; margin-top: 4px;">
+          <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s;">Privacy Policy</a>
+        </div>
+      </div>
     </div>
   </div>
 
