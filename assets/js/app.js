@@ -147,16 +147,58 @@ function showVerificationScreen(email) {
 
 async function sendCustomVerificationEmail(user) {
   try {
+    const token = await user.getIdToken(true);
     const res = await fetch('/api/send-verification', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: user.email })
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ 
+        email: user.email,
+        username: user.displayName || user.email.split('@')[0]
+      })
     });
-    if (!res.ok) throw new Error('API Error');
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'API Error');
+    }
   } catch(e) {
-    console.warn("Custom email failed, falling back to Firebase default", e);
-    await user.sendEmailVerification();
+    console.error("Custom email failed:", e);
+    throw e;
   }
+}
+
+let resendTimerInterval = null;
+
+function startResendCooldown(durationSeconds) {
+  const btn = document.getElementById('resendBtn');
+  if (!btn) return;
+  
+  if (resendTimerInterval) clearInterval(resendTimerInterval);
+  
+  let timeLeft = durationSeconds;
+  btn.disabled = true;
+  
+  const updateText = () => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    btn.textContent = `Resend in ${minutes}:${String(seconds).padStart(2, '0')}`;
+  };
+  
+  updateText();
+  
+  resendTimerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(resendTimerInterval);
+      resendTimerInterval = null;
+      btn.disabled = false;
+      btn.textContent = 'Resend Email';
+    } else {
+      updateText();
+    }
+  }, 1000);
 }
 
 async function resendVerification() {
@@ -166,14 +208,25 @@ async function resendVerification() {
   btn.disabled = true;
   btn.textContent = 'Sending...';
   try {
-    await sendCustomVerificationEmail(user);
+    const token = await user.getIdToken(true);
+    const res = await fetch('/api/resend-verification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || 'Failed to resend. Please try again.');
+    }
     showToast('Verification email sent! Check your inbox & spam.');
+    startResendCooldown(120);
   } catch (e) {
-    if (e.code === 'auth/too-many-requests') showToast('Too many attempts. Wait a few minutes.');
-    else showToast('Failed to send. Try again later.');
-  } finally {
+    console.error("Resend error:", e);
+    showToast(e.message || 'Failed to send. Try again later.');
+    btn.disabled = false;
     btn.textContent = 'Resend Email';
-    setTimeout(() => { btn.disabled = false; }, 30000);
   }
 }
 
@@ -261,6 +314,45 @@ function friendlyAuthError(code) {
     'auth/network-request-failed': 'Network error. Check your connection',
   };
   return map[code] || 'Something went wrong. Please try again.';
+}
+
+async function signInWithGoogle() {
+  const btn = document.getElementById('authActionBtn');
+  const originalText = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = 'Please wait...'; btn.disabled = true; }
+  
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const cred = await firebase.auth().signInWithPopup(provider);
+    const user = cred.user;
+    
+    // Sync the Google user profile to the Firestore DB via backend function
+    const token = await user.getIdToken(true);
+    const res = await fetch('/api/send-verification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        email: user.email,
+        username: user.displayName || user.email.split('@')[0]
+      })
+    });
+    
+    if (!res.ok) {
+      const data = await res.json();
+      console.warn("Backend user sync failed, continuing anyway:", data.message);
+    }
+    
+    showToast("Successfully signed in with Google!");
+  } catch (e) {
+    console.error("Google Sign-In failed:", e);
+    const code = e.code || '';
+    showToast(friendlyAuthError(code));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalText; }
+  }
 }
 
 async function forgotPassword() {

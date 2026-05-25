@@ -35,58 +35,73 @@ module.exports = async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
     const email = decodedToken.email;
-    
+
     if (!email) {
       return res.status(400).json({ message: 'Email address not found in token.' });
     }
 
-    const { username } = req.body;
-
-    // Detect if this is a Google or Password provider
-    const isGoogle = decodedToken.firebase.sign_in_provider === 'google.com';
-    const authProvider = isGoogle ? 'google' : 'password';
-    const emailVerified = isGoogle ? true : false;
-    const todayStr = new Date().toISOString().split('T')[0];
+    // Check if the user is already verified in Firebase Auth
+    const userRecord = await admin.auth().getUser(uid);
+    if (userRecord.emailVerified) {
+      return res.status(400).json({ message: 'Your email address is already verified.' });
+    }
 
     const db = admin.firestore();
     const userDocRef = db.collection('cineq_users').doc(uid);
     const docSnap = await userDocRef.get();
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    let resendsToday = 0;
+    let resetDate = todayStr;
 
-    // Firestore Sync
-    if (!docSnap.exists) {
-      await userDocRef.set({
-        username: username || decodedToken.name || email.split('@')[0],
-        email: email,
-        authProvider: authProvider,
-        emailVerified: emailVerified,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastVerificationSentAt: isGoogle ? null : admin.firestore.FieldValue.serverTimestamp(),
-        verificationResendsToday: isGoogle ? 0 : 1,
-        lastVerificationResetDate: isGoogle ? '' : todayStr
-      });
-    } else {
+    if (docSnap.exists) {
       const data = docSnap.data();
-      const updateData = {
-        authProvider: authProvider,
-        emailVerified: emailVerified
-      };
       
-      // If Password user, record the sent verification details
-      if (!isGoogle) {
-        updateData.lastVerificationSentAt = admin.firestore.FieldValue.serverTimestamp();
-        if (data.lastVerificationResetDate === todayStr) {
-          updateData.verificationResendsToday = (data.verificationResendsToday || 0) + 1;
-        } else {
-          updateData.verificationResendsToday = 1;
-          updateData.lastVerificationResetDate = todayStr;
+      // 1. Cooldown Rate Limiting (2 Minutes)
+      const lastSent = data.lastVerificationSentAt;
+      if (lastSent) {
+        const lastSentTime = lastSent.toDate ? lastSent.toDate().getTime() : (lastSent.seconds * 1000);
+        const now = Date.now();
+        const diffMs = now - lastSentTime;
+        if (diffMs < 120000) { // 120,000 ms = 2 minutes
+          const waitSeconds = Math.ceil((120000 - diffMs) / 1000);
+          return res.status(429).json({ message: `Please wait ${waitSeconds} seconds before requesting another email.` });
         }
       }
-      await userDocRef.update(updateData);
-    }
 
-    // Conditional Logic: Google users auto-verify, password users get email
-    if (isGoogle) {
-      return res.status(200).json({ message: 'User synced successfully. Google account is auto-verified.' });
+      // 2. Daily Rate Limiting (Max 5/Day)
+      resendsToday = data.verificationResendsToday || 0;
+      resetDate = data.lastVerificationResetDate || '';
+
+      if (resetDate === todayStr) {
+        if (resendsToday >= 5) {
+          return res.status(429).json({ message: 'You have reached the limit of 5 verification emails per day. Please try again tomorrow.' });
+        }
+        resendsToday += 1;
+      } else {
+        resendsToday = 1;
+        resetDate = todayStr;
+      }
+
+      // Update the user document
+      await userDocRef.update({
+        lastVerificationSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        verificationResendsToday: resendsToday,
+        lastVerificationResetDate: resetDate
+      });
+    } else {
+      // If document doesn't exist, create it dynamically
+      resendsToday = 1;
+      await userDocRef.set({
+        username: decodedToken.name || email.split('@')[0],
+        email: email,
+        authProvider: 'password',
+        emailVerified: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        lastVerificationSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        verificationResendsToday: 1,
+        lastVerificationResetDate: todayStr
+      });
     }
 
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -312,7 +327,7 @@ module.exports = async function handler(req, res) {
     await transporter.sendMail(mailOptions);
     return res.status(200).json({ message: 'Verification email sent successfully!' });
   } catch (error) {
-    console.error('Error in send-verification handler:', error);
+    console.error('Error in resend-verification handler:', error);
     return res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 };
