@@ -10,13 +10,19 @@ const firebaseConfig = {
 };
 
 let db = null;
+let storage = null;
+let cropperInstance = null;
+let profilePicCache = null;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  storage = firebase.storage();
 } catch (e) { console.error("Firebase not configured:", e); }
 
 let currentUser = null;
 let isSignupMode = false;
+let prevStatsCounts = null;
+let pendingStatsBadge = false;
 
 // ===== TMDB API =====
 const TMDB_BASE = '/api/tmdb';
@@ -254,30 +260,70 @@ function verifyLogout() { firebase.auth().signOut(); }
 
 function toggleAuthMode() {
   isSignupMode = !isSignupMode;
-  const flipper = document.getElementById('authFlipper');
-  if (flipper) {
-    if (isSignupMode) flipper.classList.add('flipped');
-    else flipper.classList.remove('flipped');
+  
+  const usernameGroup = document.getElementById('authUsernameGroup');
+  const authTitle = document.getElementById('authTitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const googleBtnText = document.getElementById('authGoogleBtnText');
+  const footerText = document.getElementById('authFooterText');
+  const toggleBtn = document.getElementById('authToggleBtn');
+  const forgotWrap = document.getElementById('authForgotWrap');
+  const usernameInput = document.getElementById('authUsername');
+  
+  if (isSignupMode) {
+    if(usernameGroup) {
+      usernameGroup.style.maxHeight = '80px';
+      usernameGroup.style.opacity = '1';
+      usernameGroup.style.marginBottom = '16px';
+    }
+    if(usernameInput) usernameInput.setAttribute('required', 'true');
+    
+    if(authTitle) authTitle.textContent = 'Sign Up';
+    if(submitBtn) submitBtn.textContent = 'Create Account';
+    if(googleBtnText) googleBtnText.textContent = 'Sign Up with Google';
+    if(footerText) footerText.textContent = 'Already have an account?';
+    if(toggleBtn) toggleBtn.textContent = 'Sign In';
+    
+    if(forgotWrap) {
+      forgotWrap.style.opacity = '0';
+      setTimeout(() => { forgotWrap.style.display = 'none'; }, 300);
+    }
+  } else {
+    if(usernameGroup) {
+      usernameGroup.style.maxHeight = '0';
+      usernameGroup.style.opacity = '0';
+      usernameGroup.style.marginBottom = '0';
+    }
+    if(usernameInput) usernameInput.removeAttribute('required');
+    
+    if(authTitle) authTitle.textContent = 'Sign In';
+    if(submitBtn) submitBtn.textContent = 'Sign In';
+    if(googleBtnText) googleBtnText.textContent = 'Sign In with Google';
+    if(footerText) footerText.textContent = 'New here?';
+    if(toggleBtn) toggleBtn.textContent = 'Sign Up';
+    
+    if(forgotWrap) {
+      forgotWrap.style.display = 'flex';
+      setTimeout(() => { forgotWrap.style.opacity = '1'; }, 10);
+    }
   }
 }
 
-async function handleAuth(isSignupForm = false) {
-  isSignupMode = isSignupForm;
-  let email, pwd, username, btn;
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pwd = document.getElementById('authPwd').value;
+  const usernameInput = document.getElementById('authUsername');
+  const username = usernameInput ? usernameInput.value.trim() : '';
+  const btn = document.getElementById('authSubmitBtn');
+  
   if (isSignupMode) {
-    email = document.getElementById('authEmailUp').value.trim();
-    pwd = document.getElementById('authPwdUp').value;
-    username = document.getElementById('authUsernameUp').value.trim();
-    btn = document.querySelector('.back .auth-btn');
     if (!email || !pwd || !username) return showToast('Enter username, email, and password');
     if (username.length > 15) return showToast('Username cannot be more than 15 characters');
     if (isDisposableEmail(email)) return showToast('Temporary/disposable emails are not allowed.');
   } else {
-    email = document.getElementById('authEmailIn').value.trim();
-    pwd = document.getElementById('authPwdIn').value;
-    btn = document.querySelector('.front .auth-btn');
     if (!email || !pwd) return showToast('Enter email and password');
   }
+  
   if (!isValidEmailFormat(email)) return showToast('Please enter a valid email address');
   
   if (btn) { btn.textContent = "Please wait..."; btn.disabled = true; }
@@ -299,8 +345,7 @@ async function handleAuth(isSignupForm = false) {
         const methods = await firebase.auth().fetchSignInMethodsForEmail(email);
         if (methods.length === 0) {
           toggleAuthMode();
-          const emailUp = document.getElementById('authEmailUp');
-          if (emailUp) emailUp.value = email;
+          document.getElementById('authEmail').value = email;
           showToast("No account found - sign up instead!");
         } else { showToast("Incorrect password. Try again."); }
       } catch (_) { showToast(friendlyAuthError(code)); }
@@ -549,10 +594,14 @@ function setAdvFilter(category, value, btn) {
 function renderSortPills() {
   const container = document.getElementById('sortPills');
   const flowBtn = document.getElementById('flowModeBtn');
+  const moodCont = document.getElementById('flowModeMoodContainer');
   if (flowBtn) {
     flowBtn.classList.toggle('active', flowModeActive);
     flowBtn.classList.toggle('is-selected', flowModeActive);
     flowBtn.style.display = (currentFilter === 'list' || currentFilter === 'watching') ? '' : 'none';
+  }
+  if (moodCont) {
+    moodCont.style.display = (currentFilter === 'list' || currentFilter === 'watching') ? '' : 'none';
   }
   container.innerHTML = SORT_OPTIONS.map(opt => {
     const isActive = !flowModeActive && currentSort === opt.key;
@@ -593,8 +642,8 @@ async function activateFlowMode() {
   statusEl.textContent = phases[0];
   const phaseTimer = setInterval(() => { pi++; if (pi < phases.length) statusEl.textContent = phases[pi]; }, 900);
   try {
-    const unwatched = watchlist.filter(w => !w.watched);
-    const toFetch = unwatched.filter(w => !w._genres).slice(0, 15);
+    const unwatched = watchlist.filter(w => !w.watched && !w.archived);
+    const toFetch = unwatched.filter(w => !w._genres).slice(0, 30);
     await Promise.allSettled(toFetch.map(async item => {
       try {
         const endpoint = item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
@@ -615,11 +664,41 @@ async function activateFlowMode() {
 }
 
 function applyFlowMode(items) {
-  const withPriority = items.map(a => ({
-    ...a,
-    _score: (a._aniScore || (a.score ? a.score * 10 : 0)),
-    _inProgress: (a.episodesWatched || 0) > 0 ? 1 : 0
-  }));
+  const moodSelect = document.getElementById('flowModeMood');
+  const selectedMood = moodSelect ? moodSelect.value : 'overall';
+  
+  let moodGenres = [];
+  if (selectedMood === 'action') moodGenres = ['Action', 'Adventure', 'Thriller', 'Animation'];
+  else if (selectedMood === 'chill') moodGenres = ['Comedy', 'Romance', 'Family', 'Animation'];
+  else if (selectedMood === 'deep') moodGenres = ['Drama', 'Sci-Fi', 'Documentary', 'Mystery'];
+  else if (selectedMood === 'scary') moodGenres = ['Horror', 'Mystery', 'Thriller'];
+  
+  const droppedItems = watchlist.filter(w => w.archived);
+  const watchedItems = watchlist.filter(w => w.watched);
+  
+  let droppedGenres = {};
+  droppedItems.forEach(a => { if (a._genres) a._genres.forEach(g => droppedGenres[g] = (droppedGenres[g]||0)+1); });
+  let watchedGenres = {};
+  watchedItems.forEach(a => { if (a._genres) a._genres.forEach(g => watchedGenres[g] = (watchedGenres[g]||0)+1); });
+  
+  const now = Date.now();
+  const withPriority = items.map(a => {
+    let _score = (a._aniScore || (a.score ? a.score * 10 : 0));
+    const ageDays = (now - (a.addedAt || now)) / (1000 * 60 * 60 * 24);
+    _score += Math.min(ageDays * 0.1, 15);
+    const _inProgress = (a.episodesWatched || 0) > 0 ? 1 : 0;
+    if (_inProgress) _score += 30;
+    
+    if (a._genres) {
+      a._genres.forEach(g => {
+        if (moodGenres.includes(g)) _score += 25;
+        if (watchedGenres[g]) _score += Math.min(watchedGenres[g] * 2, 20);
+        if (droppedGenres[g]) _score -= Math.min(droppedGenres[g] * 5, 40);
+      });
+    }
+    return { ...a, _score, _inProgress };
+  });
+  
   const movies = withPriority.filter(a => a.media_type === 'movie').sort((a,b) => b._score - a._score);
   const short  = withPriority.filter(a => a.media_type === 'tv' && (a.episodes||999) <= 20).sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
   const medium = withPriority.filter(a => a.media_type === 'tv' && (a.episodes||999) > 20 && (a.episodes||999) <= 100).sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
@@ -823,16 +902,19 @@ async function toggleWatched(id, mediaType, event) {
   if (event) event.stopPropagation();
   const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
   if (!item) return;
+  snapshotStatsCounts();
   item.watched = !item.watched;
   if (item.watched) {
     if (item.episodes) item.episodesWatched = item.episodes;
     item.watchedAt = todayDate();
+    pendingStatsBadge = true;
   } else {
     item.episodesWatched = 0;
     item.watchedAt = null;
   }
   await save();
   renderGrid();
+  pendingStatsBadge = false;
 }
 
 async function toggleCustomList(id, mediaType, event) {
@@ -864,6 +946,34 @@ async function save() {
 }
 
 // ===== STATS =====
+function snapshotStatsCounts() {
+  const animeStudios = ['Bones', 'MAPPA', 'Madhouse', 'Kyoto Animation', 'ufotable', 'Toei Animation', 'Studio Ghibli', 'CoMix Wave Films', 'A-1 Pictures', 'CloverWorks', 'WIT STUDIO', 'Production I.G', 'Pierrot', 'J.C.Staff', 'TMS Entertainment'];
+  const kdramaStudios = ['Studio Dragon', 'tvN', 'JTBC', 'SBS', 'KBS', 'MBC'];
+  const docStudios = ['National Geographic', 'BBC', 'Discovery', 'History'];
+  let mc=0,tc=0,ac=0,kc=0,dc=0,sc=0,rc=0;
+  watchlist.forEach(item => {
+    const isWatchedContent = item.watched || (item.episodesWatched && item.episodesWatched > 0);
+    if (!isWatchedContent) return;
+    let isAnime=item.isAnime, isKDrama=item.isKDrama, isDoc=item.isDoc, isShortFilm=item.isShortFilm, isReality=item.isReality;
+    if (isAnime === undefined) {
+      const origText = item.original_title || item.title || '';
+      const hasAsian = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(origText);
+      isAnime = hasAsian || (item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase())));
+      isKDrama = item.media_type === 'tv' && item.studio && kdramaStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      isDoc = item.studio && docStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
+      isShortFilm = item.media_type === 'movie' && item.runtime > 0 && item.runtime < 40;
+    }
+    if (isDoc) { if (item.watched) dc++; }
+    else if (isShortFilm) { if (item.watched) sc++; }
+    else if (isAnime) { if (item.watched) ac++; }
+    else if (isKDrama) { if (item.watched) kc++; }
+    else if (isReality) { if (item.watched) rc++; }
+    else if (item.media_type === 'movie') { if (item.watched) mc++; }
+    else { if (item.watched) tc++; }
+  });
+  prevStatsCounts = [mc, tc, ac, kc, dc, sc, rc];
+}
+
 function updateStats() {
   const badge = document.getElementById('statsUsernameBadge');
   if (badge) {
@@ -1038,6 +1148,47 @@ function updateStats() {
         window.mediaChartInstance = null;
       }
 
+      // Profile picture center plugin
+      const profileImageCenter = {
+        id: 'profileImageCenter',
+        afterDraw(chart) {
+          const photoURL = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.photoURL : null;
+          if (!photoURL) return;
+          const { ctx: c, chartArea } = chart;
+          const centerX = (chartArea.left + chartArea.right) / 2;
+          const centerY = (chartArea.top + chartArea.bottom) / 2;
+          const innerRadius = chart._metasets[0]?.data[0]?.innerRadius || 0;
+          const imgSize = innerRadius * 1.5;
+          if (imgSize <= 0) return;
+
+          if (!profilePicCache || profilePicCache.src !== photoURL) {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.src = photoURL;
+            img.onload = () => {
+              profilePicCache = img;
+              chart.draw();
+            };
+            return;
+          }
+          c.save();
+          c.beginPath();
+          c.arc(centerX, centerY, imgSize / 2, 0, Math.PI * 2);
+          c.closePath();
+          c.clip();
+          c.drawImage(profilePicCache, centerX - imgSize / 2, centerY - imgSize / 2, imgSize, imgSize);
+          c.restore();
+          // Draw subtle border ring
+          c.save();
+          c.beginPath();
+          c.arc(centerX, centerY, imgSize / 2, 0, Math.PI * 2);
+          c.strokeStyle = borderClr;
+          c.lineWidth = 2;
+          c.stroke();
+          c.restore();
+        }
+      };
+
       window.mediaChartInstance = new window.Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -1069,11 +1220,13 @@ function updateStats() {
               }
             }
           }
-        }
+        },
+        plugins: [profileImageCenter]
       });
 
       const legendContainer = document.getElementById('customLegend');
       if (legendContainer) {
+        const currentCounts = [moviesCount, tvCount, animeCount, kdramaCount, docCount, shortCount, realityCount];
         legendContainer.innerHTML = '';
         const labels = ['Movies', 'TV Shows', 'Anime', 'K-Dramas', 'Documentaries', 'Short Films', 'Reality TV'];
         const dataValues = [moviePct, tvPct, animePct, kdramaPct, docPct, shortPct, realityPct];
@@ -1088,6 +1241,18 @@ function updateStats() {
           text.innerText = label;
           legendItem.appendChild(colorBox);
           legendItem.appendChild(text);
+          // Show +N badge if counts changed
+          if (pendingStatsBadge && prevStatsCounts) {
+            const delta = currentCounts[index] - (prevStatsCounts[index] || 0);
+            if (delta > 0) {
+              const badge = document.createElement('span');
+              badge.className = 'stats-change-badge';
+              badge.style.color = colors[index];
+              badge.textContent = `+${delta}`;
+              legendItem.appendChild(badge);
+              legendItem.style.position = 'relative';
+            }
+          }
           legendContainer.appendChild(legendItem);
         });
       }
@@ -1269,6 +1434,8 @@ function confirmRemoveSelected() {
 
 async function markSelectedWatched() {
   if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
+  snapshotStatsCounts();
+  pendingStatsBadge = true;
   const date = todayDate();
   selectedForDelete.forEach(id => {
     const item = watchlist.find(w => w.id === id);
@@ -1278,6 +1445,7 @@ async function markSelectedWatched() {
   await save();
   toggleSelectMode();
   showToast(`Marked ${count} title(s) as watched ✓`);
+  pendingStatsBadge = false;
 }
 
 async function markSelectedUnwatched() {
@@ -1548,7 +1716,7 @@ async function openModal(id, mediaType, event) {
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               ${!inList ? `<button class="modal-add-btn" onclick="addTitleFromModal(this)">+ Add</button>` : ''}
               ${(!existingItem?.watched && !existingItem?.archived) ? `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>` : ''}
-              ${(inList && !existingItem.archived && !existingItem.watched) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="archive" style="width:12px;height:12px;"></i> Drop</button>` : ''}
+              ${(inList && !existingItem.archived && !existingItem.watched) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Drop</button>` : ''}
               ${(inList && existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="unarchive(${detail.id}, '${type}')"><i data-lucide="corner-up-left" style="width:12px;height:12px;"></i> Restore</button>` : ''}
               ${(inList && userSettings.customList?.name) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);" onclick="toggleCustomList(${detail.id}, '${type}', event)"><i data-lucide="${existingItem.inCustomList ? 'check' : 'plus'}" style="width:12px;height:12px;"></i> ${existingItem.inCustomList ? 'In ' : 'Add to '}${escHtml(userSettings.customList.name)}</button>` : ''}
               <button class="modal-cal-btn" onclick="openSchedule(${detail.id})"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule</button>
@@ -1733,6 +1901,8 @@ async function markWatchedFromModal(id, mediaType) {
     item = newItem;
   }
   if (item) {
+    snapshotStatsCounts();
+    pendingStatsBadge = true;
     item.watched = true;
     if (item.episodes) item.episodesWatched = item.episodes;
     item.watchedAt = todayDate();
@@ -1741,6 +1911,7 @@ async function markWatchedFromModal(id, mediaType) {
     renderGrid();
     openModal(id, mediaType);
     showToast('Marked as watched ✓');
+    pendingStatsBadge = false;
   }
 }
 
@@ -1760,6 +1931,8 @@ async function markUnwatchedFromModal(id, mediaType) {
 async function handleRewatch(id, mediaType) {
   const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
   if (item && item.watched) {
+    snapshotStatsCounts();
+    pendingStatsBadge = true;
     item.rewatchCount = (item.rewatchCount || 0) + 1;
     item.latestWatchedAt = todayDate();
     item.firstWatchedAt = item.firstWatchedAt || item.watchedAt || todayDate();
@@ -1767,6 +1940,7 @@ async function handleRewatch(id, mediaType) {
     renderGrid();
     openModal(id, mediaType);
     showToast('Rewatch logged! 🍿');
+    pendingStatsBadge = false;
   }
 }
 
@@ -2032,9 +2206,16 @@ async function fetchRandomTitle(forceNew = false) {
     if (genres.length > 0) filterParams += `&with_genres=${genres.join(',')}`;
     if (keywords.length > 0) filterParams += `&with_keywords=${keywords.join(',')}`;
 
-    const path = useTV
-      ? `/discover/tv?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`
-      : `/discover/movie?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`;
+    let path = '';
+    const positiveItems = watchlist.filter(w => (w.watched || w.score > 7) && !w.archived && w.media_type === (useTV ? 'tv' : 'movie'));
+    if (positiveItems.length > 0 && !isFilterActive && Math.random() > 0.3) {
+      const seedItem = positiveItems[Math.floor(Math.random() * positiveItems.length)];
+      path = `/${seedItem.media_type}/${seedItem.id}/recommendations?language=en-US&page=1${adult}`;
+    } else {
+      path = useTV
+        ? `/discover/tv?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`
+        : `/discover/movie?sort_by=popularity.desc&vote_count.gte=100&page=${page}${adult}${filterParams}`;
+    }
       
     const data = await tmdbFetch(path);
     const mediaType = useTV ? 'tv' : 'movie';
@@ -2293,6 +2474,8 @@ function openSettings() {
   if (emailText && currentUser) emailText.textContent = currentUser.email;
   const badge = document.getElementById('settingsEmailBadge');
   if (badge && currentUser) badge.style.display = currentUser.emailVerified ? 'inline-flex' : 'none';
+  // Render profile picture in settings
+  renderSettingsProfilePic();
   updateSettingsModalUI();
   lucide.createIcons();
 }
@@ -2393,6 +2576,132 @@ async function sendSettingsPasswordReset() {
     await firebase.auth().sendPasswordResetEmail(user.email);
     showToast('Password reset link sent! Check your inbox.');
   } catch (e) { showToast('Failed to send reset link'); }
+}
+
+// ===== PROFILE PICTURE =====
+function renderSettingsProfilePic() {
+  const img = document.getElementById('settingsProfileImg');
+  const icon = document.getElementById('settingsProfileIcon');
+  if (!img || !icon) return;
+  const url = currentUser && currentUser.photoURL;
+  if (url) {
+    img.src = url;
+    img.style.display = 'block';
+    icon.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    icon.style.display = 'block';
+  }
+}
+
+(function() {
+  const input = document.getElementById('profileImageInput');
+  if (input) {
+    input.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image too large. Maximum size is 5MB.');
+        input.value = '';
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select an image file.');
+        input.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        openCropper(ev.target.result);
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
+    });
+  }
+})();
+
+function openCropper(imageSrc) {
+  const backdrop = document.getElementById('cropperBackdrop');
+  const cropperImg = document.getElementById('cropperImage');
+  if (!backdrop || !cropperImg) return;
+  cropperImg.src = imageSrc;
+  backdrop.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+  setTimeout(() => {
+    cropperInstance = new Cropper(cropperImg, {
+      aspectRatio: 1,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 0.85,
+      cropBoxResizable: true,
+      cropBoxMovable: true,
+      background: false,
+      responsive: true,
+      guides: false,
+      center: true,
+      highlight: false,
+      ready: function() {
+        // Add circular mask overlay via CSS
+        const cropBox = this.cropper.querySelector('.cropper-crop-box');
+        if (cropBox) cropBox.classList.add('cropper-circle-mask');
+      }
+    });
+    lucide.createIcons();
+  }, 100);
+}
+
+function closeCropper() {
+  const backdrop = document.getElementById('cropperBackdrop');
+  if (backdrop) backdrop.style.display = 'none';
+  if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+  const settingsOpen = document.getElementById('settingsBackdrop');
+  if (!settingsOpen || settingsOpen.style.display === 'none') document.body.style.overflow = '';
+}
+
+async function saveCroppedImage() {
+  if (!cropperInstance || !currentUser || !storage) {
+    showToast('Unable to save. Please try again.');
+    return;
+  }
+  const saveBtn = document.getElementById('cropperSaveBtn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Uploading...'; }
+  try {
+    const canvas = cropperInstance.getCroppedCanvas({
+      width: 256,
+      height: 256,
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: 'high'
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    // Delete existing profile pics
+    const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
+    try {
+      const listResult = await storageRef.listAll();
+      await Promise.all(listResult.items.map(item => item.delete()));
+    } catch(e) { /* No existing files, ok */ }
+    // Upload new
+    const fileName = `avatar_${Date.now()}.jpg`;
+    const fileRef = storageRef.child(fileName);
+    await fileRef.put(blob, { contentType: 'image/jpeg' });
+    const downloadURL = await fileRef.getDownloadURL();
+    // Update auth profile
+    await currentUser.updateProfile({ photoURL: downloadURL });
+    // Update Firestore
+    if (db) {
+      await db.collection('cineq_users').doc(currentUser.uid).update({ photoURL: downloadURL });
+    }
+    profilePicCache = null; // bust cache
+    closeCropper();
+    renderSettingsProfilePic();
+    updateStats(); // re-render chart with new profile pic
+    showToast('Profile picture updated! 🎉');
+  } catch(e) {
+    console.error('Upload failed:', e);
+    showToast('Failed to upload image. Check your connection.');
+  } finally {
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Picture'; }
+  }
 }
 
 function setAppTheme(themeName) { userSettings.theme = themeName; saveSettings(); applySettings(); showToast(`Theme changed to ${themeName === 'light' ? 'Light' : 'Dark'} Mode`); }

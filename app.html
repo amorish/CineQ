@@ -49,6 +49,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=17">
   <link rel="stylesheet" href="assets/css/ticket.css?v=17">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 </head>
 <body>
   <!-- Inline script to load theme and prevent FOUC -->
@@ -85,6 +86,15 @@
         <button class="icon-btn" onclick="toggleSortPanel()" style="width:32px;height:32px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
       </div>
       <div class="sort-pills" id="sortPills"></div>
+      <div style="margin-top: 12px; margin-bottom: 12px;" id="flowModeMoodContainer">
+        <select id="flowModeMood" style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--elevated); border: 1px solid var(--border); color: var(--text-main); font-family: var(--font-body); outline: none; appearance: none; cursor: pointer;">
+          <option value="overall">Mood: Overall (Smart Mix)</option>
+          <option value="action">Action & Adventure</option>
+          <option value="chill">Chill & Comedy</option>
+          <option value="deep">Deep & Drama</option>
+          <option value="scary">Horror & Mystery</option>
+        </select>
+      </div>
       <button class="flowmode-state-btn" id="flowModeBtn" onclick="activateFlowMode()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
           <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
@@ -221,11 +231,11 @@
     <!-- Filter Tabs -->
     <nav class="tabs-nav scrollbar-hide" id="filterNav">
       <div class="tabs-container" id="normalFilters">
-        <button class="tab-btn active" onclick="setFilter('list', this)" id="tabList">List</button>
+        <button class="tab-btn" onclick="setFilter('list', this)" id="tabList">List</button>
         <button class="tab-btn" onclick="setFilter('watching', this)" id="tabWatching">Watching</button>
         <button class="tab-btn" onclick="setFilter('watched', this)" id="tabWatched">Watched</button>
-        <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Archive / Dropped"><i data-lucide="archive" style="width:18px;height:18px;vertical-align:middle;"></i></button>
         <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
+        <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Dropped"><i data-lucide="x-circle" style="width:18px;height:18px;vertical-align:middle;"></i></button>
         <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom" style="display:none;"></button>
         <div style="flex:1"></div>
         <div class="icon-pill-group" id="sortSelectPillGroup">
@@ -358,6 +368,23 @@
     </div>
   </div>
 
+  <!-- ===== CROPPER OVERLAY ===== -->
+  <div class="modal-backdrop" id="cropperBackdrop" style="display:none; z-index:100000; background:rgba(0,0,0,0.9);">
+    <div class="modal" style="width: 100%; max-width: 500px; padding: 0; overflow: hidden; display:flex; flex-direction:column; max-height:90vh; background: #080808; border: 1px solid var(--border);">
+      <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0;">Crop Profile Picture</h3>
+        <button class="modal-close" onclick="closeCropper()" style="position:relative; top:0; right:0; background:var(--elevated);"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+      </div>
+      <div style="flex:1; min-height: 300px; max-height: 60vh; background: #000; display: flex; align-items: center; justify-content: center;">
+        <img id="cropperImage" src="" style="display:block; max-width: 100%; max-height: 100%;" />
+      </div>
+      <div style="padding: 16px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); background: var(--card);">
+        <button class="settings-action-btn secondary" onclick="closeCropper()">Cancel</button>
+        <button class="settings-action-btn" onclick="saveCroppedImage()" id="cropperSaveBtn">Save Picture</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== SCHEDULE MODAL ===== -->
   <div class="modal-backdrop" id="scheduleBackdrop" onclick="closeSchedule(event)" style="display:none;">
     <div class="modal schedule-modal" id="scheduleModal">
@@ -443,96 +470,48 @@
       </div>
     </div>
     <div class="auth-scroll-wrap">
-      <div class="auth-flip-container">
-        <div class="auth-flipper" id="authFlipper">
-          
-          <!-- FRONT: Sign In -->
-          <div class="auth-card front">
-            <div class="auth-main">
-              <div class="auth-logo-wrap">
-                <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
-                <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
-              </div>
-              <h2>Sign In</h2>
-              <form class="auth-form" onsubmit="event.preventDefault(); handleAuth(false);">
-                <div class="input-group">
-                  <label for="authEmailIn">Email</label>
-                  <div class="input-wrapper"><i data-lucide="mail" class="input-icon"></i><input type="email" id="authEmailIn" placeholder="you@example.com" autocomplete="email" required /></div>
-                </div>
-                <div class="input-group">
-                  <label for="authPwdIn">Password</label>
-                  <div class="input-wrapper">
-                    <i data-lucide="lock" class="input-icon"></i>
-                    <input type="password" id="authPwdIn" placeholder="••••••••" autocomplete="current-password" required />
-                    <button class="pwd-toggle" type="button" onclick="togglePassword('authPwdIn', 'pwdEyeIconIn')" tabindex="-1"><i data-lucide="eye-off" id="pwdEyeIconIn"></i></button>
-                  </div>
-                  <div class="forgot-link-wrapper"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
-                </div>
-                <button class="auth-btn" type="submit">Sign In</button>
-              </form>
-              <div class="auth-separator"><span>OR</span></div>
-              <button class="auth-btn google-btn" onclick="signInWithGoogle()" type="button">
-                <svg class="google-logo-svg" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Sign In with Google
-              </button>
-            </div>
-            <div class="ticket-divider"></div>
-            <div class="auth-footer">
-              <span class="auth-footer-text">New here?</span>
-              <button class="auth-toggle-inline" type="button" onclick="toggleAuthMode()">Sign Up</button>
-            </div>
+      <div class="auth-card" style="margin: 0 auto; transition: height 0.4s ease;">
+        <div class="auth-main">
+          <div class="auth-logo-wrap">
+            <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+            <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
           </div>
-
-          <!-- BACK: Sign Up -->
-          <div class="auth-card back">
-            <div class="auth-main">
-              <div class="auth-logo-wrap">
-                <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
-                <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+          <h2 id="authTitle">Sign In</h2>
+          <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
+            <div class="input-group" id="authUsernameGroup" style="overflow:hidden; max-height:0; opacity:0; margin-bottom:0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);">
+              <label for="authUsername">Username</label>
+              <div class="input-wrapper"><i data-lucide="user" class="input-icon"></i><input type="text" id="authUsername" placeholder="Choose a username" maxlength="15" /></div>
+            </div>
+            <div class="input-group">
+              <label for="authEmail">Email</label>
+              <div class="input-wrapper"><i data-lucide="mail" class="input-icon"></i><input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" required /></div>
+            </div>
+            <div class="input-group">
+              <label for="authPwd">Password</label>
+              <div class="input-wrapper">
+                <i data-lucide="lock" class="input-icon"></i>
+                <input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" required />
+                <button class="pwd-toggle" type="button" onclick="togglePassword('authPwd', 'pwdEyeIcon')" tabindex="-1"><i data-lucide="eye-off" id="pwdEyeIcon"></i></button>
               </div>
-              <h2>Sign Up</h2>
-              <form class="auth-form" onsubmit="event.preventDefault(); handleAuth(true);">
-                <div class="input-group">
-                  <label for="authUsernameUp">Username</label>
-                  <div class="input-wrapper"><i data-lucide="user" class="input-icon"></i><input type="text" id="authUsernameUp" placeholder="Choose a username" maxlength="15" required /></div>
-                </div>
-                <div class="input-group">
-                  <label for="authEmailUp">Email</label>
-                  <div class="input-wrapper"><i data-lucide="mail" class="input-icon"></i><input type="email" id="authEmailUp" placeholder="you@example.com" autocomplete="email" required /></div>
-                </div>
-                <div class="input-group">
-                  <label for="authPwdUp">Password</label>
-                  <div class="input-wrapper">
-                    <i data-lucide="lock" class="input-icon"></i>
-                    <input type="password" id="authPwdUp" placeholder="••••••••" autocomplete="new-password" required />
-                    <button class="pwd-toggle" type="button" onclick="togglePassword('authPwdUp', 'pwdEyeIconUp')" tabindex="-1"><i data-lucide="eye-off" id="pwdEyeIconUp"></i></button>
-                  </div>
-                </div>
-                <button class="auth-btn" type="submit">Create Account</button>
-              </form>
-              <div class="auth-separator"><span>OR</span></div>
-              <button class="auth-btn google-btn" onclick="signInWithGoogle()" type="button">
-                <svg class="google-logo-svg" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Sign Up with Google
-              </button>
+              <div class="forgot-link-wrapper" id="authForgotWrap" style="transition: opacity 0.3s; opacity: 1;"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
             </div>
-            <div class="ticket-divider"></div>
-            <div class="auth-footer">
-              <span class="auth-footer-text">Already have an account?</span>
-              <button class="auth-toggle-inline" type="button" onclick="toggleAuthMode()">Sign In</button>
-            </div>
-          </div>
-          
+            <button class="auth-btn" type="submit" id="authSubmitBtn">Sign In</button>
+          </form>
+          <div class="auth-separator"><span>OR</span></div>
+          <button class="auth-btn google-btn" onclick="signInWithGoogle()" type="button" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+            <svg class="google-logo-svg" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span id="authGoogleBtnText">Sign In with Google</span>
+          </button>
+        </div>
+        <div class="ticket-divider"></div>
+        <div class="auth-footer">
+          <span class="auth-footer-text" id="authFooterText">New here?</span>
+          <button class="auth-toggle-inline" type="button" id="authToggleBtn" onclick="toggleAuthMode()">Sign Up</button>
         </div>
       </div>
 
@@ -681,6 +660,20 @@
           <!-- Account Tab -->
           <div class="settings-pane active" id="pane-account">
             <h3>Account Settings</h3>
+            <div class="setting-group" style="display:flex; align-items:center; gap:16px;">
+              <div class="profile-avatar-wrapper" onclick="document.getElementById('profileImageInput').click()" style="position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; cursor:pointer; border:1px solid var(--border); background:var(--elevated); display:flex; align-items:center; justify-content:center;">
+                <img id="settingsProfileImg" src="" style="width:100%; height:100%; object-fit:cover; display:none;" />
+                <i data-lucide="camera" id="settingsProfileIcon" style="width:24px; height:24px; color:var(--muted);"></i>
+                <div class="avatar-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;">
+                  <i data-lucide="edit-2" style="width:16px; height:16px; color:#fff;"></i>
+                </div>
+              </div>
+              <div>
+                <label style="margin:0;">Profile Picture</label>
+                <p class="setting-description" style="margin-top:4px;">Upload a custom image (max 5MB).</p>
+                <input type="file" id="profileImageInput" accept="image/*" style="display:none;" />
+              </div>
+            </div>
             <div class="setting-group">
               <label>Username</label>
               <div class="input-wrapper-settings">
@@ -901,7 +894,7 @@
               </button>
             </div>
             <div class="setting-group">
-              <label>Import Watchlist <span style="background:var(--accent);color:#111;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;vertical-align:middle;letter-spacing:0.05em;margin-left:6px;">BETA</span></label>
+              <label>Import Watchlist</label>
               <p class="setting-description">
                 Import your watchlist from Letterboxd, IMDb, or a CineQ backup.
                 <span style="display:block;margin-top:6px;font-size:12px;color:var(--muted);">*If using Letterboxd import, please unzip the downloaded file first and select the <strong>watchlist.csv</strong> file.</span>
@@ -996,6 +989,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="assets/js/env.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script src="assets/js/app.js?v=17"></script>

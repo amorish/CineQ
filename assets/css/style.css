@@ -1778,8 +1778,47 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
 .google-btn:active {
   transform: scale(0.98);
 }
+
+.profile-avatar-wrapper:hover .avatar-overlay { opacity: 1 !important; }
+/* cropperjs override for dark mode */
+.cropper-bg { background-image: none !important; background-color: #111 !important; }
 .verify-resend-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* ===== STATS CHANGE BADGE ===== */
+.stats-change-badge {
+  font-size: 10px;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
+  margin-left: 4px;
+  animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+             badgeFadeOut 0.5s ease 2.5s forwards;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  top: -1px;
+}
+
+@keyframes badgePop {
+  0% { opacity: 0; transform: translateY(6px) scale(0.5); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes badgeFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ===== CROPPER CIRCLE MASK ===== */
+.cropper-circle-mask .cropper-view-box,
+.cropper-circle-mask .cropper-face {
+  border-radius: 50%;
+}
+.cropper-circle-mask .cropper-view-box {
+  outline: 2px solid var(--accent, #eab308);
+  outline-offset: -1px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+}
