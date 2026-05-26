@@ -1291,7 +1291,7 @@ function renderGrid() {
   else if (currentFilter === 'watching') baseItems = baseItems.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
   else if (currentFilter === 'archive') baseItems = baseItems.filter(w => w.archived);
   else if (currentFilter === 'custom') baseItems = baseItems.filter(w => w.inCustomList);
-  else baseItems = baseItems.filter(w => !w.watched && !w.archived);
+  else baseItems = baseItems.filter(w => !w.watched && !w.archived && !(w.media_type === 'tv' && (w.episodesWatched || 0) > 0));
 
   let items = [...baseItems];
 
