@@ -1617,6 +1617,7 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
   border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 600;
+  box-shadow: none !important;
 }
 .google-btn:hover {
   background: rgba(255, 255, 255, 0.08) !important;
