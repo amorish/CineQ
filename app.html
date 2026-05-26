@@ -945,6 +945,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script src="assets/js/app.js?v=17"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auto-toggle auth mode based on hash in URL (for landing page links)
+      if (window.location.hash === '#signup') {
+        const authToggleBtn = document.getElementById('authToggleBtn');
+        if (authToggleBtn && authToggleBtn.textContent.trim() === 'Sign Up') {
+          authToggleBtn.click();
+        }
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').then(reg => {
