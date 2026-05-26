@@ -221,21 +221,17 @@
     }
     .hero-title {
       font-family: var(--font-h);
-      font-size: clamp(48px, 7.5vw, 104px);
-      font-weight: 900;
-      line-height: 0.92;
-      letter-spacing: -0.03em;
-      text-transform: uppercase;
-      /* Ghost text for most, lit word glows */
-      color: transparent;
-      -webkit-text-stroke: 1px rgba(255,255,255,0.12);
+      font-size: clamp(48px, 7.5vw, 96px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      text-transform: capitalize;
+      color: var(--text);
     }
     .hero-title .lit {
       color: var(--text);
-      -webkit-text-stroke: 0;
-      text-shadow: 0 0 60px var(--accent-glow), 0 0 120px rgba(234,179,8,0.12);
     }
-    .hero-title .accent { color: var(--accent); -webkit-text-stroke: 0; }
+    .hero-title .accent { color: var(--accent); }
 
     /* Scroll indicator */
     .scroll-cue {
@@ -398,13 +394,13 @@
     }
     .ghost img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
 
-    .ghost-l { width: 86px; height: 128px; transform: translateX(-120px) rotate(-10deg) translateY(40px); z-index: 1; }
-    .ghost-c { width: 100px; height: 150px; transform: translateY(0px); border-color: rgba(255,255,255,0.14); z-index: 3; }
-    .ghost-r { width: 76px; height: 114px; transform: translateX(120px) rotate(10deg) translateY(-40px); z-index: 1; }
+    .ghost-l { width: 86px; height: 128px; transform: translateX(-120px) rotate(-12deg) translateY(30px); z-index: 1; }
+    .ghost-c { width: 100px; height: 150px; transform: translateY(-10px); border-color: rgba(255,255,255,0.14); z-index: 3; }
+    .ghost-r { width: 76px; height: 114px; transform: translateX(120px) rotate(12deg) translateY(30px); z-index: 1; }
 
-    .flowmode-card:hover .ghost-l { transform: translateX(-130px) rotate(-15deg) translateY(30px);  border-color: rgba(234,179,8,0.5); box-shadow: -12px 12px 32px rgba(0,0,0,0.5); }
+    .flowmode-card:hover .ghost-l { transform: translateX(-130px) rotate(-16deg) translateY(20px);  border-color: rgba(234,179,8,0.5); box-shadow: -12px 12px 32px rgba(0,0,0,0.5); }
     .flowmode-card:hover .ghost-c { border-color: var(--accent); box-shadow: 0 0 36px var(--accent-glow), 0 20px 40px rgba(0,0,0,0.5); }
-    .flowmode-card:hover .ghost-r { transform: translateX(130px) rotate(15deg) translateY(-50px); border-color: rgba(234,179,8,0.5); box-shadow: 12px 12px 32px rgba(0,0,0,0.5); }
+    .flowmode-card:hover .ghost-r { transform: translateX(130px) rotate(16deg) translateY(20px); border-color: rgba(234,179,8,0.5); box-shadow: 12px 12px 32px rgba(0,0,0,0.5); }
 
     /* Flow gradient overlay */
     .flow-fade {
@@ -487,7 +483,7 @@
     /* Cinema bg behind ticket */
     .stats-vis-bg {
       position: absolute; inset: 0;
-      background: url('assets/images/socialmediabg.png') center / cover;
+      background: url('assets/images/cinema%20theatre%20bg.png') center / cover;
       opacity: 0.12;
       mix-blend-mode: luminosity;
     }
@@ -503,7 +499,7 @@
     .ticket {
       position: relative; z-index: 2;
       width: 168px;
-      background: rgba(16,16,16,0.85);
+      background: linear-gradient(rgba(16,16,16,0.7), rgba(16,16,16,0.7)), url('assets/images/socialmediabg.png') center / cover;
       border: 1.5px solid rgba(234,179,8,0.35);
       border-radius: 14px;
       display: flex; flex-direction: column; align-items: center;
@@ -752,8 +748,8 @@
     <div class="hero-content">
       <p class="hero-kicker">Welcome to CineQ</p>
       <h1 class="hero-title">
-        YOUR CINEMA<br>
-        JOURNEY, <span class="accent">CURATED.</span>
+        Your Cinema<br>
+        Journey, <span class="accent">Curated.</span>
       </h1>
     </div>
 
@@ -786,7 +782,7 @@
         <!-- Animated ghost cards -->
         <div class="flow-graphic" aria-hidden="true">
           <svg class="flow-line" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
-            <polyline points="-20,120 120,140 180,210 240,130 320,150 420,110" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="6,6" stroke-linejoin="round" style="transition: stroke 0.5s;" />
+            <path d="M -50 180 Q 200 60 450 180" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="6,6" style="transition: stroke 0.5s;" />
           </svg>
           <div class="ghost ghost-l">
             <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false">
@@ -807,23 +803,23 @@
           <h4 class="card-h-sm">Automatic Categorization</h4>
           <div class="class-icons">
             <div class="class-item">
-              <div class="class-icon amber" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/anime.png" alt="Anime" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
+              <div class="class-icon amber" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/anime.png" alt="Anime" style="width:100%; height:100%; object-fit:contain;"></div>
               <span class="class-label">Anime</span>
             </div>
             <div class="class-item">
-              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/K-drama.png" alt="K-Drama" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/K-drama.png" alt="K-Drama" style="width:100%; height:100%; object-fit:contain;"></div>
               <span class="class-label">K-Drama</span>
             </div>
             <div class="class-item">
-              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/docs.png" alt="Docs" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/docs.png" alt="Docs" style="width:100%; height:100%; object-fit:contain;"></div>
               <span class="class-label">Docs</span>
             </div>
             <div class="class-item">
-              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Short Films.png" alt="Short Films" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Short%20Films.png" alt="Short Films" style="width:100%; height:100%; object-fit:contain;"></div>
               <span class="class-label">Short Films</span>
             </div>
             <div class="class-item">
-              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Reality Tv.png" alt="Reality TV" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Reality%20Tv.png" alt="Reality TV" style="width:100%; height:100%; object-fit:contain;"></div>
               <span class="class-label">Reality TV</span>
             </div>
           </div>
