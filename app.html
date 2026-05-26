@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>CineQ | Discover What to Watch &amp; Smart Recommendations</title>
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
+  <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
+  <meta name="description" content="CineQ is an intelligent movie and TV series recommendation engine. Discover what to watch next with FlowMode, smart random suggestions, and manage your watchlist." />
+  <meta name="keywords" content="movies, tv series, watchlist, movie tracker, tv tracker, recommendations, what to watch, CineQ, film tracker" />
+  <meta name="author" content="amorish" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="CineQ | Discover What to Watch &amp; Smart Recommendations" />
+  <meta property="og:description" content="An intelligent movie &amp; TV recommendation engine. Discover what to watch next and manage your lists." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="CineQ | Discover What to Watch" />
+  <meta name="twitter:description" content="An intelligent movie &amp; TV series recommendation engine. Discover what to watch next and manage your lists." />
+
+  <!-- Structured Data / JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CineQ",
+    "description": "CineQ is an elegant, ad-free movie and TV series tracking application and watchlist manager. It includes high-fidelity personal tools, genre-smart random recommendations, and collection watch order guides.",
+    "applicationCategory": "EntertainmentApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript. Requires HTML5.",
+    "featureList": [
+      "Movie &amp; TV Series Watchlist Tracker",
+      "Dynamic Search &amp; Sync",
+      "Collection/Franchise Watch Order Guides",
+      "Random Movie/TV Suggestion Engine with genre filters",
+      "Modern Light and Dark Theme Options",
+      "Ad-free premium interface"
+    ]
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
+  <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css?v=17">
+  <link rel="stylesheet" href="assets/css/ticket.css?v=17">
+</head>
+<body>
+  <!-- Inline script to load theme and prevent FOUC -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('cineq_settings');
+        if (saved) {
+          const settings = JSON.parse(saved);
+          if (settings.theme === 'light') {
+            document.body.classList.add('light-theme');
+          }
+        }
+      } catch (e) { console.error('FOUC mitigation script error:', e); }
+    })();
+  </script>
+
+  <div class="theater-background">
+    <div class="main-app-content">
+
+  <div class="splash-screen" id="splashScreen" style="position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:var(--bg, #0a0a0a); transition: opacity 0.4s ease, visibility 0.4s ease;">
+    <div class="splash-content" style="display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center;">
+      <img src="assets/images/blocks_shuffle_loading.svg" alt="Loading..." class="blocks-loading splash-loading" style="width: 48px; height: 48px;" />
+    </div>
+  </div>
+
+  <!-- Sort Panel Backdrop -->
+  <div class="sort-panel-backdrop" id="sortPanelBackdrop" onclick="toggleSortPanel()" style="display:none;"></div>
+  <!-- Sort Panel -->
+  <div class="sort-panel" id="sortPanel" style="display:none;">
+    <div class="sort-panel-inner">
+      <div class="sort-panel-header">
+        <span class="sort-panel-title">Sort By</span>
+        <button class="icon-btn" onclick="toggleSortPanel()" style="width:32px;height:32px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+      </div>
+      <div class="sort-pills" id="sortPills"></div>
+      <button class="flowmode-state-btn" id="flowModeBtn" onclick="activateFlowMode()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
+          <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
+          <path d="M20 2v4"></path>
+          <path d="M22 4h-4"></path>
+          <circle cx="4" cy="20" r="2"></circle>
+        </svg>
+        FlowMode
+      </button>
+    </div>
+  </div>
+
+  <!-- Advanced Filter Panel Backdrop -->
+  <div class="sort-panel-backdrop" id="advFilterBackdrop" onclick="toggleAdvancedFilter()" style="display:none;"></div>
+  <!-- Advanced Filter Panel -->
+  <div class="sort-panel" id="advFilterPanel" style="display:none;">
+    <div class="sort-panel-inner" style="max-height:80vh;overflow-y:auto;">
+      <div class="sort-panel-header">
+        <span class="sort-panel-title">Advanced Filter</span>
+        <button class="icon-btn" onclick="toggleAdvancedFilter()" style="width:32px;height:32px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Type</div>
+        <div class="sort-pills" id="advFilterType">
+          <button class="sort-pill active" onclick="setAdvFilter('type', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('type', 'movie', this)">Movie</button>
+          <button class="sort-pill" onclick="setAdvFilter('type', 'tv', this)">TV Series</button>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Year</div>
+        <div class="sort-pills" id="advFilterYear">
+          <button class="sort-pill active" onclick="setAdvFilter('year', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2020s', this)">2020s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2010s', this)">2010s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '2000s', this)">2000s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '90s', this)">90s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', '80s', this)">80s</button>
+          <button class="sort-pill" onclick="setAdvFilter('year', 'older', this)">Older</button>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Length (Movies)</div>
+        <div class="sort-pills" id="advFilterLength">
+          <button class="sort-pill active" onclick="setAdvFilter('length', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'short', this)">Short (&lt;90m)</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'medium', this)">Medium (90-120m)</button>
+          <button class="sort-pill" onclick="setAdvFilter('length', 'long', this)">Long (&gt;120m)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOP APP BAR ===== -->
+  <header class="app-header">
+    <div class="header-container">
+      <!-- LEFT: Logo -->
+      <div class="logo-wrap" onclick="resetToHome()" style="cursor:pointer;display:flex;align-items:center;">
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img logo-desktop logo-dark" draggable="false" oncontextmenu="return false" />
+        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img logo-desktop logo-light" draggable="false" oncontextmenu="return false" />
+        <img src="assets/images/cineqFavicon.png" alt="CineQ" class="logo-img logo-mobile" draggable="false" oncontextmenu="return false" />
+      </div>
+
+      <!-- MIDDLE: Inline search bar -->
+      <div class="header-search-wrap">
+        <div class="header-search-bar" id="headerSearchBar">
+          <i data-lucide="search" class="header-search-icon"></i>
+          <input type="text" id="searchInput" name="search-query" placeholder="Search movies &amp; TV series..." autocomplete="off" class="header-search-input" />
+          <button class="icon-btn header-search-clear" id="headerSearchClear" onclick="clearSearch()" style="display:none;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+        </div>
+        <div class="dropdown" id="dropdown"></div>
+        <div class="search-status" id="searchStatus"></div>
+      </div>
+
+      <!-- RIGHT: Profile -->
+      <div class="header-right">
+        <button class="icon-btn" id="notifBtn" onclick="toggleNotifMenu()" aria-label="Notifications" style="position:relative;">
+          <i data-lucide="bell"></i>
+          <span id="notifBadge" style="display:none;position:absolute;top:2px;right:4px;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span>
+        </button>
+        <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile">
+          <i data-lucide="user"></i>
+        </button>
+      </div>
+
+      <!-- Profile dropdown -->
+      <div class="profile-menu" id="profileMenu" style="display:none;">
+        <div class="user-info" id="userBadge"><span id="userEmail"></span></div>
+        <button class="settings-btn-profile" onclick="openSettings()"><i data-lucide="settings" style="width:14px;height:14px;margin-right:8px;"></i>Settings</button>
+        <button class="logout-btn" onclick="logout()"><i data-lucide="log-out" style="width:14px;height:14px;margin-right:8px;"></i>Sign Out</button>
+      </div>
+      
+      <!-- Notifications dropdown -->
+      <div class="profile-menu" id="notifMenu" style="display:none;right:50px;width:300px;max-height:400px;overflow-y:auto;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-heading);font-weight:600;">Notifications</div>
+        <div id="notifList">
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No new notifications</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+    <section class="stats-card">
+      <div class="stat-pill">
+        <div class="stat-icon-wrap"><i data-lucide="layers" style="width:14px;height:14px;"></i></div>
+        <div style="display:flex; align-items:baseline; gap:4px; transform: translateY(-1px);">
+          <span class="stat-label">Total</span>
+          <span class="stat-value" id="totalCount">0</span>
+        </div>
+      </div>
+      <div class="stat-pill highlight-pill">
+        <div class="stat-icon-wrap highlight-icon"><i data-lucide="eye" style="width:14px;height:14px;"></i></div>
+        <div style="display:flex; align-items:baseline; gap:4px; transform: translateY(-1px);">
+          <span class="stat-label highlight-label">Watched</span>
+          <span class="stat-value highlight-value" id="watchedCount">0</span>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-icon-wrap"><i data-lucide="clock" style="width:14px;height:14px;"></i></div>
+        <div style="display:flex; align-items:baseline; gap:4px; transform: translateY(-1px);">
+          <span class="stat-label">Remaining</span>
+          <span class="stat-value" id="remainCount">0</span>
+        </div>
+      </div>
+      <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+        <button class="icon-btn" id="advancedFilterBtn" onclick="toggleAdvancedFilter()" title="Advanced Filter">
+          <i data-lucide="filter"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Filter Tabs -->
+    <nav class="tabs-nav scrollbar-hide" id="filterNav">
+      <div class="tabs-container" id="normalFilters">
+        <button class="tab-btn active" onclick="setFilter('list', this)" id="tabList">List</button>
+        <button class="tab-btn" onclick="setFilter('watching', this)" id="tabWatching">Watching</button>
+        <button class="tab-btn" onclick="setFilter('watched', this)" id="tabWatched">Watched</button>
+        <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Archive / Dropped"><i data-lucide="archive" style="width:18px;height:18px;vertical-align:middle;"></i></button>
+        <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
+        <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom" style="display:none;"></button>
+        <div style="flex:1"></div>
+        <div class="icon-pill-group" id="sortSelectPillGroup">
+          <button class="pill-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
+            <i data-lucide="sliders-horizontal"></i>
+          </button>
+          <div class="pill-divider"></div>
+          <button class="pill-btn" id="selectModeToggleBtn" onclick="toggleSelectMode()" title="Select">
+            <i data-lucide="list-checks"></i>
+          </button>
+        </div>
+      </div>
+      <div class="tabs-container select-bar" id="selectFilters" style="display:none;align-items:center;gap:8px;">
+        <span style="font-size:13px;color:var(--accent);font-weight:600;flex:1;" id="selectCountText">0 Selected</span>
+        <button class="sel-action-btn sel-watched" onclick="markSelectedWatched()">
+          <i data-lucide="check-circle" style="width:15px;height:15px;"></i> Watched
+        </button>
+        <button class="sel-action-btn sel-remove" onclick="confirmRemoveSelected()">
+          <i data-lucide="trash-2" style="width:15px;height:15px;"></i> Remove
+        </button>
+        <button class="icon-btn sel-close-btn" onclick="toggleSelectMode()" title="Cancel">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Grid -->
+    <div class="grid-wrap" id="gridWrap">
+      <div class="grid" id="grid"></div>
+      <div class="empty-state" id="emptyState" style="display:none">
+        <div style="display:flex;justify-content:center;margin-bottom:16px;"><i data-lucide="film" style="width:48px;height:48px;color:var(--muted);"></i></div>
+        <p>Your watchlist is empty</p>
+        <small>Search movies &amp; TV series to get started</small>
+      </div>
+    </div>
+
+    <!-- ===== EXPLORE SECTION ===== -->
+    <div id="exploreSection" style="display:none;">
+      <!-- Random Pick -->
+      <div class="explore-random-section">
+        <div class="explore-random-header">
+          <div>
+            <h2>Random Pick</h2>
+            <p>Don't know what to watch?</p>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px;">
+            <select id="randomPickType" class="random-filter-select">
+              <option value="all">Type: All</option>
+              <option value="movie">Movie</option>
+              <option value="tv">TV Series</option>
+              <option value="anime">Anime</option>
+              <option value="documentary">Documentary</option>
+            </select>
+            <select id="randomPickGenre" class="random-filter-select">
+              <option value="all">Genre: All</option>
+              <option value="mystery">Mystery</option>
+              <option value="horror">Horror</option>
+              <option value="scifi">Sci-Fi</option>
+              <option value="action">Action</option>
+              <option value="adventure">Adventure</option>
+              <option value="drama">Drama</option>
+              <option value="bio">Bio</option>
+              <option value="sports">Sports</option>
+              <option value="animation">Animation</option>
+            </select>
+            <select id="randomPickRating" class="random-filter-select">
+              <option value="all">Rating: All</option>
+              <option value="6">6+</option>
+              <option value="7">7+</option>
+              <option value="8">8+</option>
+              <option value="9">9+</option>
+            </select>
+          </div>
+          <button class="random-action-btn" id="randomPickBtn" onclick="fetchRandomTitle(true)">
+            <svg class="shuffle-custom-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><g stroke-width="1.5"><path stroke="currentColor" stroke-linecap="round" d="M15.473 8.41a5 5 0 10.939 5.952"/><path fill="currentColor" stroke="currentColor" d="M17.195 10.373l-2.308-.347a.065.065 0 01-.018-.005.023.023 0 01-.007-.005.056.056 0 01-.015-.024.056.056 0 01-.002-.03.03.03 0 01.002-.007.069.069 0 01.013-.015l1.995-1.964a.066.066 0 01.015-.012.027.027 0 01.007-.003.056.056 0 01.029.003c.012.004.02.01.024.015a.027.027 0 01.005.007.069.069 0 01.004.019l.313 2.312a.047.047 0 01-.002.023.053.053 0 01-.013.02.053.053 0 01-.02.012.046.046 0 01-.022.001z"/></g></svg> Suggest Another <span id="randomLimitText"></span>
+          </button>
+        </div>
+        <div class="explore-random-grid" id="randomPickGrid"></div>
+      </div>
+
+      <!-- Carousels -->
+      <div class="explore-carousel-section">
+        <div class="explore-list-header"><i data-lucide="flame" style="width:16px;height:16px;color:var(--accent);"></i><span>Trending This Week</span></div>
+        <div class="explore-carousel" id="carousel-trending"></div>
+      </div>
+      <div class="explore-carousel-section">
+        <div class="explore-list-header"><i data-lucide="star" style="width:16px;height:16px;color:#f59e0b;"></i><span>Top Rated Movies</span></div>
+        <div class="explore-carousel" id="carousel-movies"></div>
+      </div>
+      <div class="explore-carousel-section">
+        <div class="explore-list-header"><i data-lucide="award" style="width:16px;height:16px;color:#3b82f6;"></i><span>Top Rated TV Series</span></div>
+        <div class="explore-carousel" id="carousel-tv"></div>
+      </div>
+      <div class="explore-carousel-section" style="margin-bottom:64px;">
+        <div class="explore-list-header"><i data-lucide="ticket" style="width:16px;height:16px;color:#10b981;"></i><span>In Theaters Now</span></div>
+        <div class="explore-carousel" id="carousel-upcoming"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== DETAIL MODAL ===== -->
+  <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal(event)">
+    <div class="modal-wrapper">
+      <button class="modal-close" onclick="closeModalDirect()"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+      <div class="modal" id="modal">
+        <div id="modalContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== POSTER LIGHTBOX ===== -->
+  <div class="lightbox-backdrop" id="lightboxBackdrop" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()"><i data-lucide="x"></i></button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="Poster" draggable="false" oncontextmenu="return false" onclick="event.stopPropagation()" />
+  </div>
+
+  <!-- ===== FLOWMODE LOADING OVERLAY ===== -->
+  <div class="flowmode-overlay" id="flowmodeOverlay" style="display:none;">
+    <div class="flowmode-overlay-inner">
+      <img src="assets/images/blocks_shuffle_loading.svg" alt="Scanning..." class="blocks-loading flowmode-loading" style="width: 48px; height: 48px;" />
+      <div class="flowmode-overlay-text" id="flowmodeStatus">Scanning your list...</div>
+    </div>
+  </div>
+
+  <!-- ===== IMPORT LOADING OVERLAY ===== -->
+  <div class="flowmode-overlay" id="importOverlay" style="display:none; z-index:100000;">
+    <div class="flowmode-overlay-inner">
+      <img src="assets/images/blocks_shuffle_loading.svg" alt="Importing..." class="blocks-loading flowmode-loading" style="width: 48px; height: 48px;" />
+      <div class="flowmode-overlay-text" id="importStatus">Importing...</div>
+    </div>
+  </div>
+
+  <!-- ===== SCHEDULE MODAL ===== -->
+  <div class="modal-backdrop" id="scheduleBackdrop" onclick="closeSchedule(event)" style="display:none;">
+    <div class="modal schedule-modal" id="scheduleModal">
+      <button class="modal-close" onclick="closeScheduleDirect()">✕</button>
+      <div id="scheduleContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== AUTH OVERLAY ===== -->
+  <div class="auth-overlay" id="authOverlay" style="display:none;">
+    <div class="bg-grid-container">
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+        </div>
+      </div>
+    </div>
+    <div class="auth-scroll-wrap">
+      <div class="auth-card">
+        <div class="auth-main">
+          <div class="auth-logo-wrap">
+            <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+            <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+          </div>
+          <p style="text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; font-weight: 500; padding: 0 10px; letter-spacing: 0.2px;">
+            Track, discover, and share your watchlist with friends.
+          </p>
+          <h2 id="authTitle">Sign In</h2>
+          <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
+          <div class="input-group" id="authUsernameGroup" style="display:none;">
+            <label for="authUsername">Username</label>
+            <div class="input-wrapper"><i data-lucide="user" class="input-icon"></i><input type="text" id="authUsername" placeholder="Choose a username" maxlength="15" /></div>
+          </div>
+          <div class="input-group">
+            <label for="authEmail">Email</label>
+            <div class="input-wrapper"><i data-lucide="mail" class="input-icon"></i><input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" /></div>
+          </div>
+          <div class="input-group">
+            <label for="authPwd">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock" class="input-icon"></i>
+              <input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" />
+              <button class="pwd-toggle" type="button" onclick="togglePassword()" id="pwdToggleBtn"><i data-lucide="eye-off" id="pwdEyeIcon"></i></button>
+            </div>
+            <div class="forgot-link-wrapper" id="forgotLinkWrapper"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
+          </div>
+          <button class="auth-btn" id="authActionBtn" type="submit">Sign In</button>
+          </form>
+          <div class="auth-separator"><span>OR</span></div>
+          <button class="auth-btn google-btn" onclick="signInWithGoogle()" type="button">
+            <svg class="google-logo-svg" viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Sign In with Google
+          </button>
+        </div>
+        <div class="ticket-divider"></div>
+        <div class="auth-footer" style="flex-direction: column; gap: 8px;">
+          <div>
+            <span class="auth-footer-text" id="authFooterText">New here?</span>
+            <button class="auth-toggle-inline" onclick="toggleAuthMode()" id="authToggleBtn">Sign Up</button>
+          </div>
+          <div style="font-size: 11px; margin-top: 4px; display: flex; gap: 12px; justify-content: center;">
+            <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Privacy Policy</a>
+            <span style="color: var(--muted); opacity: 0.5;">|</span>
+            <a href="/tos.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Public Feature Card to satisfy Google OAuth Review -->
+      <div class="auth-info-card">
+        <h3>
+          <i data-lucide="info" style="width: 18px; height: 18px; color: var(--accent);"></i>
+          About CineQ
+        </h3>
+        <p>
+          CineQ is an elegant, ad-free movie and TV series tracking application designed for cinema lovers. Manage your watchlist, discover personalized recommendation cards, and coordinate release schedules seamlessly.
+        </p>
+        
+        <strong style="font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; display: block; margin-top: 4px;">Key Capabilities:</strong>
+        <ul>
+          <li><strong>Personalized Watchlist</strong>: Keep absolute track of movies you want to watch, or mark specific episode numbers for ongoing TV shows.</li>
+          <li><strong>Smart Discover Engine</strong>: Instantly generate recommendations with customizable genre filters and immersive layouts.</li>
+          <li><strong>Secure Cloud Backup</strong>: Sync and store your customized profiles safely across devices by signing in with your Google account.</li>
+          <li><strong>No Paywalls, Ad-Free</strong>: Enjoy a fluid, fully featured personal tracking experience with no ads and no subscription locks.</li>
+        </ul>
+        
+        <div class="auth-info-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <span>© 2026 CineQ. All rights reserved.</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="/privacy.html" target="_blank">Privacy Policy</a>
+            <span style="opacity: 0.3;">•</span>
+            <a href="/tos.html" target="_blank">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EMAIL VERIFICATION OVERLAY ===== -->
+  <div class="auth-overlay" id="verifyOverlay" style="display:none">
+    <div class="bg-grid-container">
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
+          <img src="assets/images/posters/Succession.webp" alt="Succession">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
+          <img src="assets/images/posters/Akira.webp" alt="Akira">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+        </div>
+      </div>
+      <div class="bg-column down">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
+          <img src="assets/images/posters/Dune.webp" alt="Dune">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+        </div>
+      </div>
+      <div class="bg-column up">
+        <div class="bg-scroll-track">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+        </div>
+      </div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-main">
+        <div class="auth-logo-wrap">
+          <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
+          <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img auth-logo logo-light" draggable="false" oncontextmenu="return false">
+        </div>
+        <div class="verify-icon"><i data-lucide="mail" style="width:40px;height:40px;color:var(--accent);"></i></div>
+        <h2>Verify Your Email</h2>
+      <p class="verify-hint">We sent a verification link to:</p>
+      <p class="verify-email-display" id="verifyEmail"></p>
+      <p class="verify-hint">Click the link in the email, then press below.</p>
+      <div style="margin: 16px 0; padding: 12px; background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary); text-align: center;">
+        <strong style="color: rgba(234, 179, 8, 1); display: block; margin-bottom: 4px;">Didn't receive the email?</strong>
+        Please check your <strong>Spam / Junk</strong> folder.
+      </div>
+        <div class="auth-form" style="margin-top:12px;">
+          <button class="auth-btn" onclick="checkVerification()">I've Verified - Let Me In</button>
+          <button class="auth-btn verify-resend-btn" id="resendBtn" onclick="resendVerification()">Resend Email</button>
+        </div>
+      </div>
+      <div class="ticket-divider"></div>
+      <div class="auth-footer" style="flex-direction: column; gap: 8px;">
+        <button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button>
+        <div style="font-size: 11px; margin-top: 4px; display: flex; gap: 12px; justify-content: center;">
+          <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Privacy Policy</a>
+          <span style="color: var(--muted); opacity: 0.5;">|</span>
+          <a href="/tos.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS MODAL ===== -->
+  <div class="modal-backdrop" id="settingsBackdrop" onclick="closeSettings(event)" style="display:none;">
+    <div class="modal settings-modal" id="settingsModal" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeSettingsDirect()"><i data-lucide="x" style="width:18px;height:18px;"></i></button>
+      <div class="settings-container">
+        <!-- Settings Sidebar -->
+        <aside class="settings-sidebar">
+          <h2 class="settings-title">Settings</h2>
+          <nav class="settings-nav">
+            <button class="settings-tab-btn active" onclick="switchSettingsTab('account', this)">
+              <i data-lucide="user"></i><span>Account</span>
+            </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('watchlist', this)">
+              <i data-lucide="list"></i><span>Watchlist</span>
+            </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('stats', this)">
+              <i data-lucide="bar-chart-2"></i><span>Stats & Insights</span>
+            </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('appearance', this)">
+              <i data-lucide="palette"></i><span>Appearance</span>
+            </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('data', this)">
+              <i data-lucide="database"></i><span>Data</span>
+            </button>
+            <button class="settings-tab-btn" onclick="switchSettingsTab('guide', this)">
+              <i data-lucide="info"></i><span>Feature Guide</span>
+            </button>
+            <button class="settings-tab-btn" id="reportBugTab" onclick="switchSettingsTab('feedback', this)">
+              <i data-lucide="bug"></i><span>Report Bug / Feedback</span>
+            </button>
+          </nav>
+        </aside>
+
+        <!-- Settings Content Pane -->
+        <main class="settings-content-pane">
+          <!-- Account Tab -->
+          <div class="settings-pane active" id="pane-account">
+            <h3>Account Settings</h3>
+            <div class="setting-group">
+              <label>Username</label>
+              <div class="input-wrapper-settings">
+                <input type="text" id="settingsUsername" placeholder="Username" maxlength="15" />
+                <button class="settings-action-btn" onclick="updateProfileUsername()">Update</button>
+              </div>
+            </div>
+            <div class="setting-group">
+              <label>Email Address</label>
+              <div class="email-display-wrap">
+                <span id="settingsEmail">user@example.com</span>
+                <span class="verified-badge" id="settingsEmailBadge"><i data-lucide="shield-check" style="width:14px;height:14px;margin-right:4px;"></i>Verified</span>
+              </div>
+            </div>
+            <div class="setting-group">
+              <label>Password</label>
+              <div class="password-action-wrap">
+                <p class="setting-description">Need to reset your password? We will send you a password reset link to your email address.</p>
+                <button class="settings-action-btn secondary" onclick="sendSettingsPasswordReset()">Send Reset Email</button>
+              </div>
+            </div>
+            <div class="setting-group danger-zone">
+              <label>Danger Zone</label>
+              <div class="danger-box">
+                <div class="danger-text">
+                  <strong>Delete Account</strong>
+                  <p>Permanently delete your account and all watchlist data. This cannot be undone.</p>
+                </div>
+                <button class="danger-btn" onclick="confirmDeleteAccount()">Delete Account</button>
+              </div>
+            </div>
+          </div>
+          
+
+
+          <!-- Stats Tab -->
+          <div class="settings-pane" id="pane-stats">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <h3 style="margin: 0; white-space: nowrap;">Your Overview</h3>
+                <select id="statsFilter" class="settings-select" style="width: auto; padding: 4px 8px; font-size: 13px;" onchange="updateStats()">
+                  <option value="total">Total</option>
+                  <option value="yearly">This Year</option>
+                  <option value="monthly">This Month</option>
+                </select>
+              </div>
+              <button class="settings-action-btn secondary" id="shareBtn" onclick="shareStats()" title="Share Ticket" style="padding: 8px;">
+                <i data-lucide="share-2" style="width:18px;height:18px;display:flex;"></i>
+              </button>
+            </div>
+            
+            <!-- Stats Export Area (Ticket Design) -->
+            <div class="ticket-wrapper" id="capture-target">
+              <div class="ticket-card">
+                
+                <div class="ticket-top">
+                  <div class="header">
+                    <div class="header-title-group">
+                      <h2 style="white-space: nowrap;">Stats & Insights</h2>
+                      <div id="statsTicketPeriod" style="font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 600;">Total</div>
+                    </div>
+                    <div class="header-actions" style="display: flex; align-items: center; gap: 8px;">
+                      <span class="username-badge" id="statsUsernameBadge">@username</span> 
+                    </div>
+                  </div>
+
+                  <div class="stats-row">
+                    <div class="stat-item">
+                      <span class="stat-label">Total Watch Time</span>
+                      <span class="stat-value" id="statsTotalTime">0d 0h</span>
+                    </div>
+                    <div style="border-left: 2px dotted var(--border);"></div>
+                    <div class="stat-item" style="text-align: right; align-items: flex-end;">
+                      <span class="stat-label">Titles Watched</span>
+                      <span class="stat-value" id="statsTitlesWatched">0</span>
+                    </div>
+                  </div>
+
+                  <div class="chart-container">
+                    <h3>Media Distribution</h3>
+                    <div class="canvas-wrapper">
+                      <canvas id="mediaChart"></canvas>
+                    </div>
+                    <div class="custom-legend" id="customLegend"></div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="ticket-bottom">
+                  <div class="footer-info">
+                    <div class="footer-brand">CineQ</div>
+                    <div class="footer-link">cine-q.vercel.app</div>
+                  </div>
+                  <div class="barcode">
+                    <!-- Inline SVG for html2canvas compatibility -->
+                    <svg width="70" height="32" viewBox="0 0 70 32" preserveAspectRatio="none">
+                      <g fill="currentColor">
+                        <rect x="0" width="3" height="32" />
+                        <rect x="5" width="2" height="32" />
+                        <rect x="10" width="4" height="32" />
+                        <rect x="16" width="1" height="32" />
+                        <rect x="20" width="3" height="32" />
+                        <rect x="25" width="2" height="32" />
+                        <rect x="30" width="5" height="32" />
+                        <rect x="37" width="1" height="32" />
+                        <rect x="40" width="3" height="32" />
+                        <rect x="45" width="2" height="32" />
+                        <rect x="50" width="4" height="32" />
+                        <rect x="56" width="1" height="32" />
+                        <rect x="60" width="3" height="32" />
+                        <rect x="65" width="2" height="32" />
+                      </g>
+                    </svg>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance Tab -->
+          <div class="settings-pane" id="pane-appearance">
+            <h3>Appearance Settings</h3>
+            <div class="setting-group toggle-group">
+              <div class="setting-row">
+                <div>
+                  <label for="settingsThemeToggle" style="margin-bottom:2px; display:block;">Light Mode</label>
+                  <p class="setting-description">Enable light theme across the application.</p>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="settingsThemeToggle" onchange="toggleAppTheme(this.checked)">
+                  <span class="slider-toggle round-toggle"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Watchlist Tab -->
+          <div class="settings-pane" id="pane-watchlist">
+            <h3>Watchlist Preferences</h3>
+            <div class="setting-group">
+              <label for="settingsDefaultView">Default View</label>
+              <p class="setting-description">Choose which tab opens automatically when loading the app.</p>
+              <select id="settingsDefaultView" class="settings-select" onchange="updateWatchlistPreference('defaultView', this.value)">
+                <option value="list">List (Unwatched)</option>
+                <option value="watching">Watching</option>
+                <option value="watched">Watched</option>
+                <option value="explore">Explore</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <label>Custom List</label>
+              <p class="setting-description">Create your own custom tab (e.g. "Favorites") and place it anywhere in the top navigation.</p>
+              <div class="input-wrapper-settings" style="margin-bottom:12px;">
+                <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
+              </div>
+              <div class="input-wrapper-settings" style="align-items: center;">
+                <select id="settingsCustomListPos" class="settings-select" style="flex: 1;">
+                  <option value="1">Position 1 (First)</option>
+                  <option value="2">Position 2</option>
+                  <option value="3">Position 3</option>
+                  <option value="4">Position 4</option>
+                  <option value="5">Position 5</option>
+                  <option value="6">Position 6 (Last)</option>
+                </select>
+                <button class="settings-action-btn" onclick="saveCustomListSettings()" style="gap: 6px; padding: 0 20px;">
+                  <i data-lucide="save" style="width:14px;height:14px;"></i> Save
+                </button>
+              </div>
+            </div>
+            <div class="setting-group">
+              <label for="settingsDefaultSort">Default Sort</label>
+              <p class="setting-description">Select how your cards are ordered by default.</p>
+              <div class="select-row">
+                <select id="settingsDefaultSort" class="settings-select" onchange="updateWatchlistPreference('defaultSort', this.value)">
+                  <option value="added">Date Added</option>
+                  <option value="name">Name</option>
+                  <option value="rating">Rating</option>
+                  <option value="year">Year</option>
+                </select>
+                <select id="settingsDefaultSortOrder" class="settings-select" onchange="updateWatchlistPreference('defaultSortOrder', this.value)">
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
+                </select>
+              </div>
+            </div>
+            <div class="setting-group toggle-group">
+              <div class="setting-row">
+                <div>
+                  <label for="settingsSfwFilter" style="margin-bottom:2px; display:block;">Safe For Work (SFW) Filter</label>
+                  <p class="setting-description">Hide adult content in search and explore results.</p>
+                </div>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="settingsSfwFilter" onchange="updateWatchlistPreference('sfwFilter', this.checked)">
+                  <span class="slider-toggle round-toggle"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Tab -->
+          <div class="settings-pane" id="pane-data">
+            <h3>Data Management</h3>
+            <div class="setting-group">
+              <label>Export Watchlist</label>
+              <p class="setting-description">Download your entire watchlist as a backup JSON file.</p>
+              <button class="settings-action-btn secondary" onclick="exportWatchlistData()">
+                <i data-lucide="download" style="width:16px;height:16px;margin-right:8px;display:inline-block;vertical-align:middle;"></i><span style="vertical-align:middle;">Export Watchlist JSON</span>
+              </button>
+            </div>
+            <div class="setting-group">
+              <label>Import Watchlist <span style="background:var(--accent);color:#111;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;vertical-align:middle;letter-spacing:0.05em;margin-left:6px;">BETA</span></label>
+              <p class="setting-description">
+                Import your watchlist from Letterboxd, IMDb, or a CineQ backup.
+                <span style="display:block;margin-top:6px;font-size:12px;color:var(--muted);">*If using Letterboxd import, please unzip the downloaded file first and select the <strong>watchlist.csv</strong> file.</span>
+              </p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importCineq').click()">CineQ</button>
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importLetterboxd').click()">Letterboxd</button>
+                <button class="settings-action-btn secondary" onclick="document.getElementById('importImdb').click()">IMDb</button>
+                <input type="file" id="importCineq" accept=".json" style="display:none" onchange="handleImport(event, 'cineq')" />
+                <input type="file" id="importLetterboxd" accept=".csv" style="display:none" onchange="handleImport(event, 'letterboxd')" />
+                <input type="file" id="importImdb" accept=".csv" style="display:none" onchange="handleImport(event, 'imdb')" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Guide Tab -->
+          <div class="settings-pane" id="pane-guide">
+            <h3>Feature Guide</h3>
+
+            
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">01.</span>Advanced Filtering</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Click the Sliders icon next to the "Select" button to open the <strong>Advanced Filter</strong> panel. Here you can filter your lists by Movie/TV, Release Year (Decades), and Runtime Length.</p>
+              <img src="assets/images/Feature Guide/1AdvanceFilter.png" alt="Advanced Filter" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">02.</span>FlowMode &amp; Sorting</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Inside the Sort Panel, you can click <strong>FlowMode</strong> to hide titles you've recently viewed, creating an ultra-clean UI. You can also sort your lists by Date Added, Name, Rating, and Year.</p>
+              <img src="assets/images/Feature Guide/2FlowMode&Sorting.png" alt="FlowMode and Sorting" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">03.</span>TV Series Season Tracking</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">When viewing the details of a TV show you are currently watching, use the <strong>Season + / -</strong> buttons to quickly mark an entire season as watched, jumping your episode count automatically.</p>
+              <img src="assets/images/Feature Guide/3SeriesTracking.png" alt="TV Series Tracking" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">04.</span>Archive &amp; Drop</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">If you decide to drop a show or movie but want to remember where you left off, click <strong>Drop</strong> in the detail modal. It will be moved to the hidden Archive tab (the box icon) where you can always restore it later.</p>
+              <img src="assets/images/Feature Guide/4Dropped.png" alt="Archive and Drop" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">05.</span>Random Pick Generator</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">Can't decide what to watch? Head over to the <strong>Explore</strong> tab and use the Random Pick feature to get smart, randomized suggestions from TMDB.</p>
+              <img src="assets/images/Feature Guide/5RandomPick.png" alt="Random Pick" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+
+            <div class="setting-group" style="margin-bottom: 32px;">
+              <label style="font-size: 18px;"><span style="color:var(--accent); margin-right:8px;">06.</span>Import &amp; Export Data</label>
+              <p class="setting-description" style="margin-top:4px;color:var(--text-main);margin-bottom:12px;">In the Data settings tab, you can back up your entire watchlist as a JSON file, or import your data directly from Letterboxd or IMDb CSV exports!</p>
+              <img src="assets/images/Feature Guide/6ExportDataImportBeta.png" alt="Import and Export Data" style="border-radius: var(--radius-md); border: 1px solid var(--border); width: 100%;" />
+            </div>
+          </div>
+
+          <!-- Feedback Tab -->
+          <div class="settings-pane" id="pane-feedback">
+            <h3 style="margin-bottom: 24px;">Report Bug / Feedback</h3>
+            
+            <div class="setting-group" style="background:var(--elevated); padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border);">
+              <p class="setting-description" style="margin-bottom:20px;">Found a bug or have a suggestion? Send a message directly to the developer! (Limit: 1 message per 24 hours).</p>
+              
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <label style="font-size:12px; margin-bottom:8px; display:block;">Your Message <span style="color:var(--danger, #ef4444);">*</span></label>
+                  <textarea id="feedbackMessage" rows="5" placeholder="Describe the issue or feedback..." style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; color:var(--text); font-family:inherit; resize:vertical;"></textarea>
+                </div>
+                
+                <div>
+                  <label style="font-size:12px; margin-bottom:8px; display:block;">Attachment (Optional, max 2MB)</label>
+                  <input type="file" id="feedbackAttachment" accept="image/*,.pdf" style="width:100%; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px; color:var(--text); font-size:13px;" />
+                </div>
+
+                <button class="settings-action-btn" id="sendFeedbackBtn" onclick="sendFeedback()" style="align-self:flex-start; margin-top:8px;">
+                  <i data-lucide="send" style="width:14px;height:14px;margin-right:6px;"></i>Send Message
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+  <script src="assets/js/env.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+  <script src="assets/js/app.js?v=17"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('ServiceWorker registered successfully.');
+        }).catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

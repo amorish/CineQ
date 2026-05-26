@@ -1,7 +1,8 @@
-const CACHE_NAME = 'cineq-v2';
+const CACHE_NAME = 'cineq-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/app.html',
   '/assets/css/style.css',
   '/assets/css/ticket.css',
   '/assets/js/app.js',
