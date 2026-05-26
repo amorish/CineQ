@@ -2725,7 +2725,7 @@ async function saveCroppedImage() {
       imageSmoothingEnabled: true,
       imageSmoothingQuality: 'high'
     });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.80));
     // Delete existing profile pics
     const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
     try {
@@ -2733,9 +2733,9 @@ async function saveCroppedImage() {
       await Promise.all(listResult.items.map(item => item.delete()));
     } catch(e) { /* No existing files, ok */ }
     // Upload new
-    const fileName = `avatar_${Date.now()}.jpg`;
+    const fileName = `avatar_${Date.now()}.webp`;
     const fileRef = storageRef.child(fileName);
-    await fileRef.put(blob, { contentType: 'image/jpeg' });
+    await fileRef.put(blob, { contentType: 'image/webp' });
     const downloadURL = await fileRef.getDownloadURL();
     // Update auth profile
     await currentUser.updateProfile({ photoURL: downloadURL });
