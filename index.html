@@ -3,641 +3,666 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>CineQ | Your Cinema Journey, Curated</title>
+  <title>CineQ — Your Cinema Journey, Curated</title>
   <meta name="theme-color" content="#0a0a0a">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
   <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
-  <meta name="description" content="CineQ is your personal cinema companion. Track movies and TV series, discover with FlowMode, visualise your stats, and switch from any platform — ad-free, forever." />
-  <meta property="og:title" content="CineQ | Your Cinema Journey, Curated" />
-  <meta property="og:description" content="The personal watchlist manager, discovery engine, and stats tracker. Built from scratch. No ads. Zero paywalls." />
+  <meta name="description" content="CineQ — the personal watchlist manager, discovery engine, and stats tracker. No ads. No paywalls. Pure cinema." />
+  <meta property="og:title" content="CineQ — Your Cinema Journey, Curated" />
+  <meta property="og:description" content="Track movies and TV series, discover with FlowMode, and share your cinema stats — ad-free, forever." />
   <meta property="og:type" content="website" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 
   <style>
-    /* ===== RESET & DESIGN TOKENS ===== */
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    /* =============================================
+       TOKENS & RESET
+    ============================================= */
     :root {
-      --bg: #0a0a0a;
-      --surface: #0f0f0f;
-      --card: #141414;
-      --elevated: #1c1c1c;
-      --border: rgba(255,255,255,0.06);
-      --border-hover: rgba(255,255,255,0.14);
-      --accent: #eab308;
-      --accent-glow: rgba(234,179,8,0.3);
-      --accent-soft: rgba(234,179,8,0.08);
-      --text: #f0eeed;
-      --text-secondary: #8a8886;
-      --muted: #444;
-      --font-heading: 'Outfit', system-ui, sans-serif;
-      --font-body: 'Inter', system-ui, sans-serif;
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-      --radius-2xl: 28px;
+      --bg:             #0a0a0a;
+      --surface:        #111111;
+      --card:           #161616;
+      --elevated:       #1e1e1e;
+      --border:         rgba(255,255,255,0.06);
+      --border-hover:   rgba(255,255,255,0.14);
+      --accent:         #eab308;
+      --accent-glow:    rgba(234,179,8,0.28);
+      --accent-soft:    rgba(234,179,8,0.08);
+      --text:           #f0eeed;
+      --text-2:         #a8a6a5;
+      --muted:          #4a4a4a;
+      --font-h:         'Outfit', sans-serif;
+      --font-b:         'Inter', sans-serif;
+      --r-sm:  8px;
+      --r-md:  14px;
+      --r-lg:  20px;
+      --r-xl:  28px;
     }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
     html { scroll-behavior: smooth; }
+
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 16px;
-      line-height: 1.5;
+      font-family: var(--font-b);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      cursor: none;
     }
+
+    ::selection { background: var(--accent-glow); color: var(--accent); }
+
     a { text-decoration: none; color: inherit; }
     img { display: block; max-width: 100%; }
-    button { cursor: pointer; font-family: inherit; border: none; }
 
-    /* ===== NAVBAR ===== */
+    /* =============================================
+       CUSTOM CURSOR
+    ============================================= */
+    .cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+      mix-blend-mode: exclusion;
+      will-change: transform;
+    }
+    .cursor.hover {
+      width: 36px;
+      height: 36px;
+      background: rgba(234,179,8,0.6);
+    }
+    @media (hover: none) { .cursor { display: none; } body { cursor: auto; } }
+
+    /* =============================================
+       NAVBAR
+    ============================================= */
     .nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
       height: 64px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 48px;
-      background: rgba(10,10,10,0.85);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      background: rgba(10,10,10,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
+      cursor: auto;
     }
-    .nav-logo img { height: 34px; width: auto; display: block; }
-    .nav-links {
-      display: flex; align-items: center; gap: 36px;
-      list-style: none;
-    }
+    .nav-logo img { height: 32px; width: auto; }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
     .nav-links a {
-      font-family: var(--font-heading);
+      font-family: var(--font-h);
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--text-secondary);
+      color: var(--text-2);
       transition: color 0.2s;
     }
     .nav-links a:hover { color: var(--text); }
     .nav-cta {
-      display: inline-flex; align-items: center;
-      background: var(--accent);
-      color: #000;
-      font-family: var(--font-heading);
+      font-family: var(--font-h);
       font-weight: 800;
       font-size: 12px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 10px 20px;
-      border-radius: var(--radius-sm);
-      transition: all 0.2s;
-    }
-    .nav-cta:hover { background: #fbbf24; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(234,179,8,0.3); }
-
-    /* ===== HERO ===== */
-    .hero {
-      min-height: 100vh;
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      align-items: center;
-      gap: 48px;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 96px 48px 60px;
-    }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-family: var(--font-heading);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 28px;
-    }
-    .hero-eyebrow::before {
-      content: '';
-      display: block;
-      width: 20px; height: 2px;
-      background: var(--accent);
-      border-radius: 2px;
-      flex-shrink: 0;
-    }
-    .hero-title {
-      font-family: var(--font-heading);
-      font-size: clamp(48px, 5.5vw, 76px);
-      font-weight: 900;
-      line-height: 0.95;
-      letter-spacing: -0.03em;
-      text-transform: uppercase;
-      color: var(--text);
-      margin-bottom: 28px;
-    }
-    .hero-title .accent { color: var(--accent); }
-    .hero-desc {
-      font-size: 15px;
-      color: var(--text-secondary);
-      line-height: 1.75;
-      max-width: 440px;
-      margin-bottom: 44px;
-    }
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
       background: var(--accent);
       color: #000;
-      font-family: var(--font-heading);
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 14px 28px;
-      border-radius: var(--radius-sm);
-      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
-      border: none;
+      padding: 10px 22px;
+      border-radius: var(--r-sm);
+      transition: all 0.2s;
+      cursor: pointer;
     }
-    .btn-primary:hover {
-      background: #fbbf24;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 28px rgba(234,179,8,0.35);
-    }
-    .btn-primary i { width: 14px; height: 14px; flex-shrink: 0; }
-    .hero-note {
-      display: flex; align-items: center; gap: 6px;
-      margin-top: 18px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .hero-note i { width: 12px; height: 12px; color: var(--accent); opacity: 0.7; }
+    .nav-cta:hover { background: #fbbf24; transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
 
-    /* ===== PHONE MOCKUP ===== */
-    .hero-visual {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    /* =============================================
+       HERO — SPOTLIGHT
+    ============================================= */
+    .hero {
       position: relative;
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: var(--bg);
     }
-    .phone-glow {
+
+    /* Cinema background that follows the cursor like a spotlight */
+    .hero-bg {
       position: absolute;
-      width: 280px; height: 280px;
-      background: var(--accent);
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.06;
+      inset: 0;
+      background: url('assets/images/cinema%20theatre%20bg.png') center / cover no-repeat;
+      -webkit-mask-image: radial-gradient(circle 28vw at var(--mx, 50%) var(--my, 50%), black 0%, transparent 100%);
+      mask-image:         radial-gradient(circle 28vw at var(--mx, 50%) var(--my, 50%), black 0%, transparent 100%);
+      opacity: 0.55;
+      transition: mask-position 0.05s, -webkit-mask-position 0.05s;
+      z-index: 1;
+    }
+
+    /* Poster strips — left and right sides */
+    .poster-strip {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      z-index: 2;
+      overflow: hidden;
+    }
+    .poster-strip.left  { left: 0;  mask-image: linear-gradient(to right, black 60%, transparent 100%); -webkit-mask-image: linear-gradient(to right, black 60%, transparent 100%); }
+    .poster-strip.right { right: 0; mask-image: linear-gradient(to left, black 60%, transparent 100%);  -webkit-mask-image: linear-gradient(to left, black 60%, transparent 100%); }
+    .strip-track {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      will-change: transform;
+    }
+    .strip-track.scroll-down  { animation: stripDown 28s linear infinite; }
+    .strip-track.scroll-up    { animation: stripUp   28s linear infinite; }
+    @keyframes stripDown { from { transform: translateY(0); }    to { transform: translateY(-50%); } }
+    @keyframes stripUp   { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+
+    .strip-poster {
+      width: 180px;
+      height: 270px;
+      object-fit: cover;
+      display: block;
+      opacity: 0.35;
+      filter: grayscale(0.5);
+    }
+
+    /* Gradient vignettes */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0; z-index: 3;
+      background:
+        linear-gradient(to right, var(--bg) 0%, transparent 18%, transparent 82%, var(--bg) 100%),
+        linear-gradient(to bottom, var(--bg) 0%, transparent 20%, transparent 75%, var(--bg) 100%);
       pointer-events: none;
     }
-    .phone-frame {
-      width: 240px;
-      background: #111111;
-      border-radius: 40px;
-      border: 1.5px solid rgba(255,255,255,0.1);
-      box-shadow:
-        0 0 0 1px rgba(0,0,0,0.5),
-        0 40px 80px rgba(0,0,0,0.8),
-        inset 0 1px 0 rgba(255,255,255,0.08);
-      overflow: hidden;
+
+    .hero-content {
       position: relative;
+      z-index: 4;
+      text-align: center;
+      pointer-events: none;
+      padding: 0 24px;
     }
-    .phone-pill {
-      width: 72px; height: 7px;
-      background: #1a1a1a;
-      border-radius: 4px;
-      margin: 14px auto 12px;
-    }
-    .phone-screen {
-      background: var(--bg);
-      padding: 10px 10px 14px;
-    }
-    .phone-top-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .phone-app-name {
-      font-family: var(--font-heading);
-      font-size: 12px;
-      font-weight: 800;
+    .hero-kicker {
+      font-family: var(--font-b);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
       color: var(--accent);
-      letter-spacing: -0.01em;
+      margin-bottom: 28px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
     }
-    .phone-top-icons { display: flex; gap: 4px; }
-    .phone-top-icon {
-      width: 18px; height: 18px;
-      background: var(--elevated);
-      border-radius: 50%;
+    .hero-kicker::before, .hero-kicker::after {
+      content: '';
+      width: 28px; height: 1px;
+      background: var(--accent);
+      opacity: 0.6;
     }
-    .phone-section-label {
-      font-size: 8px;
-      font-weight: 700;
-      letter-spacing: 0.1em;
+    .hero-title {
+      font-family: var(--font-h);
+      font-size: clamp(48px, 7.5vw, 104px);
+      font-weight: 900;
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      /* Ghost text for most, lit word glows */
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,255,255,0.12);
+    }
+    .hero-title .lit {
+      color: var(--text);
+      -webkit-text-stroke: 0;
+      text-shadow: 0 0 60px var(--accent-glow), 0 0 120px rgba(234,179,8,0.12);
+    }
+    .hero-title .accent { color: var(--accent); -webkit-text-stroke: 0; }
+
+    /* Scroll indicator */
+    .scroll-cue {
+      position: absolute;
+      bottom: 36px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      font-family: var(--font-b);
+      font-size: 10px;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 7px;
+      pointer-events: none;
     }
-    .phone-poster-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 90px 90px;
-      gap: 5px;
+    .scroll-cue .cue-line {
+      width: 1px; height: 44px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      animation: cueAnim 2.2s ease-in-out infinite;
     }
-    .phone-poster {
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--elevated);
-      position: relative;
-    }
-    .phone-poster img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .phone-poster.col-span {
-      grid-column: 1;
-      grid-row: 1 / 3;
-    }
-    .phone-poster-label {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 12px 6px 5px;
-      background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-      font-family: var(--font-heading);
-      font-size: 7.5px;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.2;
-    }
-    .phone-pill-badge {
-      display: inline-block;
-      background: rgba(234,179,8,0.15);
-      border: 1px solid rgba(234,179,8,0.25);
-      color: var(--accent);
-      font-size: 6.5px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      padding: 1px 4px;
-      border-radius: 3px;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-    .phone-second-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5px;
-      margin-top: 5px;
-    }
-    .phone-second-poster {
-      height: 54px;
-      border-radius: 8px;
-      overflow: hidden;
-      background: var(--elevated);
-      position: relative;
-    }
-    .phone-second-poster img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
+    @keyframes cueAnim {
+      0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+      49%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+      50%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
     }
 
-    /* ===== SECTION WRAPPER ===== */
-    .section-wrapper {
-      max-width: 1200px;
+    /* =============================================
+       FEATURES — BENTO
+    ============================================= */
+    .features {
+      max-width: 1160px;
       margin: 0 auto;
-      padding: 100px 48px;
+      padding: 120px 40px;
     }
-    .section-header {
+    .section-head {
       text-align: center;
       margin-bottom: 56px;
     }
-    .section-eyebrow {
-      font-family: var(--font-heading);
+    .section-eye {
+      font-family: var(--font-h);
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 14px;
+      text-shadow: 0 0 16px var(--accent-glow);
     }
     .section-title {
-      font-family: var(--font-heading);
-      font-size: clamp(30px, 3.5vw, 50px);
+      font-family: var(--font-h);
+      font-size: clamp(28px, 3.8vw, 52px);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: -0.025em;
-      line-height: 1.0;
       color: var(--text);
     }
 
-    /* ===== BENTO GRID ===== */
-    .bento-grid {
+    /* Grid */
+    .bento {
       display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 12px;
     }
     .bento-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius-2xl);
+      border-radius: var(--r-xl);
       overflow: hidden;
-      transition: border-color 0.25s;
+      transition: border-color 0.35s ease, box-shadow 0.35s ease;
+      position: relative;
+      cursor: pointer;
     }
-    .bento-card:hover { border-color: var(--border-hover); }
-    .bento-card.span-col { grid-row: 1 / 3; }
-    .bento-inner { padding: 36px; height: 100%; display: flex; flex-direction: column; }
+    .bento-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.45);
+    }
+    .card-inner { padding: 40px; position: relative; z-index: 2; }
 
-    /* FlowMode Card */
-    .feature-tag {
+    /* Tag / Badge */
+    .card-tag {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(109,40,217,0.12);
-      border: 1px solid rgba(109,40,217,0.25);
-      color: #a78bfa;
-      font-family: var(--font-heading);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      font-family: var(--font-h);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 5px 10px;
-      border-radius: 6px;
-      width: fit-content;
+      padding: 5px 12px;
+      border-radius: 40px;
       margin-bottom: 24px;
+      transition: all 0.3s;
     }
-    .feature-tag i { width: 10px; height: 10px; }
-    .bento-title {
-      font-family: var(--font-heading);
-      font-size: clamp(32px, 3vw, 44px);
+    .bento-card:hover .card-tag {
+      background: var(--accent-soft);
+      border-color: rgba(234,179,8,0.3);
+      color: var(--accent);
+    }
+    .card-tag i { width: 10px; height: 10px; }
+
+    /* Headings */
+    .card-h {
+      font-family: var(--font-h);
+      font-size: clamp(30px, 3vw, 42px);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: -0.025em;
       line-height: 0.95;
       color: var(--text);
-      margin-bottom: 20px;
-    }
-    .bento-desc {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.75;
-      flex: 1;
-      margin-bottom: 32px;
-    }
-    .flowmode-posters {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-    }
-    .fm-poster {
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--elevated);
-      flex-shrink: 0;
-      border: 1px solid var(--border);
-    }
-    .fm-poster img { display: block; object-fit: cover; }
-
-    /* Right small cards */
-    .bento-right { display: flex; flex-direction: column; gap: 10px; }
-    .bento-small { padding: 28px 30px; }
-
-    .card-label {
-      font-family: var(--font-heading);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--accent);
       margin-bottom: 18px;
     }
-    .card-title-sm {
-      font-family: var(--font-heading);
-      font-size: 20px;
+    .card-h-sm {
+      font-family: var(--font-h);
+      font-size: 16px;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: -0.02em;
-      line-height: 1.0;
+      letter-spacing: 0.03em;
       color: var(--text);
-      margin-bottom: 14px;
+      margin-bottom: 20px;
     }
-    .card-desc-sm {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.7;
+    .card-p {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.75;
     }
 
-    /* Classification icons */
+    /* ----- FlowMode card ----- */
+    .flowmode-card { grid-column: 1; grid-row: 1 / 3; display: flex; flex-direction: column; }
+
+    .flow-graphic {
+      flex: 1;
+      min-height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Dashed sorting line */
+    .flow-line {
+      position: absolute;
+      width: 160%;
+      height: 1px;
+      border-bottom: 2px dashed rgba(255,255,255,0.07);
+      transform: rotate(-7deg);
+      transition: border-color 0.5s;
+    }
+    .flowmode-card:hover .flow-line { border-color: rgba(234,179,8,0.25); }
+
+    /* Ghost poster cards */
+    .ghost {
+      position: absolute;
+      border-radius: var(--r-md);
+      background: var(--elevated);
+      border: 1px solid rgba(255,255,255,0.07);
+      overflow: hidden;
+      transition: transform 0.55s cubic-bezier(0.4,0,0.2,1), border-color 0.4s, box-shadow 0.4s;
+    }
+    .ghost img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+    .ghost-l { width: 86px; height: 128px; transform: translateX(-116px) rotate(-9deg) translateY(14px); z-index: 1; }
+    .ghost-c { width: 100px; height: 150px; transform: translateY(-8px); border-color: rgba(255,255,255,0.14); z-index: 3; }
+    .ghost-r { width: 76px; height: 114px; transform: translateX(110px) rotate(8deg) translateY(18px); z-index: 1; }
+
+    .flowmode-card:hover .ghost-l { transform: translateX(-126px) rotate(-14deg) translateY(6px);  border-color: rgba(234,179,8,0.5); box-shadow: -12px 12px 32px rgba(0,0,0,0.5); }
+    .flowmode-card:hover .ghost-c { border-color: var(--accent); box-shadow: 0 0 36px var(--accent-glow), 0 20px 40px rgba(0,0,0,0.5); }
+    .flowmode-card:hover .ghost-r { transform: translateX(120px) rotate(13deg) translateY(28px); border-color: rgba(234,179,8,0.5); box-shadow: 12px 12px 32px rgba(0,0,0,0.5); }
+
+    /* Flow gradient overlay */
+    .flow-fade {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--card) 0%, transparent 55%);
+      z-index: 4; pointer-events: none;
+    }
+
+    /* ----- Classification card ----- */
+    .class-card  { grid-column: 2; grid-row: 1; }
+
     .class-icons {
-      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+      display: flex; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 18px;
     }
     .class-item {
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      cursor: default;
     }
-    .class-icon-box {
-      width: 38px; height: 38px;
+    .class-icon {
+      width: 44px; height: 44px;
       background: var(--elevated);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      color: var(--text-secondary);
-      transition: all 0.2s;
+      color: var(--text-2);
+      transition: all 0.25s;
     }
-    .class-icon-box i { width: 16px; height: 16px; }
-    .class-item:hover .class-icon-box {
-      border-color: var(--border-hover);
-      color: var(--text);
-    }
-    .class-item-label {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
+    .class-icon i { width: 18px; height: 18px; }
+    .class-icon.amber { color: var(--accent); border-color: rgba(234,179,8,0.3); background: var(--accent-soft); }
+    .class-item:hover .class-icon { border-color: var(--border-hover); color: var(--text); transform: translateY(-2px); }
+    .class-label { font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
 
-    /* Migration */
-    .migration-row {
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-    .platform-pill {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--elevated);
-      border: 1px solid var(--border);
-      padding: 7px 12px;
-      border-radius: var(--radius-sm);
-      font-family: var(--font-heading);
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .platform-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .migration-arrow {
-      color: var(--muted);
-      font-size: 14px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .platform-pill.cineq {
-      background: var(--accent-soft);
-      border-color: rgba(234,179,8,0.25);
-      color: var(--accent);
-    }
+    /* ----- Migration card ----- */
+    .mig-card { grid-column: 2; grid-row: 2; }
 
-    /* ===== STATS SECTION ===== */
-    .stats-wrapper {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 48px 100px;
+    .mig-flow {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 18px;
     }
-    .stats-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-2xl);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      overflow: hidden;
-      min-height: 360px;
+    .mig-pill {
+      height: 48px;
+      border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 13px;
+      transition: transform 0.3s, box-shadow 0.3s;
     }
-    .stats-text-side {
-      padding: 64px 56px;
+    .mig-card:hover .mig-pill { transform: translateY(-2px); }
+    .mig-lboxd { width: 72px; gap: 4px; background: #14181c; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .mig-lboxd .d { width: 9px; height: 9px; border-radius: 50%; }
+    .mig-imdb  { width: 72px; background: #f5c518; color: #000; border-radius: var(--r-sm); font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+    .mig-cineq { width: 52px; background: var(--elevated); border: 1px solid var(--accent); box-shadow: 0 0 18px var(--accent-glow); }
+    .mig-cineq i { width: 18px; height: 18px; color: var(--accent); }
+    .mig-arrow { color: var(--muted); flex-shrink: 0; transition: color 0.3s; }
+    .mig-card:hover .mig-arrow { color: var(--accent); }
+    .mig-arrow i { width: 14px; height: 14px; }
+
+    /* ----- Stats card ----- */
+    .stats-card { grid-column: 1 / 3; grid-row: 3; }
+
+    .stats-inner {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      min-height: 340px;
+    }
+    .stats-text { padding: 48px 48px 48px 48px; flex: 0 0 48%; }
+    .stats-vis {
+      flex: 1;
+      position: relative;
+      align-self: stretch;
+      display: flex;
+      align-items: center;
       justify-content: center;
-    }
-    .stats-eyebrow {
-      font-family: var(--font-heading);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-    .stats-title {
-      font-family: var(--font-heading);
-      font-size: clamp(26px, 2.8vw, 40px);
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: -0.025em;
-      line-height: 1.0;
-      color: var(--text);
-      margin-bottom: 20px;
-    }
-    .stats-desc {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.75;
-      max-width: 380px;
-    }
-    .stats-visual-side {
-      background: linear-gradient(135deg, #0d0d0d 0%, #111008 100%);
-      display: flex; align-items: center; justify-content: center;
-      padding: 48px;
-      position: relative;
+      background: #080808;
       border-left: 1px solid var(--border);
-    }
-    .stats-glow {
-      position: absolute;
-      width: 200px; height: 200px;
-      background: var(--accent);
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.05;
-      pointer-events: none;
-    }
-
-    /* Ticket Visual */
-    .ticket {
-      width: 196px;
-      background: var(--elevated);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 18px;
-      position: relative;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
-    }
-    .ticket-top-row {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 14px;
-    }
-    .ticket-heading { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; }
-    .ticket-period { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
-    .ticket-username {
-      font-family: var(--font-heading);
-      font-size: 9px; font-weight: 800;
-      color: var(--accent);
-      background: var(--accent-soft);
-      padding: 3px 7px;
-      border-radius: 4px;
-    }
-    .ticket-stats-row {
-      display: flex; justify-content: space-between; align-items: flex-end;
-      padding: 10px 0;
-      border-bottom: 1px dotted rgba(255,255,255,0.07);
-      margin-bottom: 14px;
-    }
-    .t-stat-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 3px; }
-    .t-stat-value { font-family: var(--font-heading); font-size: 18px; font-weight: 900; color: var(--text); }
-    .t-stat-value.colored { color: #818cf8; }
-    .ticket-chart {
-      height: 52px;
-      background: var(--bg);
-      border-radius: 7px;
-      display: flex; align-items: flex-end; gap: 3px;
-      padding: 8px 8px 0;
-      margin-bottom: 14px;
       overflow: hidden;
     }
-    .t-bar {
-      flex: 1;
-      border-radius: 3px 3px 0 0;
-      min-width: 4px;
-    }
-    .ticket-perforated {
-      border-top: 1.5px dashed rgba(255,255,255,0.07);
-      margin: 0 -18px 14px;
-    }
-    .ticket-barcode {
-      display: flex; gap: 2px; align-items: center; justify-content: center; height: 28px;
-    }
-    .t-bc { background: rgba(255,255,255,0.25); border-radius: 1px; }
 
-    /* ===== CTA SECTION ===== */
-    .cta-section {
+    /* Cinema bg behind ticket */
+    .stats-vis-bg {
+      position: absolute; inset: 0;
+      background: url('assets/images/cinema%20theatre%20bg.png') center / cover;
+      opacity: 0.12;
+      mix-blend-mode: luminosity;
+    }
+    /* Fade left edge into card */
+    .stats-vis::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, var(--card) 0%, transparent 30%);
+      z-index: 1; pointer-events: none;
+    }
+
+    /* Neon Ticket */
+    .ticket {
+      position: relative; z-index: 2;
+      width: 168px;
+      background: rgba(16,16,16,0.85);
+      border: 1.5px solid rgba(234,179,8,0.35);
+      border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 20px 16px 16px;
+      gap: 0;
+      box-shadow: 0 0 32px rgba(234,179,8,0.08), inset 0 0 20px rgba(234,179,8,0.04);
+      transition: border-color 0.5s, box-shadow 0.5s, transform 0.5s;
+      backdrop-filter: blur(8px);
+    }
+    .stats-card:hover .ticket {
+      border-color: var(--accent);
+      box-shadow: 0 0 48px var(--accent-glow), inset 0 0 32px rgba(234,179,8,0.06);
+      transform: scale(1.04) rotate(1.5deg);
+    }
+
+    /* Cutout notches */
+    .ticket::before, .ticket::after {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--card); /* punches through */
+      top: 136px;
+      border: 1.5px solid rgba(234,179,8,0.3);
+      transition: border-color 0.5s;
+    }
+    .stats-card:hover .ticket::before,
+    .stats-card:hover .ticket::after { border-color: var(--accent); }
+    .ticket::before { left: -10px; clip-path: inset(0 0 0 50%); }
+    .ticket::after  { right: -10px; clip-path: inset(0 50% 0 0); }
+
+    .ticket-top { width: 100%; margin-bottom: 14px; }
+    .t-head { font-family: var(--font-h); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text); }
+    .t-sub  { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+
+    .ticket-stats {
+      display: flex; justify-content: space-between; width: 100%;
+      padding: 10px 0; margin-bottom: 14px;
+      border-bottom: 1.5px dashed rgba(255,255,255,0.07);
+    }
+    .t-stat-l { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+    .t-stat-v { font-family: var(--font-h); font-size: 20px; font-weight: 900; color: var(--text); }
+    .t-stat-v.c { color: #818cf8; }
+
+    /* Pie-ish donut */
+    .t-donut {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      border: 5px solid rgba(234,179,8,0.12);
+      border-top-color:  var(--accent);
+      border-right-color: var(--accent);
+      transform: rotate(-45deg);
+      margin: 4px 0 14px;
+      transition: transform 0.9s cubic-bezier(0.4,0,0.2,1);
+    }
+    .stats-card:hover .t-donut { transform: rotate(225deg); }
+
+    /* Perf divider */
+    .t-perf {
+      width: calc(100% + 32px);
+      height: 1px;
+      border-top: 1.5px dashed rgba(234,179,8,0.2);
+      margin: 0 -16px 14px;
+    }
+
+    /* Barcode */
+    .t-barcode {
+      width: 100%;
+      height: 22px;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(234,179,8,0.65)  0, rgba(234,179,8,0.65)  2px,
+        transparent           2px, transparent           5px,
+        rgba(234,179,8,0.65)  5px, rgba(234,179,8,0.65)  8px,
+        transparent           8px, transparent           10px,
+        rgba(234,179,8,0.65) 10px, rgba(234,179,8,0.65) 15px,
+        transparent          15px, transparent           17px
+      );
+      border-radius: 1px;
+    }
+
+    /* =============================================
+       CTA SECTION
+    ============================================= */
+    .cta {
       background: var(--surface);
       border-top: 1px solid var(--border);
-      padding: 110px 48px;
+      padding: 110px 40px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    .cta-eyebrow {
-      font-family: var(--font-heading);
+    .cta::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: var(--accent);
+      border-radius: 50%;
+      filter: blur(160px);
+      opacity: 0.04;
+      pointer-events: none;
+    }
+    .cta-kicker {
+      font-family: var(--font-h);
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 20px;
+      text-shadow: 0 0 16px var(--accent-glow);
     }
     .cta-title {
-      font-family: var(--font-heading);
-      font-size: clamp(32px, 4.5vw, 60px);
+      font-family: var(--font-h);
+      font-size: clamp(32px, 5vw, 68px);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: -0.03em;
-      line-height: 1.0;
+      line-height: 0.95;
       color: var(--text);
-      margin-bottom: 44px;
+      margin-bottom: 48px;
     }
     .cta-title .accent { color: var(--accent); }
+    .btn-main {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent);
+      color: #000;
+      font-family: var(--font-h);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      border-radius: var(--r-sm);
+      transition: all 0.22s;
+      cursor: pointer;
+      position: relative; z-index: 1;
+    }
+    .btn-main:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 10px 32px var(--accent-glow); }
+    .btn-main i { width: 16px; height: 16px; flex-shrink: 0; }
 
-    /* ===== FOOTER ===== */
+    /* =============================================
+       FOOTER
+    ============================================= */
     .footer {
       background: var(--bg);
       border-top: 1px solid var(--border);
       padding: 28px 48px;
       display: flex; align-items: center; justify-content: space-between;
+      cursor: auto;
     }
-    .footer-left { display: flex; flex-direction: column; gap: 6px; }
-    .footer-logo img { height: 22px; width: auto; }
-    .footer-copy { font-size: 11px; color: var(--muted); letter-spacing: 0.02em; }
-    .footer-links { display: flex; gap: 24px; align-items: center; }
+    .footer-l { display: flex; flex-direction: column; gap: 6px; }
+    .footer-logo img { height: 22px; }
+    .footer-copy { font-size: 11px; color: var(--muted); }
+    .footer-links { display: flex; gap: 24px; }
     .footer-links a {
       font-size: 11px;
       font-weight: 600;
@@ -648,39 +673,36 @@
     }
     .footer-links a:hover { color: var(--text); }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 960px) {
-      .nav { padding: 0 24px; }
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 880px) {
+      .nav { padding: 0 20px; }
       .nav-links { display: none; }
-      .hero {
-        grid-template-columns: 1fr;
-        padding: 96px 24px 56px;
-        text-align: center;
-        gap: 52px;
-      }
-      .hero-desc { margin-left: auto; margin-right: auto; }
-      .btn-primary { margin: 0 auto; }
-      .hero-note { justify-content: center; }
-      .section-wrapper { padding: 72px 24px; }
-      .bento-grid { grid-template-columns: 1fr; }
-      .bento-card.span-col { grid-row: auto; }
-      .bento-right { flex-direction: column; }
-      .stats-wrapper { padding: 0 24px 72px; }
-      .stats-card { grid-template-columns: 1fr; }
-      .stats-text-side { padding: 40px 32px; }
-      .stats-visual-side { padding: 40px; min-height: 280px; border-left: none; border-top: 1px solid var(--border); }
-      .cta-section { padding: 80px 24px; }
-      .footer { padding: 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
+      .poster-strip { width: 110px; }
+      .strip-poster { width: 110px; height: 165px; }
+      .features { padding: 72px 20px; }
+      .bento { grid-template-columns: 1fr; }
+      .flowmode-card { grid-column: 1; grid-row: auto; }
+      .class-card    { grid-column: 1; grid-row: auto; }
+      .mig-card      { grid-column: 1; grid-row: auto; }
+      .stats-card    { grid-column: 1; grid-row: auto; }
+      .stats-inner { flex-direction: column; }
+      .stats-text { padding: 36px 28px; flex: none; width: 100%; }
+      .stats-vis  { width: 100%; min-height: 280px; border-left: none; border-top: 1px solid var(--border); }
+      .cta { padding: 80px 20px; }
+      .footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; gap: 18px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+
   <!-- ===== NAVBAR ===== -->
-  <nav class="nav" role="navigation" aria-label="Main navigation">
-    <div class="nav-logo">
-      <a href="/"><img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" draggable="false" /></a>
-    </div>
+  <nav class="nav" role="navigation">
+    <a href="/"><img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" id="navLogo" draggable="false" /></a>
     <ul class="nav-links" role="list">
       <li><a href="#features">Features</a></li>
       <li><a href="#stats">Statistics</a></li>
@@ -691,235 +713,187 @@
 
 
   <!-- ===== HERO ===== -->
-  <section class="hero" aria-labelledby="hero-heading">
-    <div class="hero-content">
-      <div class="hero-eyebrow">Personal Cinema Companion</div>
-      <h1 id="hero-heading" class="hero-title">
-        Your Cinema<br>Journey,<br><span class="accent">Curated.</span>
-      </h1>
-      <p class="hero-desc">
-        The personal watchlist manager, discovery engine, and stats tracker — built from scratch. No ads. No paywalls. Pure cinema.
-      </p>
-      <a href="/app.html" class="btn-primary">
-        <i data-lucide="play"></i>
-        Start Tracking Free
-      </a>
-      <div class="hero-note">
-        <i data-lucide="shield-check"></i>
-        Free forever &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Ad-free
+  <section class="hero" id="hero">
+    <!-- Spotlight cinema background -->
+    <div class="hero-bg" id="heroBg"></div>
+
+    <!-- Left poster strip -->
+    <div class="poster-strip left" aria-hidden="true">
+      <div class="strip-track scroll-down">
+        <img class="strip-poster" src="assets/images/posters/Breaking Bad.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Stranger Things.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Game of Thrones.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Succession.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Arcane.webp" alt="" draggable="false">
+        <!-- duplicate for seamless loop -->
+        <img class="strip-poster" src="assets/images/posters/Breaking Bad.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Stranger Things.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Game of Thrones.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Succession.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Arcane.webp" alt="" draggable="false">
       </div>
     </div>
 
-    <div class="hero-visual" aria-hidden="true">
-      <div class="phone-glow"></div>
-      <div class="phone-frame">
-        <div class="phone-pill"></div>
-        <div class="phone-screen">
-          <div class="phone-top-bar">
-            <span class="phone-app-name">CineQ</span>
-            <div class="phone-top-icons">
-              <div class="phone-top-icon"></div>
-              <div class="phone-top-icon"></div>
-            </div>
-          </div>
-          <div class="phone-section-label">Your Watchlist</div>
-          <div class="phone-poster-grid">
-            <!-- Tall left poster -->
-            <div class="phone-poster col-span">
-              <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" draggable="false" oncontextmenu="return false" />
-              <div class="phone-poster-label">
-                <div class="phone-pill-badge">Movie</div><br>Blade Runner 2049
-              </div>
-            </div>
-            <!-- Top right -->
-            <div class="phone-poster">
-              <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" draggable="false" oncontextmenu="return false" />
-              <div class="phone-poster-label">Spirited Away</div>
-            </div>
-            <!-- Bottom right -->
-            <div class="phone-poster">
-              <img src="assets/images/posters/Akira.webp" alt="Akira" draggable="false" oncontextmenu="return false" />
-              <div class="phone-poster-label">Akira</div>
-            </div>
-          </div>
-          <!-- Second row -->
-          <div class="phone-second-row">
-            <div class="phone-second-poster">
-              <img src="assets/images/posters/Parasite.webp" alt="Parasite" draggable="false" oncontextmenu="return false" />
-            </div>
-            <div class="phone-second-poster">
-              <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" draggable="false" oncontextmenu="return false" />
-            </div>
-          </div>
-        </div>
+    <!-- Right poster strip -->
+    <div class="poster-strip right" aria-hidden="true">
+      <div class="strip-track scroll-up">
+        <img class="strip-poster" src="assets/images/posters/Blade Runner 2049.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Parasite.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Dune.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Interstellar.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/The Dark Knight.webp" alt="" draggable="false">
+        <!-- duplicate -->
+        <img class="strip-poster" src="assets/images/posters/Blade Runner 2049.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Parasite.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Dune.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/Interstellar.webp" alt="" draggable="false">
+        <img class="strip-poster" src="assets/images/posters/The Dark Knight.webp" alt="" draggable="false">
       </div>
+    </div>
+
+    <!-- Hero text -->
+    <div class="hero-content">
+      <p class="hero-kicker">Meet CineQ</p>
+      <h1 class="hero-title">
+        YOUR CINEMA<br>
+        JOURNEY, <span class="accent">CURATED.</span>
+      </h1>
+    </div>
+
+    <!-- Scroll cue -->
+    <div class="scroll-cue" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="cue-line"></div>
     </div>
   </section>
 
 
-  <!-- ===== FEATURES SECTION ===== -->
-  <section class="section-wrapper" id="features" aria-labelledby="features-heading">
-    <div class="section-header">
-      <p class="section-eyebrow">What Makes It Different</p>
-      <h2 id="features-heading" class="section-title">Unmatched Personal Tracking</h2>
+  <!-- ===== FEATURES ===== -->
+  <section class="features" id="features">
+    <div class="section-head">
+      <p class="section-eye">What Makes It Different</p>
+      <h2 class="section-title">Unmatched Personal Tracking</h2>
     </div>
 
-    <div class="bento-grid">
+    <div class="bento">
 
-      <!-- FlowMode — tall left card -->
-      <div class="bento-card span-col">
-        <div class="bento-inner">
-          <div class="feature-tag">
+      <!-- FlowMode — tall left -->
+      <div class="bento-card flowmode-card">
+        <div class="card-inner">
+          <div class="card-tag">
             <i data-lucide="sparkles"></i>
             Introducing FlowMode
           </div>
-          <h3 class="bento-title">Seamless<br>Cinematic<br>Sorting.</h3>
-          <p class="bento-desc">
-            An intelligent reordering engine that analyses your collection, weighs genre data and ratings, and interleaves movies and TV series into the perfect watch flow — automatically.
-          </p>
-          <div class="flowmode-posters" aria-hidden="true">
-            <div class="fm-poster" style="width:80px; height:120px;">
-              <img src="assets/images/posters/Interstellar.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+          <h3 class="card-h">Seamless<br>Cinematic<br>Sorting.</h3>
+          <p class="card-p">An intelligent reordering engine that weighs ratings, genres, and watch progress — then arranges your entire collection into the perfect viewing flow, automatically.</p>
+        </div>
+        <!-- Animated ghost cards -->
+        <div class="flow-graphic" aria-hidden="true">
+          <div class="flow-line"></div>
+          <div class="ghost ghost-l">
+            <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false">
+          </div>
+          <div class="ghost ghost-c">
+            <img src="assets/images/posters/Interstellar.webp" alt="" draggable="false" oncontextmenu="return false">
+          </div>
+          <div class="ghost ghost-r">
+            <img src="assets/images/posters/Arcane.webp" alt="" draggable="false" oncontextmenu="return false">
+          </div>
+          <div class="flow-fade"></div>
+        </div>
+      </div>
+
+      <!-- Smart Classification -->
+      <div class="bento-card class-card">
+        <div class="card-inner">
+          <h4 class="card-h-sm">Smart Content Classification</h4>
+          <div class="class-icons">
+            <div class="class-item">
+              <div class="class-icon amber"><i data-lucide="zap"></i></div>
+              <span class="class-label">Anime</span>
             </div>
-            <div class="fm-poster" style="width:62px; height:93px; opacity:0.65;">
-              <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+            <div class="class-item">
+              <div class="class-icon"><i data-lucide="heart"></i></div>
+              <span class="class-label">K-Drama</span>
             </div>
-            <div class="fm-poster" style="width:48px; height:72px; opacity:0.35;">
-              <img src="assets/images/posters/Arcane.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+            <div class="class-item">
+              <div class="class-icon"><i data-lucide="video"></i></div>
+              <span class="class-label">Docs</span>
+            </div>
+            <div class="class-item">
+              <div class="class-icon"><i data-lucide="film"></i></div>
+              <span class="class-label">Short Films</span>
+            </div>
+            <div class="class-item">
+              <div class="class-icon"><i data-lucide="radio"></i></div>
+              <span class="class-label">Reality TV</span>
+            </div>
+          </div>
+          <p class="card-p">Automatic detection and precise categorisation for every medium type — powering accurate watch time stats across your entire history.</p>
+        </div>
+      </div>
+
+      <!-- Migration -->
+      <div class="bento-card mig-card">
+        <div class="card-inner">
+          <h4 class="card-h-sm">Seamless Migration</h4>
+          <div class="mig-flow">
+            <div class="mig-pill mig-lboxd">
+              <div class="d" style="background:#00e054;"></div>
+              <div class="d" style="background:#ff8000;"></div>
+              <div class="d" style="background:#40bcf4;"></div>
+            </div>
+            <span class="mig-arrow"><i data-lucide="arrow-right"></i></span>
+            <div class="mig-pill mig-imdb">IMDb</div>
+            <span class="mig-arrow"><i data-lucide="arrow-right"></i></span>
+            <div class="mig-pill mig-cineq"><i data-lucide="search"></i></div>
+          </div>
+          <p class="card-p">Switch from Letterboxd or IMDb without losing your history. Your entire watch catalogue comes with you in minutes.</p>
+        </div>
+      </div>
+
+      <!-- Stats Ticket — full width -->
+      <div class="bento-card stats-card" id="stats">
+        <div class="stats-inner">
+          <div class="stats-text">
+            <h3 class="card-h">Your Stats Ticket:<br>A Shareable Identity.</h3>
+            <p class="card-p">Visualise your entire watch history as a beautifully designed cinema ticket. Filter by all time, this year, or this month — then share it with one tap.</p>
+          </div>
+          <div class="stats-vis">
+            <div class="stats-vis-bg"></div>
+            <div class="ticket" aria-hidden="true">
+              <div class="ticket-top">
+                <div class="t-head">Stats &amp; Insights</div>
+                <div class="t-sub">Total</div>
+              </div>
+              <div class="ticket-stats">
+                <div>
+                  <span class="t-stat-l">Watch Time</span>
+                  <span class="t-stat-v">47d 3h</span>
+                </div>
+                <div style="text-align:right;">
+                  <span class="t-stat-l">Watched</span>
+                  <span class="t-stat-v c">94</span>
+                </div>
+              </div>
+              <div class="t-donut"></div>
+              <div class="t-perf"></div>
+              <div class="t-barcode"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right column: two smaller cards -->
-      <div class="bento-right">
-
-        <!-- Smart Classification Card -->
-        <div class="bento-card" style="flex:1;">
-          <div class="bento-inner bento-small">
-            <div class="card-label">Smart Content Classification</div>
-            <div class="class-icons" aria-label="Supported content types">
-              <div class="class-item">
-                <div class="class-icon-box"><i data-lucide="zap"></i></div>
-                <span class="class-item-label">Anime</span>
-              </div>
-              <div class="class-item">
-                <div class="class-icon-box"><i data-lucide="heart"></i></div>
-                <span class="class-item-label">K-Drama</span>
-              </div>
-              <div class="class-item">
-                <div class="class-icon-box"><i data-lucide="video"></i></div>
-                <span class="class-item-label">Docs</span>
-              </div>
-              <div class="class-item">
-                <div class="class-icon-box"><i data-lucide="film"></i></div>
-                <span class="class-item-label">Short Films</span>
-              </div>
-              <div class="class-item">
-                <div class="class-icon-box"><i data-lucide="radio"></i></div>
-                <span class="class-item-label">Reality TV</span>
-              </div>
-            </div>
-            <p class="card-desc-sm">
-              Automatic detection and precise categorisation for every medium type — powering accurate watch time in your stats.
-            </p>
-          </div>
-        </div>
-
-        <!-- Seamless Migration Card -->
-        <div class="bento-card" style="flex:1;">
-          <div class="bento-inner bento-small">
-            <div class="card-label">Seamless Migration</div>
-            <div class="migration-row" aria-label="Supported import sources">
-              <div class="platform-pill">
-                <div class="platform-dot" style="background:#00E054;"></div>
-                Letterboxd
-              </div>
-              <span class="migration-arrow" aria-hidden="true">→</span>
-              <div class="platform-pill">
-                <div class="platform-dot" style="background:#F5C518;"></div>
-                IMDb
-              </div>
-              <span class="migration-arrow" aria-hidden="true">→</span>
-              <div class="platform-pill cineq">CineQ</div>
-            </div>
-            <p class="card-desc-sm">
-              Switch from Letterboxd or IMDb without losing your history. Import your entire catalogue in minutes.
-            </p>
-          </div>
-        </div>
-
-      </div>
     </div>
   </section>
 
 
-  <!-- ===== STATS SECTION ===== -->
-  <section class="stats-wrapper" id="stats" aria-labelledby="stats-heading">
-    <div class="stats-card">
-      <div class="stats-text-side">
-        <div class="stats-eyebrow">Stats &amp; Insights</div>
-        <h2 id="stats-heading" class="stats-title">Your Stats Ticket:<br>A Shareable Identity.</h2>
-        <p class="stats-desc">
-          Visualise your entire watch history as a beautifully designed cinema ticket. Filter by all time, this year, or this month — then share it with one tap.
-        </p>
-      </div>
-      <div class="stats-visual-side" aria-hidden="true">
-        <div class="stats-glow"></div>
-        <div class="ticket">
-          <div class="ticket-top-row">
-            <div>
-              <div class="ticket-heading">Stats &amp; Insights</div>
-              <div class="ticket-period">Total</div>
-            </div>
-            <div class="ticket-username">@you</div>
-          </div>
-          <div class="ticket-stats-row">
-            <div>
-              <span class="t-stat-label">Watch Time</span>
-              <span class="t-stat-value">47d 3h</span>
-            </div>
-            <div style="text-align:right;">
-              <span class="t-stat-label">Watched</span>
-              <span class="t-stat-value colored">94</span>
-            </div>
-          </div>
-          <div class="ticket-chart">
-            <div class="t-bar" style="height:68%;background:#818cf8;"></div>
-            <div class="t-bar" style="height:42%;background:#fb923c;"></div>
-            <div class="t-bar" style="height:88%;background:#f43f5e;"></div>
-            <div class="t-bar" style="height:30%;background:#a78bfa;"></div>
-            <div class="t-bar" style="height:20%;background:#10b981;"></div>
-            <div class="t-bar" style="height:15%;background:#38bdf8;"></div>
-          </div>
-          <div class="ticket-perforated"></div>
-          <div class="ticket-barcode">
-            <div class="t-bc" style="width:3px;height:26px;"></div>
-            <div class="t-bc" style="width:1px;height:26px;"></div>
-            <div class="t-bc" style="width:4px;height:26px;"></div>
-            <div class="t-bc" style="width:2px;height:20px;"></div>
-            <div class="t-bc" style="width:3px;height:26px;"></div>
-            <div class="t-bc" style="width:1px;height:22px;"></div>
-            <div class="t-bc" style="width:5px;height:26px;"></div>
-            <div class="t-bc" style="width:1px;height:18px;"></div>
-            <div class="t-bc" style="width:3px;height:26px;"></div>
-            <div class="t-bc" style="width:2px;height:26px;"></div>
-            <div class="t-bc" style="width:4px;height:22px;"></div>
-            <div class="t-bc" style="width:1px;height:26px;"></div>
-            <div class="t-bc" style="width:3px;height:20px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ===== CTA SECTION ===== -->
-  <section class="cta-section" aria-labelledby="cta-heading">
-    <p class="cta-eyebrow">Join the list</p>
-    <h2 id="cta-heading" class="cta-title">Ready for a <span class="accent">Better</span> Watchlist?</h2>
-    <a href="/app.html" class="btn-primary" style="margin: 0 auto; font-size:14px; padding:16px 36px;">
-      <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
+  <!-- ===== CTA ===== -->
+  <section class="cta">
+    <p class="cta-kicker">Join the list</p>
+    <h2 class="cta-title">Ready for a <span class="accent">Better</span><br>Watchlist?</h2>
+    <a href="/app.html" class="btn-main">
+      <i data-lucide="arrow-right"></i>
       Start with CineQ — It's Free
     </a>
   </section>
@@ -927,13 +901,13 @@
 
   <!-- ===== FOOTER ===== -->
   <footer class="footer" role="contentinfo">
-    <div class="footer-left">
+    <div class="footer-l">
       <div class="footer-logo">
-        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" draggable="false" />
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" id="footerLogo" draggable="false" />
       </div>
       <span class="footer-copy">© 2026 CineQ. Built with passion.</span>
     </div>
-    <nav class="footer-links" aria-label="Footer navigation">
+    <nav class="footer-links" aria-label="Footer">
       <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
       <a href="/tos.html" target="_blank" rel="noopener">Terms of Service</a>
       <a href="/app.html">Launch App</a>
@@ -942,18 +916,61 @@
 
 
   <script>
+    // ── Icons
     lucide.createIcons();
 
-    // Apply saved theme preference to prevent flash
+    // ── Custom cursor
+    const cursor = document.getElementById('cursor');
+    const interactables = 'a, button, .bento-card, .nav-cta, .btn-main';
+    let cursorX = 0, cursorY = 0;
+    document.addEventListener('mousemove', e => {
+      cursorX = e.clientX; cursorY = e.clientY;
+      cursor.style.left = cursorX + 'px';
+      cursor.style.top  = cursorY + 'px';
+    });
+    document.addEventListener('mouseover', e => {
+      if (e.target.closest(interactables)) cursor.classList.add('hover');
+    });
+    document.addEventListener('mouseout', e => {
+      if (e.target.closest(interactables)) cursor.classList.remove('hover');
+    });
+
+    // ── Spotlight hero — mask follows mouse
+    const heroBg = document.getElementById('heroBg');
+    const hero   = document.getElementById('hero');
+    hero.addEventListener('mousemove', e => {
+      const r = hero.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width)  * 100;
+      const y = ((e.clientY - r.top)  / r.height) * 100;
+      heroBg.style.setProperty('--mx', x + '%');
+      heroBg.style.setProperty('--my', y + '%');
+    });
+    hero.addEventListener('mouseleave', () => {
+      heroBg.style.setProperty('--mx', '50%');
+      heroBg.style.setProperty('--my', '50%');
+    });
+
+    // ── VanillaTilt on bento cards
+    if (typeof VanillaTilt !== 'undefined') {
+      VanillaTilt.init(document.querySelectorAll('.bento-card'), {
+        max: 3,
+        speed: 600,
+        glare: true,
+        'max-glare': 0.06,
+        scale: 1.01,
+        gyroscope: false
+      });
+    }
+
+    // ── Theme logo swap
     try {
-      const saved = localStorage.getItem('cineq_settings');
-      if (saved) {
-        const settings = JSON.parse(saved);
-        if (settings.theme === 'light') {
-          // Swap logos
-          const logos = document.querySelectorAll('img[src*="DarkMode"], img[src*="Darkmode"]');
-          logos.forEach(img => {
-            img.src = img.src.replace(/Darkmode|DarkMode/gi, 'Lightmode');
+      const s = localStorage.getItem('cineq_settings');
+      if (s) {
+        const parsed = JSON.parse(s);
+        if (parsed.theme === 'light') {
+          ['navLogo','footerLogo'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.src = el.src.replace(/[Dd]ark[Mm]ode/, 'Lightmode');
           });
         }
       }
