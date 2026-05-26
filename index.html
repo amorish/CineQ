@@ -3,217 +3,961 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>CineQ | Discover What to Watch & Smart Recommendations</title>
+  <title>CineQ | Your Cinema Journey, Curated</title>
   <meta name="theme-color" content="#0a0a0a">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
   <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
-  <meta name="description" content="CineQ is an intelligent movie and TV series recommendation engine. Discover what to watch next with FlowMode, smart random suggestions, and manage your watchlist." />
-  
+  <meta name="description" content="CineQ is your personal cinema companion. Track movies and TV series, discover with FlowMode, visualise your stats, and switch from any platform — ad-free, forever." />
+  <meta property="og:title" content="CineQ | Your Cinema Journey, Curated" />
+  <meta property="og:description" content="The personal watchlist manager, discovery engine, and stats tracker. Built from scratch. No ads. Zero paywalls." />
+  <meta property="og:type" content="website" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  
-  <!-- Use the existing CSS for aesthetics -->
-  <link rel="stylesheet" href="assets/css/style.css?v=17">
-  
+
   <style>
-    /* Additional custom landing page styles */
-    .landing-wrapper {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
+    /* ===== RESET & DESIGN TOKENS ===== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #0f0f0f;
+      --card: #141414;
+      --elevated: #1c1c1c;
+      --border: rgba(255,255,255,0.06);
+      --border-hover: rgba(255,255,255,0.14);
+      --accent: #eab308;
+      --accent-glow: rgba(234,179,8,0.3);
+      --accent-soft: rgba(234,179,8,0.08);
+      --text: #f0eeed;
+      --text-secondary: #8a8886;
+      --muted: #444;
+      --font-heading: 'Outfit', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-2xl: 28px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
       background: var(--bg);
-      color: var(--text-main);
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .landing-content {
-      z-index: 10;
-      max-width: 600px;
-      animation: fadeInUp 0.8s ease-out;
-    }
-
-    .landing-title {
-      font-family: var(--font-heading);
-      font-size: 64px;
-      font-weight: 800;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, var(--text-main) 0%, var(--text-secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -1px;
-    }
-
-    .landing-subtitle {
-      font-size: 18px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 40px;
-    }
-
-    .landing-cta {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--accent);
-      color: white;
-      font-family: var(--font-heading);
-      font-weight: 600;
+      color: var(--text);
+      font-family: var(--font-body);
       font-size: 16px;
-      padding: 16px 32px;
-      border-radius: var(--radius-full);
-      text-decoration: none;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    
-    .landing-cta:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
-    }
-    
-    .landing-cta i {
-      margin-left: 8px;
-      width: 18px;
-      height: 18px;
-      transition: transform 0.2s ease;
-    }
-    
-    .landing-cta:hover i {
-      transform: translateX(4px);
-    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+    button { cursor: pointer; font-family: inherit; border: none; }
 
-    .landing-features {
-      display: flex;
-      gap: 24px;
-      margin-top: 64px;
-      justify-content: center;
-      flex-wrap: wrap;
+    /* ===== NAVBAR ===== */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
     }
-
-    .feature-item {
-      background: var(--elevated);
-      padding: 16px 24px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-main);
+    .nav-logo img { height: 34px; width: auto; display: block; }
+    .nav-links {
+      display: flex; align-items: center; gap: 36px;
+      list-style: none;
     }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    .nav-links a {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      transition: color 0.2s;
     }
-
-    /* Abstract background shapes */
-    .glow-shape {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      z-index: 1;
-      opacity: 0.15;
-    }
-    
-    .glow-1 {
-      width: 400px;
-      height: 400px;
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: inline-flex; align-items: center;
       background: var(--accent);
-      top: -100px;
-      left: -100px;
+      color: #000;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s;
     }
-    
-    .glow-2 {
-      width: 300px;
-      height: 300px;
-      background: #8b5cf6;
-      bottom: -50px;
-      right: -100px;
-    }
+    .nav-cta:hover { background: #fbbf24; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(234,179,8,0.3); }
 
-    .landing-footer {
-      position: absolute;
-      bottom: 24px;
-      display: flex;
-      gap: 16px;
+    /* ===== HERO ===== */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      align-items: center;
+      gap: 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 96px 48px 60px;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 28px;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .hero-title {
+      font-family: var(--font-heading);
+      font-size: clamp(48px, 5.5vw, 76px);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+    .hero-title .accent { color: var(--accent); }
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 440px;
+      margin-bottom: 44px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent);
+      color: #000;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border-radius: var(--radius-sm);
+      transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
+      border: none;
+    }
+    .btn-primary:hover {
+      background: #fbbf24;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(234,179,8,0.35);
+    }
+    .btn-primary i { width: 14px; height: 14px; flex-shrink: 0; }
+    .hero-note {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 18px;
       font-size: 12px;
       color: var(--muted);
-      z-index: 10;
     }
+    .hero-note i { width: 12px; height: 12px; color: var(--accent); opacity: 0.7; }
 
-    .landing-footer a {
+    /* ===== PHONE MOCKUP ===== */
+    .hero-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+    .phone-glow {
+      position: absolute;
+      width: 280px; height: 280px;
+      background: var(--accent);
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .phone-frame {
+      width: 240px;
+      background: #111111;
+      border-radius: 40px;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,0.5),
+        0 40px 80px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .phone-pill {
+      width: 72px; height: 7px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      margin: 14px auto 12px;
+    }
+    .phone-screen {
+      background: var(--bg);
+      padding: 10px 10px 14px;
+    }
+    .phone-top-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .phone-app-name {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+    .phone-top-icons { display: flex; gap: 4px; }
+    .phone-top-icon {
+      width: 18px; height: 18px;
+      background: var(--elevated);
+      border-radius: 50%;
+    }
+    .phone-section-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       color: var(--muted);
-      text-decoration: none;
-      transition: color 0.2s ease;
+      margin-bottom: 7px;
+    }
+    .phone-poster-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 90px 90px;
+      gap: 5px;
+    }
+    .phone-poster {
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--elevated);
+      position: relative;
+    }
+    .phone-poster img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .phone-poster.col-span {
+      grid-column: 1;
+      grid-row: 1 / 3;
+    }
+    .phone-poster-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 12px 6px 5px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+      font-family: var(--font-heading);
+      font-size: 7.5px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .phone-pill-badge {
+      display: inline-block;
+      background: rgba(234,179,8,0.15);
+      border: 1px solid rgba(234,179,8,0.25);
+      color: var(--accent);
+      font-size: 6.5px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 1px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .phone-second-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .phone-second-poster {
+      height: 54px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--elevated);
+      position: relative;
+    }
+    .phone-second-poster img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    .landing-footer a:hover {
-      color: var(--text-main);
+    /* ===== SECTION WRAPPER ===== */
+    .section-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 100px 48px;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .section-eyebrow {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: clamp(30px, 3.5vw, 50px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.025em;
+      line-height: 1.0;
+      color: var(--text);
+    }
+
+    /* ===== BENTO GRID ===== */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 10px;
+    }
+    .bento-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      overflow: hidden;
+      transition: border-color 0.25s;
+    }
+    .bento-card:hover { border-color: var(--border-hover); }
+    .bento-card.span-col { grid-row: 1 / 3; }
+    .bento-inner { padding: 36px; height: 100%; display: flex; flex-direction: column; }
+
+    /* FlowMode Card */
+    .feature-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(109,40,217,0.12);
+      border: 1px solid rgba(109,40,217,0.25);
+      color: #a78bfa;
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 6px;
+      width: fit-content;
+      margin-bottom: 24px;
+    }
+    .feature-tag i { width: 10px; height: 10px; }
+    .bento-title {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 3vw, 44px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.025em;
+      line-height: 0.95;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .bento-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      flex: 1;
+      margin-bottom: 32px;
+    }
+    .flowmode-posters {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    .fm-poster {
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--elevated);
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .fm-poster img { display: block; object-fit: cover; }
+
+    /* Right small cards */
+    .bento-right { display: flex; flex-direction: column; gap: 10px; }
+    .bento-small { padding: 28px 30px; }
+
+    .card-label {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    .card-title-sm {
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 1.0;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .card-desc-sm {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Classification icons */
+    .class-icons {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .class-item {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .class-icon-box {
+      width: 38px; height: 38px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .class-icon-box i { width: 16px; height: 16px; }
+    .class-item:hover .class-icon-box {
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+    .class-item-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Migration */
+    .migration-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .platform-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .platform-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .migration-arrow {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .platform-pill.cineq {
+      background: var(--accent-soft);
+      border-color: rgba(234,179,8,0.25);
+      color: var(--accent);
+    }
+
+    /* ===== STATS SECTION ===== */
+    .stats-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 48px 100px;
+    }
+    .stats-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-2xl);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+      min-height: 360px;
+    }
+    .stats-text-side {
+      padding: 64px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .stats-eyebrow {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .stats-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 2.8vw, 40px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.025em;
+      line-height: 1.0;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .stats-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.75;
+      max-width: 380px;
+    }
+    .stats-visual-side {
+      background: linear-gradient(135deg, #0d0d0d 0%, #111008 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 48px;
+      position: relative;
+      border-left: 1px solid var(--border);
+    }
+    .stats-glow {
+      position: absolute;
+      width: 200px; height: 200px;
+      background: var(--accent);
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.05;
+      pointer-events: none;
+    }
+
+    /* Ticket Visual */
+    .ticket {
+      width: 196px;
+      background: var(--elevated);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+    .ticket-top-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .ticket-heading { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; }
+    .ticket-period { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+    .ticket-username {
+      font-family: var(--font-heading);
+      font-size: 9px; font-weight: 800;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 3px 7px;
+      border-radius: 4px;
+    }
+    .ticket-stats-row {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      padding: 10px 0;
+      border-bottom: 1px dotted rgba(255,255,255,0.07);
+      margin-bottom: 14px;
+    }
+    .t-stat-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 3px; }
+    .t-stat-value { font-family: var(--font-heading); font-size: 18px; font-weight: 900; color: var(--text); }
+    .t-stat-value.colored { color: #818cf8; }
+    .ticket-chart {
+      height: 52px;
+      background: var(--bg);
+      border-radius: 7px;
+      display: flex; align-items: flex-end; gap: 3px;
+      padding: 8px 8px 0;
+      margin-bottom: 14px;
+      overflow: hidden;
+    }
+    .t-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      min-width: 4px;
+    }
+    .ticket-perforated {
+      border-top: 1.5px dashed rgba(255,255,255,0.07);
+      margin: 0 -18px 14px;
+    }
+    .ticket-barcode {
+      display: flex; gap: 2px; align-items: center; justify-content: center; height: 28px;
+    }
+    .t-bc { background: rgba(255,255,255,0.25); border-radius: 1px; }
+
+    /* ===== CTA SECTION ===== */
+    .cta-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 110px 48px;
+      text-align: center;
+    }
+    .cta-eyebrow {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .cta-title {
+      font-family: var(--font-heading);
+      font-size: clamp(32px, 4.5vw, 60px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      line-height: 1.0;
+      color: var(--text);
+      margin-bottom: 44px;
+    }
+    .cta-title .accent { color: var(--accent); }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .footer-left { display: flex; flex-direction: column; gap: 6px; }
+    .footer-logo img { height: 22px; width: auto; }
+    .footer-copy { font-size: 11px; color: var(--muted); letter-spacing: 0.02em; }
+    .footer-links { display: flex; gap: 24px; align-items: center; }
+    .footer-links a {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 960px) {
+      .nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 96px 24px 56px;
+        text-align: center;
+        gap: 52px;
+      }
+      .hero-desc { margin-left: auto; margin-right: auto; }
+      .btn-primary { margin: 0 auto; }
+      .hero-note { justify-content: center; }
+      .section-wrapper { padding: 72px 24px; }
+      .bento-grid { grid-template-columns: 1fr; }
+      .bento-card.span-col { grid-row: auto; }
+      .bento-right { flex-direction: column; }
+      .stats-wrapper { padding: 0 24px 72px; }
+      .stats-card { grid-template-columns: 1fr; }
+      .stats-text-side { padding: 40px 32px; }
+      .stats-visual-side { padding: 40px; min-height: 280px; border-left: none; border-top: 1px solid var(--border); }
+      .cta-section { padding: 80px 24px; }
+      .footer { padding: 24px; flex-direction: column; align-items: flex-start; gap: 20px; }
     }
   </style>
 </head>
-<body class="dark-theme">
-  <div class="landing-wrapper">
-    <div class="glow-shape glow-1"></div>
-    <div class="glow-shape glow-2"></div>
-    
-    <div class="landing-content">
-      <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ Logo" style="height: 48px; margin-bottom: 24px;" draggable="false" />
-      <h1 class="landing-title">CineQ</h1>
-      <p class="landing-subtitle">
-        An elegant, ad-free movie and TV series tracker. <br />
-        Discover personalized recommendations, manage your watchlist seamlessly, and coordinate release schedules with friends.
-      </p>
-      
-      <a href="/app.html" class="landing-cta">
-        Get Started <i data-lucide="arrow-right"></i>
-      </a>
+<body>
 
-      <div class="landing-features">
-        <div class="feature-item">
-          <i data-lucide="film" style="color:var(--accent);"></i> Track Everything
-        </div>
-        <div class="feature-item">
-          <i data-lucide="sparkles" style="color:#f59e0b;"></i> Smart Discover
-        </div>
-        <div class="feature-item">
-          <i data-lucide="cloud" style="color:#3b82f6;"></i> Cloud Sync
+  <!-- ===== NAVBAR ===== -->
+  <nav class="nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-logo">
+      <a href="/"><img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" draggable="false" /></a>
+    </div>
+    <ul class="nav-links" role="list">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#stats">Statistics</a></li>
+      <li><a href="/app.html">Sign In</a></li>
+    </ul>
+    <a href="/app.html" class="nav-cta">Get Started</a>
+  </nav>
+
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-content">
+      <div class="hero-eyebrow">Personal Cinema Companion</div>
+      <h1 id="hero-heading" class="hero-title">
+        Your Cinema<br>Journey,<br><span class="accent">Curated.</span>
+      </h1>
+      <p class="hero-desc">
+        The personal watchlist manager, discovery engine, and stats tracker — built from scratch. No ads. No paywalls. Pure cinema.
+      </p>
+      <a href="/app.html" class="btn-primary">
+        <i data-lucide="play"></i>
+        Start Tracking Free
+      </a>
+      <div class="hero-note">
+        <i data-lucide="shield-check"></i>
+        Free forever &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Ad-free
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="phone-glow"></div>
+      <div class="phone-frame">
+        <div class="phone-pill"></div>
+        <div class="phone-screen">
+          <div class="phone-top-bar">
+            <span class="phone-app-name">CineQ</span>
+            <div class="phone-top-icons">
+              <div class="phone-top-icon"></div>
+              <div class="phone-top-icon"></div>
+            </div>
+          </div>
+          <div class="phone-section-label">Your Watchlist</div>
+          <div class="phone-poster-grid">
+            <!-- Tall left poster -->
+            <div class="phone-poster col-span">
+              <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" draggable="false" oncontextmenu="return false" />
+              <div class="phone-poster-label">
+                <div class="phone-pill-badge">Movie</div><br>Blade Runner 2049
+              </div>
+            </div>
+            <!-- Top right -->
+            <div class="phone-poster">
+              <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" draggable="false" oncontextmenu="return false" />
+              <div class="phone-poster-label">Spirited Away</div>
+            </div>
+            <!-- Bottom right -->
+            <div class="phone-poster">
+              <img src="assets/images/posters/Akira.webp" alt="Akira" draggable="false" oncontextmenu="return false" />
+              <div class="phone-poster-label">Akira</div>
+            </div>
+          </div>
+          <!-- Second row -->
+          <div class="phone-second-row">
+            <div class="phone-second-poster">
+              <img src="assets/images/posters/Parasite.webp" alt="Parasite" draggable="false" oncontextmenu="return false" />
+            </div>
+            <div class="phone-second-poster">
+              <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" draggable="false" oncontextmenu="return false" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    
-    <div class="landing-footer">
-      <span>© 2026 CineQ</span>
-      <span>•</span>
-      <a href="/privacy.html" target="_blank">Privacy Policy</a>
-      <span>•</span>
-      <a href="/tos.html" target="_blank">Terms of Service</a>
+  </section>
+
+
+  <!-- ===== FEATURES SECTION ===== -->
+  <section class="section-wrapper" id="features" aria-labelledby="features-heading">
+    <div class="section-header">
+      <p class="section-eyebrow">What Makes It Different</p>
+      <h2 id="features-heading" class="section-title">Unmatched Personal Tracking</h2>
     </div>
-  </div>
+
+    <div class="bento-grid">
+
+      <!-- FlowMode — tall left card -->
+      <div class="bento-card span-col">
+        <div class="bento-inner">
+          <div class="feature-tag">
+            <i data-lucide="sparkles"></i>
+            Introducing FlowMode
+          </div>
+          <h3 class="bento-title">Seamless<br>Cinematic<br>Sorting.</h3>
+          <p class="bento-desc">
+            An intelligent reordering engine that analyses your collection, weighs genre data and ratings, and interleaves movies and TV series into the perfect watch flow — automatically.
+          </p>
+          <div class="flowmode-posters" aria-hidden="true">
+            <div class="fm-poster" style="width:80px; height:120px;">
+              <img src="assets/images/posters/Interstellar.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+            </div>
+            <div class="fm-poster" style="width:62px; height:93px; opacity:0.65;">
+              <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+            </div>
+            <div class="fm-poster" style="width:48px; height:72px; opacity:0.35;">
+              <img src="assets/images/posters/Arcane.webp" alt="" draggable="false" oncontextmenu="return false" style="width:100%;height:100%;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: two smaller cards -->
+      <div class="bento-right">
+
+        <!-- Smart Classification Card -->
+        <div class="bento-card" style="flex:1;">
+          <div class="bento-inner bento-small">
+            <div class="card-label">Smart Content Classification</div>
+            <div class="class-icons" aria-label="Supported content types">
+              <div class="class-item">
+                <div class="class-icon-box"><i data-lucide="zap"></i></div>
+                <span class="class-item-label">Anime</span>
+              </div>
+              <div class="class-item">
+                <div class="class-icon-box"><i data-lucide="heart"></i></div>
+                <span class="class-item-label">K-Drama</span>
+              </div>
+              <div class="class-item">
+                <div class="class-icon-box"><i data-lucide="video"></i></div>
+                <span class="class-item-label">Docs</span>
+              </div>
+              <div class="class-item">
+                <div class="class-icon-box"><i data-lucide="film"></i></div>
+                <span class="class-item-label">Short Films</span>
+              </div>
+              <div class="class-item">
+                <div class="class-icon-box"><i data-lucide="radio"></i></div>
+                <span class="class-item-label">Reality TV</span>
+              </div>
+            </div>
+            <p class="card-desc-sm">
+              Automatic detection and precise categorisation for every medium type — powering accurate watch time in your stats.
+            </p>
+          </div>
+        </div>
+
+        <!-- Seamless Migration Card -->
+        <div class="bento-card" style="flex:1;">
+          <div class="bento-inner bento-small">
+            <div class="card-label">Seamless Migration</div>
+            <div class="migration-row" aria-label="Supported import sources">
+              <div class="platform-pill">
+                <div class="platform-dot" style="background:#00E054;"></div>
+                Letterboxd
+              </div>
+              <span class="migration-arrow" aria-hidden="true">→</span>
+              <div class="platform-pill">
+                <div class="platform-dot" style="background:#F5C518;"></div>
+                IMDb
+              </div>
+              <span class="migration-arrow" aria-hidden="true">→</span>
+              <div class="platform-pill cineq">CineQ</div>
+            </div>
+            <p class="card-desc-sm">
+              Switch from Letterboxd or IMDb without losing your history. Import your entire catalogue in minutes.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== STATS SECTION ===== -->
+  <section class="stats-wrapper" id="stats" aria-labelledby="stats-heading">
+    <div class="stats-card">
+      <div class="stats-text-side">
+        <div class="stats-eyebrow">Stats &amp; Insights</div>
+        <h2 id="stats-heading" class="stats-title">Your Stats Ticket:<br>A Shareable Identity.</h2>
+        <p class="stats-desc">
+          Visualise your entire watch history as a beautifully designed cinema ticket. Filter by all time, this year, or this month — then share it with one tap.
+        </p>
+      </div>
+      <div class="stats-visual-side" aria-hidden="true">
+        <div class="stats-glow"></div>
+        <div class="ticket">
+          <div class="ticket-top-row">
+            <div>
+              <div class="ticket-heading">Stats &amp; Insights</div>
+              <div class="ticket-period">Total</div>
+            </div>
+            <div class="ticket-username">@you</div>
+          </div>
+          <div class="ticket-stats-row">
+            <div>
+              <span class="t-stat-label">Watch Time</span>
+              <span class="t-stat-value">47d 3h</span>
+            </div>
+            <div style="text-align:right;">
+              <span class="t-stat-label">Watched</span>
+              <span class="t-stat-value colored">94</span>
+            </div>
+          </div>
+          <div class="ticket-chart">
+            <div class="t-bar" style="height:68%;background:#818cf8;"></div>
+            <div class="t-bar" style="height:42%;background:#fb923c;"></div>
+            <div class="t-bar" style="height:88%;background:#f43f5e;"></div>
+            <div class="t-bar" style="height:30%;background:#a78bfa;"></div>
+            <div class="t-bar" style="height:20%;background:#10b981;"></div>
+            <div class="t-bar" style="height:15%;background:#38bdf8;"></div>
+          </div>
+          <div class="ticket-perforated"></div>
+          <div class="ticket-barcode">
+            <div class="t-bc" style="width:3px;height:26px;"></div>
+            <div class="t-bc" style="width:1px;height:26px;"></div>
+            <div class="t-bc" style="width:4px;height:26px;"></div>
+            <div class="t-bc" style="width:2px;height:20px;"></div>
+            <div class="t-bc" style="width:3px;height:26px;"></div>
+            <div class="t-bc" style="width:1px;height:22px;"></div>
+            <div class="t-bc" style="width:5px;height:26px;"></div>
+            <div class="t-bc" style="width:1px;height:18px;"></div>
+            <div class="t-bc" style="width:3px;height:26px;"></div>
+            <div class="t-bc" style="width:2px;height:26px;"></div>
+            <div class="t-bc" style="width:4px;height:22px;"></div>
+            <div class="t-bc" style="width:1px;height:26px;"></div>
+            <div class="t-bc" style="width:3px;height:20px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== CTA SECTION ===== -->
+  <section class="cta-section" aria-labelledby="cta-heading">
+    <p class="cta-eyebrow">Join the list</p>
+    <h2 id="cta-heading" class="cta-title">Ready for a <span class="accent">Better</span> Watchlist?</h2>
+    <a href="/app.html" class="btn-primary" style="margin: 0 auto; font-size:14px; padding:16px 36px;">
+      <i data-lucide="arrow-right" style="width:16px;height:16px;"></i>
+      Start with CineQ — It's Free
+    </a>
+  </section>
+
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-left">
+      <div class="footer-logo">
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" draggable="false" />
+      </div>
+      <span class="footer-copy">© 2026 CineQ. Built with passion.</span>
+    </div>
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+      <a href="/tos.html" target="_blank" rel="noopener">Terms of Service</a>
+      <a href="/app.html">Launch App</a>
+    </nav>
+  </footer>
+
 
   <script>
     lucide.createIcons();
-    // Auto-detect if user has a light theme preference saved in localStorage
+
+    // Apply saved theme preference to prevent flash
     try {
       const saved = localStorage.getItem('cineq_settings');
       if (saved) {
         const settings = JSON.parse(saved);
         if (settings.theme === 'light') {
-          document.body.classList.replace('dark-theme', 'light-theme');
-          document.querySelector('img[alt="CineQ Logo"]').src = 'assets/images/cineqLogoLightmode.png';
+          // Swap logos
+          const logos = document.querySelectorAll('img[src*="DarkMode"], img[src*="Darkmode"]');
+          logos.forEach(img => {
+            img.src = img.src.replace(/Darkmode|DarkMode/gi, 'Lightmode');
+          });
         }
       }
-    } catch (e) {}
+    } catch(e) {}
   </script>
 </body>
 </html>
