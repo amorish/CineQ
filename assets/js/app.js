@@ -137,6 +137,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     watchlist = [];
     epCache = {};
     epCacheKey = 'cineq_ep_cache';
+    localStorage.removeItem('cineq_cached_watchlist');
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('verifyOverlay').style.display = 'none';
     document.getElementById('userBadge').style.display = 'none';
@@ -471,6 +472,7 @@ async function loadWatchlist() {
       const data = docSnap.data();
       watchlist = data.items || [];
       notifications = data.notifications || [];
+      localStorage.setItem('cineq_cached_watchlist', JSON.stringify(watchlist));
       if (data.epCache) { epCache = { ...epCache, ...data.epCache }; saveEpCache(); }
       if (data.randomPickState) {
         const todayStr = todayDate();
@@ -487,6 +489,10 @@ async function loadWatchlist() {
 // ===== STATE =====
 let isWatchlistLoading = true;
 let watchlist = [];
+try {
+  const cached = localStorage.getItem('cineq_cached_watchlist');
+  if (cached) watchlist = JSON.parse(cached);
+} catch(e) {}
 let currentFilter = 'list'; // list, watching, watched, explore, archive
 let currentSort = 'added'; // added, name, rating, year
 let currentSortOrder = 'desc'; // desc, asc
@@ -931,6 +937,7 @@ async function save() {
   updateStats();
   if (!db || !currentUser) return;
   try {
+    localStorage.setItem('cineq_cached_watchlist', JSON.stringify(watchlist));
     let randomPickState = null;
     try { const stored = localStorage.getItem('cineq_random_pick_state'); if (stored) randomPickState = JSON.parse(stored); } catch(e) {}
     await db.collection("cineq_watchlists").doc(currentUser.uid).set({ items: watchlist, epCache, randomPickState, notifications });
