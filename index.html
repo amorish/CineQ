@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>CineQ — Your Cinema Journey, Curated</title>
+  <title>CineQ | Your Watchlist Companion</title>
   <meta name="theme-color" content="#0a0a0a">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="assets/images/cineqFavicon.png?v=2" type="image/png" sizes="64x64" />
   <link rel="apple-touch-icon" href="assets/images/cineqFavicon.png" />
   <meta name="description" content="CineQ — the personal watchlist manager, discovery engine, and stats tracker. No ads. No paywalls. Pure cinema." />
-  <meta property="og:title" content="CineQ — Your Cinema Journey, Curated" />
-  <meta property="og:description" content="Track movies and TV series, discover with FlowMode, and share your cinema stats — ad-free, forever." />
+  <meta property="og:title" content="CineQ | Your Watchlist Companion" />
+  <meta property="og:description" content="Track movies and TV series, discover with FlowMode, and share your cinema stats, completely ad-free." />
   <meta property="og:type" content="website" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,7 +99,8 @@
       border-bottom: 1px solid var(--border);
       cursor: auto;
     }
-    .nav-logo img { height: 32px; width: auto; }
+    .nav-logo { display: block; height: 32px; flex-shrink: 0; }
+    .nav-logo img { height: 32px; width: auto; max-width: 120px; object-fit: contain; }
     .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
     .nav-links a {
       font-family: var(--font-h);
@@ -378,16 +379,22 @@
       overflow: hidden;
     }
 
-    /* Dashed sorting line */
-    .flow-line {
+    /* Dashed sorting line curve */
+    .flow-curve-svg {
       position: absolute;
-      width: 160%;
-      height: 1px;
-      border-bottom: 2px dashed rgba(255,255,255,0.07);
-      transform: rotate(-7deg);
-      transition: border-color 0.5s;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
     }
-    .flowmode-card:hover .flow-line { border-color: rgba(234,179,8,0.25); }
+    .flow-curve-path {
+      transition: stroke 0.4s, stroke-width 0.4s;
+    }
+    .flowmode-card:hover .flow-curve-path {
+      stroke: rgba(234,179,8,0.3);
+      stroke-width: 2.5;
+    }
 
     /* Ghost poster cards */
     .ghost {
@@ -412,59 +419,107 @@
     .flow-fade {
       position: absolute; inset: 0;
       background: linear-gradient(to top, var(--card) 0%, transparent 55%);
-      z-index: 4; pointer-events: none;
+      z-index: 4; pointer-events:    /* ----- Classification Chips ----- */
+    .class-chips {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 24px;
     }
-
-    /* ----- Classification card ----- */
-    .class-card  { grid-column: 2; grid-row: 1; }
-
-    .class-icons {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-    .class-item {
-      display: flex; flex-direction: column; align-items: center; gap: 7px;
+    .class-chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: var(--r-md);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: default;
     }
-    .class-icon {
-      width: 44px; height: 44px;
-      background: var(--elevated);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .class-chip .chip-icon {
+      width: 20px; height: 20px;
       display: flex; align-items: center; justify-content: center;
       color: var(--text-2);
-      transition: all 0.25s;
+      transition: color 0.3s;
     }
-    .class-icon i { width: 18px; height: 18px; }
-    .class-icon.amber { color: var(--accent); border-color: rgba(234,179,8,0.3); background: var(--accent-soft); }
-    .class-item:hover .class-icon { border-color: var(--border-hover); color: var(--text); transform: translateY(-2px); }
-    .class-label { font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
-
-    /* ----- Migration card ----- */
-    .mig-card { grid-column: 2; grid-row: 2; }
-
+    .class-chip .chip-icon i {
+      width: 16px; height: 16px;
+    }
+    .class-chip .chip-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.02em;
+      transition: color 0.3s;
+    }
+    .class-chip:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border-hover);
+    }
+    .class-chip.chip-anime:hover { border-color: rgba(239, 68, 68, 0.3); }
+    .class-chip.chip-anime:hover .chip-icon { color: #ef4444; filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)); }
+    .class-chip.chip-anime:hover .chip-label { color: #fca5a5; }
+    
+    .class-chip.chip-kdrama:hover { border-color: rgba(236, 72, 153, 0.3); }
+    .class-chip.chip-kdrama:hover .chip-icon { color: #ec4899; filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.5)); }
+    .class-chip.chip-kdrama:hover .chip-label { color: #fbcfe8; }
+    
+    .class-chip.chip-docs:hover { border-color: rgba(59, 130, 246, 0.3); }
+    .class-chip.chip-docs:hover .chip-icon { color: #3b82f6; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5)); }
+    .class-chip.chip-docs:hover .chip-label { color: #bfdbfe; }
+    
+    .class-chip.chip-shorts:hover { border-color: rgba(139, 92, 246, 0.3); }
+    .class-chip.chip-shorts:hover .chip-icon { color: #8b5cf6; filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5)); }
+    .class-chip.chip-shorts:hover .chip-label { color: #ddd6fe; }
+    
+    .class-chip.chip-reality:hover { border-color: rgba(234, 179, 8, 0.3); }
+    .class-chip.chip-reality:hover .chip-icon { color: #eab308; filter: drop-shadow(0 0 6px rgba(234, 179, 8, 0.5)); }
+    .class-chip.chip-reality:hover .chip-label { color: #fde047; }ar    /* ----- Migration Card Custom Layout ----- */
     .mig-flow {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
       margin-bottom: 18px;
+      background: rgba(0,0,0,0.15);
+      padding: 16px 20px;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.02);
     }
-    .mig-pill {
-      height: 48px;
+    .mig-brand {
+      background: var(--elevated);
+      border: 1px solid var(--border);
       border-radius: var(--r-sm);
+      height: 44px; padding: 0 16px;
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-h);
-      font-weight: 800;
-      font-size: 13px;
-      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+      transition: all 0.3s;
     }
-    .mig-card:hover .mig-pill { transform: translateY(-2px); }
-    .mig-lboxd { width: 72px; gap: 4px; background: #14181c; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-    .mig-lboxd .d { width: 9px; height: 9px; border-radius: 50%; }
-    .mig-imdb  { width: 72px; background: #f5c518; color: #000; border-radius: var(--r-sm); font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-    .mig-cineq { width: 52px; background: var(--elevated); border: 1px solid var(--accent); box-shadow: 0 0 18px var(--accent-glow); }
-    .mig-cineq i { width: 18px; height: 18px; color: var(--accent); }
-    .mig-arrow { color: var(--muted); flex-shrink: 0; transition: color 0.3s; }
-    .mig-card:hover .mig-arrow { color: var(--accent); }
-    .mig-arrow i { width: 14px; height: 14px; }
+    .mig-card:hover .mig-brand {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+    .mig-cineq-dest {
+      width: 52px; height: 52px;
+      background: var(--elevated);
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+      transition: all 0.3s;
+    }
+    .mig-cineq-dest img {
+      width: 28px; height: 28px;
+      object-fit: contain;
+    }
+    .mig-card:hover .mig-cineq-dest {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px var(--accent-glow);
+      border-color: #fbbf24;
+    }
+    .mig-arrow {
+      color: var(--muted);
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+    .mig-card:hover .mig-arrow {
+      color: var(--accent);
+    }eight: 14px; }
 
     /* ----- Stats card ----- */
     .stats-card { grid-column: 1 / 3; grid-row: 3; }
@@ -700,9 +755,8 @@
   <!-- Custom Cursor -->
   <div class="cursor" id="cursor"></div>
 
-  <!-- ===== NAVBAR ===== -->
   <nav class="nav" role="navigation">
-    <a href="/"><img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" id="navLogo" draggable="false" /></a>
+    <a href="/" class="nav-logo"><img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" id="navLogo" draggable="false" /></a>
     <ul class="nav-links" role="list">
       <li><a href="#features">Features</a></li>
       <li><a href="#stats">Statistics</a></li>
@@ -753,7 +807,7 @@
 
     <!-- Hero text -->
     <div class="hero-content">
-      <p class="hero-kicker">Meet CineQ</p>
+      <p class="hero-kicker">PRIVATE &amp; AD-FREE</p>
       <h1 class="hero-title">
         YOUR CINEMA<br>
         JOURNEY, <span class="accent">CURATED.</span>
@@ -762,7 +816,6 @@
 
     <!-- Scroll cue -->
     <div class="scroll-cue" aria-hidden="true">
-      <span>Scroll</span>
       <div class="cue-line"></div>
     </div>
   </section>
@@ -785,11 +838,13 @@
             Introducing FlowMode
           </div>
           <h3 class="card-h">Seamless<br>Cinematic<br>Sorting.</h3>
-          <p class="card-p">An intelligent reordering engine that weighs ratings, genres, and watch progress — then arranges your entire collection into the perfect viewing flow, automatically.</p>
+          <p class="card-p">An intelligent reordering engine that weighs ratings, genres, and watch progress to arrange your entire collection into the perfect viewing flow, automatically.</p>
         </div>
         <!-- Animated ghost cards -->
         <div class="flow-graphic" aria-hidden="true">
-          <div class="flow-line"></div>
+          <svg class="flow-curve-svg" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M -20 160 C 120 180, 100 20, 240 40 C 340 50, 320 170, 420 140" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="6 6" fill="none" class="flow-curve-path" />
+          </svg>
           <div class="ghost ghost-l">
             <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false">
           </div>
@@ -807,29 +862,29 @@
       <div class="bento-card class-card">
         <div class="card-inner">
           <h4 class="card-h-sm">Smart Content Classification</h4>
-          <div class="class-icons">
-            <div class="class-item">
-              <div class="class-icon amber"><i data-lucide="zap"></i></div>
-              <span class="class-label">Anime</span>
+          <div class="class-chips">
+            <div class="class-chip chip-anime">
+              <div class="chip-icon"><i data-lucide="flame"></i></div>
+              <span class="chip-label">Anime</span>
             </div>
-            <div class="class-item">
-              <div class="class-icon"><i data-lucide="heart"></i></div>
-              <span class="class-label">K-Drama</span>
+            <div class="class-chip chip-kdrama">
+              <div class="chip-icon"><i data-lucide="heart"></i></div>
+              <span class="chip-label">K-Drama</span>
             </div>
-            <div class="class-item">
-              <div class="class-icon"><i data-lucide="video"></i></div>
-              <span class="class-label">Docs</span>
+            <div class="class-chip chip-docs">
+              <div class="chip-icon"><i data-lucide="globe"></i></div>
+              <span class="chip-label">Docs</span>
             </div>
-            <div class="class-item">
-              <div class="class-icon"><i data-lucide="film"></i></div>
-              <span class="class-label">Short Films</span>
+            <div class="class-chip chip-shorts">
+              <div class="chip-icon"><i data-lucide="clapperboard"></i></div>
+              <span class="chip-label">Shorts</span>
             </div>
-            <div class="class-item">
-              <div class="class-icon"><i data-lucide="radio"></i></div>
-              <span class="class-label">Reality TV</span>
+            <div class="class-chip chip-reality">
+              <div class="chip-icon"><i data-lucide="crown"></i></div>
+              <span class="chip-label">Reality TV</span>
             </div>
           </div>
-          <p class="card-p">Automatic detection and precise categorisation for every medium type — powering accurate watch time stats across your entire history.</p>
+          <p class="card-p">Automatic detection and precise categorisation for every medium type, powering accurate watch time stats across your entire history.</p>
         </div>
       </div>
 
@@ -838,15 +893,31 @@
         <div class="card-inner">
           <h4 class="card-h-sm">Seamless Migration</h4>
           <div class="mig-flow">
-            <div class="mig-pill mig-lboxd">
-              <div class="d" style="background:#00e054;"></div>
-              <div class="d" style="background:#ff8000;"></div>
-              <div class="d" style="background:#40bcf4;"></div>
+            <!-- Letterboxd Logo -->
+            <div class="mig-brand" title="Letterboxd">
+              <svg viewBox="0 0 100 35" width="70" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="17" r="14" fill="#00e054" style="mix-blend-mode: screen; opacity: 0.85;" />
+                <circle cx="45" cy="17" r="14" fill="#ff8000" style="mix-blend-mode: screen; opacity: 0.85;" />
+                <circle cx="70" cy="17" r="14" fill="#40bcf4" style="mix-blend-mode: screen; opacity: 0.85;" />
+              </svg>
             </div>
+            
             <span class="mig-arrow"><i data-lucide="arrow-right"></i></span>
-            <div class="mig-pill mig-imdb">IMDb</div>
-            <span class="mig-arrow"><i data-lucide="arrow-right"></i></span>
-            <div class="mig-pill mig-cineq"><i data-lucide="search"></i></div>
+            
+            <!-- CineQ Dest -->
+            <div class="mig-cineq-dest" title="CineQ">
+              <img src="assets/images/cineqFavicon.png" alt="CineQ" />
+            </div>
+            
+            <span class="mig-arrow"><i data-lucide="arrow-left"></i></span>
+            
+            <!-- IMDb Logo -->
+            <div class="mig-brand" title="IMDb">
+              <svg viewBox="0 0 48 24" width="56" height="24" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="24" rx="4" fill="#F5C518"/>
+                <text x="24" y="17" font-family="'Impact', 'Arial Black', sans-serif" font-weight="900" font-size="13" fill="#000000" text-anchor="middle" letter-spacing="-0.5">IMDb</text>
+              </svg>
+            </div>
           </div>
           <p class="card-p">Switch from Letterboxd or IMDb without losing your history. Your entire watch catalogue comes with you in minutes.</p>
         </div>
@@ -857,7 +928,7 @@
         <div class="stats-inner">
           <div class="stats-text">
             <h3 class="card-h">Your Stats Ticket:<br>A Shareable Identity.</h3>
-            <p class="card-p">Visualise your entire watch history as a beautifully designed cinema ticket. Filter by all time, this year, or this month — then share it with one tap.</p>
+            <p class="card-p">Visualise your entire watch history as a beautifully designed cinema ticket. Filter by all time, this year, or this month, and share it with one tap.</p>
           </div>
           <div class="stats-vis">
             <div class="stats-vis-bg"></div>
@@ -894,7 +965,7 @@
     <h2 class="cta-title">Ready for a <span class="accent">Better</span><br>Watchlist?</h2>
     <a href="/app.html" class="btn-main">
       <i data-lucide="arrow-right"></i>
-      Start with CineQ — It's Free
+      Start with CineQ for Free
     </a>
   </section>
 
