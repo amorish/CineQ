@@ -490,8 +490,10 @@
             <span class="auth-footer-text" id="authFooterText">New here?</span>
             <button class="auth-toggle-inline" onclick="toggleAuthMode()" id="authToggleBtn">Sign Up</button>
           </div>
-          <div style="font-size: 11px; margin-top: 4px;">
-            <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s;">Privacy Policy</a>
+          <div style="font-size: 11px; margin-top: 4px; display: flex; gap: 12px; justify-content: center;">
+            <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Privacy Policy</a>
+            <span style="color: var(--muted); opacity: 0.5;">|</span>
+            <a href="/tos.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Terms of Service</a>
           </div>
         </div>
       </div>
@@ -514,9 +516,13 @@
           <li><strong>No Paywalls, Ad-Free</strong>: Enjoy a fluid, fully featured personal tracking experience with no ads and no subscription locks.</li>
         </ul>
         
-        <div class="auth-info-footer">
+        <div class="auth-info-footer" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
           <span>© 2026 CineQ. All rights reserved.</span>
-          <a href="/privacy.html" target="_blank">Privacy Policy</a>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <a href="/privacy.html" target="_blank">Privacy Policy</a>
+            <span style="opacity: 0.3;">•</span>
+            <a href="/tos.html" target="_blank">Terms of Service</a>
+          </div>
         </div>
       </div>
     </div>
@@ -621,8 +627,10 @@
       <div class="ticket-divider"></div>
       <div class="auth-footer" style="flex-direction: column; gap: 8px;">
         <button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button>
-        <div style="font-size: 11px; margin-top: 4px;">
-          <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s;">Privacy Policy</a>
+        <div style="font-size: 11px; margin-top: 4px; display: flex; gap: 12px; justify-content: center;">
+          <a href="/privacy.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Privacy Policy</a>
+          <span style="color: var(--muted); opacity: 0.5;">|</span>
+          <a href="/tos.html" target="_blank" style="color: var(--muted); text-decoration: none; transition: color 0.2s; font-weight: 500;">Terms of Service</a>
         </div>
       </div>
     </div>

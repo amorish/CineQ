@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - CineQ</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #121212;
+      color: #f0eeed;
+      line-height: 1.75;
+      padding: 60px 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Page Container */
+    .container {
+      width: 100%;
+      max-width: 650px;
+      box-sizing: border-box;
+    }
+
+    /* Back Button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      color: #eab308;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border: 1px solid rgba(234, 179, 8, 0.25);
+      padding: 10px 22px;
+      border-radius: 30px;
+      background: rgba(234, 179, 8, 0.02);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      margin-bottom: 24px;
+    }
+    .back-btn:hover {
+      background: rgba(234, 179, 8, 0.08);
+      border-color: #eab308;
+      transform: translateY(-1px);
+    }
+    .back-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Ticket Body */
+    .ticket {
+      background: #181818;
+      border: none;
+      border-radius: 16px;
+      padding: 56px 48px;
+      box-sizing: border-box;
+      position: relative;
+      box-shadow: 0 35px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+    }
+
+    /* Repeating Circular Punch-Hole Cutouts (Left Edge) */
+    .ticket::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -9px;
+      width: 16px;
+      background-image: radial-gradient(circle, #121212 6px, transparent 7px);
+      background-size: 16px 26px;
+      z-index: 10;
+    }
+
+    /* Repeating Circular Punch-Hole Cutouts (Right Edge) */
+    .ticket::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -9px;
+      width: 16px;
+      background-image: radial-gradient(circle, #121212 6px, transparent 7px);
+      background-size: 16px 26px;
+      z-index: 10;
+    }
+
+    .admit-text {
+      font-size: 9px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #eab308;
+      margin-bottom: 28px;
+      display: block;
+      font-weight: 700;
+      text-align: center;
+      opacity: 0.85;
+    }
+
+    .logo-box {
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: center;
+    }
+    .logo-box img {
+      height: 36px;
+      width: auto;
+      display: block;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .date {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 32px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .ticket-divider {
+      border-top: 2px dashed rgba(234, 179, 8, 0.25);
+      margin: 36px 0;
+      position: relative;
+    }
+
+    h2 {
+      color: #eab308;
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 12px;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      color: #a8a6a5;
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      text-align: justify;
+    }
+
+    ul {
+      color: #a8a6a5;
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    li {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    a.inline-link {
+      color: #eab308;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px dotted rgba(234, 179, 8, 0.4);
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    a.inline-link:hover {
+      color: #f59e0b;
+      border-color: #f59e0b;
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+      color: #555;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 520px) {
+      .ticket {
+        padding: 40px 28px;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Back Button -->
+    <div>
+      <a href="/" class="back-btn">
+        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; display: inline-block; vertical-align: middle; transform: translateY(-1px);"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to CineQ
+      </a>
+    </div>
+
+    <!-- Golden Ticket -->
+    <div class="ticket">
+      <span class="admit-text">• Service Protocol Agreement •</span>
+      
+      <div class="logo-box">
+        <img src="https://raw.githubusercontent.com/amorish/CineQ/main/assets/images/cineqLogoDarkmode.png" alt="CineQ">
+      </div>
+      
+      <h1>Terms of Service</h1>
+      <div class="date">Effective Date: May 26, 2026</div>
+      
+      <p>Welcome to CineQ ("we," "our," or "us"). By accessing or using our website (<a href="https://cine-q.vercel.app" class="inline-link">https://cine-q.vercel.app</a>), you agree to be bound by these Terms of Service. Please read these terms carefully before accessing the application.</p>
+      
+      <div class="ticket-divider"></div>
+
+      <h2>1. Acceptance & Fair Use</h2>
+      <p>CineQ provides a premium, ad-free movie and TV series tracking platform. You agree to use this service strictly for personal, non-commercial purposes. You must not attempt to disrupt the service, exploit database endpoints, scrape TMDB metadata systematically, or bypass security features.</p>
+      
+      <h2>2. Account Security & Google OAuth</h2>
+      <p>To use full watchlist synchronization, you may authenticate using Google Sign-In. You are responsible for maintaining the security of your linked Google account credentials. CineQ processes authentication securely using official Google APIs and Google Cloud Firestore, ensuring strict data isolation per user.</p>
+      
+      <h2>3. Intellectual Property & API Data</h2>
+      <p>CineQ utilizes the TMDB API to fetch high-fidelity media metadata (movie posters, casting, summaries, and ratings). All media assets, logos, and descriptions remain the property of their respective copyright holders. CineQ does not claim ownership of TMDB metadata or media posters.</p>
+      
+      <h2>4. Termination & Autonomy</h2>
+      <p>We reserve the right to suspend or restrict access to users who violate these terms. You maintain complete autonomy over your data and can permanently delete your account and clear all Firestore records instantly at any time from your settings panel.</p>
+      
+      <h2>5. Limitation of Liability</h2>
+      <p>CineQ is provided "as is" without warranties of any kind. We are not liable for any temporary database outages or service interruptions. For compliance or terms inquiries, please contact: <a href="mailto:mycineq@gmail.com" class="inline-link">mycineq@gmail.com</a>.</p>
+
+      <footer>
+        &copy; 2026 CineQ. All rights reserved.
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
