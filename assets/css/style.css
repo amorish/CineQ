@@ -18,6 +18,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-si
 h1,h2,h3,h4,.logo,.card-title,.modal-title{font-family:var(--font-heading);letter-spacing:-.02em}
 img{display:block;max-width:100%}
 button, a, .clickable, select, input[type="checkbox"] {font-family:inherit;cursor:pointer;}
+select option { background: var(--surface, #141414); color: var(--text, #fff); }
 .scrollbar-hide::-webkit-scrollbar{display:none}
 .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
 /* ===== THEATER BACKGROUND LAYOUT ===== */
@@ -667,6 +668,12 @@ body.light-theme #advancedFilterBtn.active {
   align-items:center;
   gap:2px;
   box-shadow:0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.rewatch-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  cursor: pointer;
 }
 /* Remove Button */
 .remove-btn{
@@ -1068,7 +1075,9 @@ body.light-theme .auth-info-card li strong {
 .auth-logo { height:32px !important; margin:0 auto; }
 .auth-card h2{font-size:22px;font-weight:700;margin-bottom:4px}
 .auth-card p{color:var(--text-secondary);font-size:14px;margin-bottom:20px}
-.auth-form{display:flex;flex-direction:column;gap:16px;text-align:left}
+.auth-form{display:flex;flex-direction:column;text-align:left}
+.auth-form > * { margin-bottom: 16px; }
+.auth-form > *:last-child { margin-bottom: 0; }
 .input-group{display:flex;flex-direction:column;gap:6px}
 .input-group label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .input-wrapper{position:relative;display:flex;align-items:center}

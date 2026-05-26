@@ -86,15 +86,7 @@
         <button class="icon-btn" onclick="toggleSortPanel()" style="width:32px;height:32px;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
       </div>
       <div class="sort-pills" id="sortPills"></div>
-      <div style="margin-top: 12px; margin-bottom: 12px;" id="flowModeMoodContainer">
-        <select id="flowModeMood" style="width: 100%; padding: 10px; border-radius: var(--radius-md); background: var(--elevated); border: 1px solid var(--border); color: var(--text-main); font-family: var(--font-body); outline: none; appearance: none; cursor: pointer;">
-          <option value="overall">Mood: Overall (Smart Mix)</option>
-          <option value="action">Action & Adventure</option>
-          <option value="chill">Chill & Comedy</option>
-          <option value="deep">Deep & Drama</option>
-          <option value="scary">Horror & Mystery</option>
-        </select>
-      </div>
+
       <button class="flowmode-state-btn" id="flowModeBtn" onclick="activateFlowMode()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sparkle-icon">
           <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
@@ -676,9 +668,9 @@
             </div>
             <div class="setting-group">
               <label>Username</label>
-              <div class="input-wrapper-settings">
-                <input type="text" id="settingsUsername" placeholder="Username" maxlength="15" />
-                <button class="settings-action-btn" onclick="updateProfileUsername()">Update</button>
+              <div class="input-wrapper-settings" style="display:flex; align-items:center; gap:8px;">
+                <input type="text" id="settingsUsername" placeholder="Username" maxlength="15" readonly style="flex:1; cursor:default; background:transparent; border:1px solid transparent; border-bottom:1px solid var(--border); border-radius:0; padding:8px 0; outline:none; transition:0.2s;" onblur="updateProfileUsernameOnBlur()" onkeydown="if(event.key==='Enter') this.blur();" />
+                <button class="settings-action-btn" onclick="editUsernameInit()" style="padding:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:var(--muted);"><i data-lucide="pencil" style="width:16px; height:16px;"></i></button>
               </div>
             </div>
             <div class="setting-group">

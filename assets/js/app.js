@@ -125,6 +125,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     const displayName = user.displayName || user.email;
     document.getElementById('userEmail').innerHTML =
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
+    isWatchlistLoading = true;
     try {
       await Promise.all([syncSettingsFromFirestore(), loadWatchlist()]);
     } catch (e) { console.error("Error during parallel initialization:", e); }
@@ -132,6 +133,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     hideSplash();
   } else {
     currentUser = null;
+    isWatchlistLoading = false;
     watchlist = [];
     epCache = {};
     epCacheKey = 'cineq_ep_cache';
@@ -476,12 +478,14 @@ async function loadWatchlist() {
       }
     } else { watchlist = []; notifications = []; }
     reclassifyWatchlistItems();
+    isWatchlistLoading = false;
     renderGrid();
     renderNotifications();
-  } catch (e) { console.error("Error loading watchlist", e); }
+  } catch (e) { console.error("Error loading watchlist", e); isWatchlistLoading = false; renderGrid(); }
 }
 
 // ===== STATE =====
+let isWatchlistLoading = true;
 let watchlist = [];
 let currentFilter = 'list'; // list, watching, watched, explore, archive
 let currentSort = 'added'; // added, name, rating, year
@@ -664,15 +668,6 @@ async function activateFlowMode() {
 }
 
 function applyFlowMode(items) {
-  const moodSelect = document.getElementById('flowModeMood');
-  const selectedMood = moodSelect ? moodSelect.value : 'overall';
-  
-  let moodGenres = [];
-  if (selectedMood === 'action') moodGenres = ['Action', 'Adventure', 'Thriller', 'Animation'];
-  else if (selectedMood === 'chill') moodGenres = ['Comedy', 'Romance', 'Family', 'Animation'];
-  else if (selectedMood === 'deep') moodGenres = ['Drama', 'Sci-Fi', 'Documentary', 'Mystery'];
-  else if (selectedMood === 'scary') moodGenres = ['Horror', 'Mystery', 'Thriller'];
-  
   const droppedItems = watchlist.filter(w => w.archived);
   const watchedItems = watchlist.filter(w => w.watched);
   
@@ -691,7 +686,6 @@ function applyFlowMode(items) {
     
     if (a._genres) {
       a._genres.forEach(g => {
-        if (moodGenres.includes(g)) _score += 25;
         if (watchedGenres[g]) _score += Math.min(watchedGenres[g] * 2, 20);
         if (droppedGenres[g]) _score -= Math.min(droppedGenres[g] * 5, 40);
       });
@@ -1548,6 +1542,22 @@ function renderGrid() {
         if (!asc) items.reverse();
       }
     }
+  }
+
+  if (isWatchlistLoading) {
+    grid.innerHTML = Array(6).fill(`
+      <div class="skeleton-card grid-skeleton">
+        <div class="skeleton-thumbnail" style="border-radius: var(--radius-md);"></div>
+        <div class="skeleton-text title" style="margin-top: 12px;"></div>
+        <div class="skeleton-text meta" style="margin-top: 8px;"></div>
+      </div>
+    `).join('');
+    empty.style.display = 'none';
+    if (sortFilterBtn) sortFilterBtn.style.display = 'none';
+    if (selectModeToggleBtn) selectModeToggleBtn.style.display = 'none';
+    if (pillDivider) pillDivider.style.display = 'none';
+    if (sortSelectPillGroup) sortSelectPillGroup.style.display = 'none';
+    return;
   }
 
   if (items.length === 0) {
@@ -2555,18 +2565,60 @@ function saveCustomListSettings() {
 }
 
 // ===== ACCOUNT ACTIONS =====
-async function updateProfileUsername() {
-  const newName = document.getElementById('settingsUsername').value.trim();
-  if (!newName) return showToast('Username cannot be empty');
-  if (newName.length > 15) return showToast('Username cannot be more than 15 characters');
+let originalUsername = '';
+function editUsernameInit() {
+  const input = document.getElementById('settingsUsername');
+  originalUsername = input.value;
+  input.removeAttribute('readonly');
+  input.style.cursor = 'text';
+  input.style.background = 'rgba(53,53,52,0.4)';
+  input.style.border = '1px solid var(--border)';
+  input.style.padding = '0 14px';
+  input.style.borderRadius = 'var(--radius-sm)';
+  input.style.height = '44px';
+  input.focus();
+}
+
+async function updateProfileUsernameOnBlur() {
+  const input = document.getElementById('settingsUsername');
+  input.setAttribute('readonly', 'true');
+  input.style.cursor = 'default';
+  input.style.background = 'transparent';
+  input.style.border = '1px solid transparent';
+  input.style.borderBottom = '1px solid var(--border)';
+  input.style.padding = '8px 0';
+  input.style.height = 'auto';
+  input.style.borderRadius = '0';
+  
+  const newName = input.value.trim();
+  if (!newName) {
+    input.value = originalUsername; 
+    return;
+  }
+  if (newName === originalUsername) return; 
+  
+  if (newName.length > 15) {
+    showToast('Username cannot be more than 15 characters');
+    input.value = originalUsername;
+    return;
+  }
+  
   const user = firebase.auth().currentUser;
   if (!user) return;
   try {
     await user.updateProfile({ displayName: newName });
     if (db) await db.collection("cineq_users").doc(user.uid).update({ username: newName });
     document.getElementById('userEmail').innerHTML = `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(newName)}</span>`;
+    originalUsername = newName;
     showToast('Username updated successfully');
-  } catch (e) { showToast('Failed to update username'); }
+  } catch (e) { 
+    showToast('Failed to update username'); 
+    input.value = originalUsername;
+  }
+}
+
+async function updateProfileUsername() {
+  updateProfileUsernameOnBlur();
 }
 
 async function sendSettingsPasswordReset() {
@@ -2613,9 +2665,9 @@ function renderSettingsProfilePic() {
       const reader = new FileReader();
       reader.onload = function(ev) {
         openCropper(ev.target.result);
+        input.value = '';
       };
       reader.readAsDataURL(file);
-      input.value = '';
     });
   }
 })();
