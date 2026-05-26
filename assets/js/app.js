@@ -490,9 +490,7 @@ let watchlist = [];
 let currentFilter = 'list'; // list, watching, watched, explore, archive
 let currentSort = 'added'; // added, name, rating, year
 let currentSortOrder = 'desc'; // desc, asc
-let advFilters = { type: 'all', year: 'all', length: 'all' };
-let deleteMode = false;
-let selectedForDelete = new Set();
+let advFilters = { type: 'all', year: 'all', length: 'all', genre: 'all' };
 let flowModeActive = false;
 let searchTimeout;
 let lastQuery = '';
@@ -1375,83 +1373,32 @@ function setFilter(f, btn) {
     gridWrap.style.display = 'block';
     exploreSection.style.display = 'none';
     if (sortFilterBtn) sortFilterBtn.style.display = '';
-    if (selectModeToggleBtn) selectModeToggleBtn.style.display = '';
     if (advancedFilterBtn) advancedFilterBtn.style.display = '';
-    if (sortSelectPillGroup) sortSelectPillGroup.style.display = '';
+    if (sortSelectPillGroup) advancedFilterBtn.style.display = '';
     renderGrid();
   }
 }
 
-function toggleSelectMode() {
-  deleteMode = !deleteMode;
-  selectedForDelete.clear();
-  document.getElementById('normalFilters').style.display = deleteMode ? 'none' : 'flex';
-  document.getElementById('selectFilters').style.display = deleteMode ? 'flex' : 'none';
-  renderGrid();
-  updateSelectUI();
-}
-
-function updateSelectUI() {
-  const countText = document.getElementById('selectCountText');
-  if (countText) countText.textContent = `${selectedForDelete.size} Selected`;
-  const bulkBtn = document.querySelector('.sel-watched');
-  if (bulkBtn) {
-    if (currentFilter === 'watched') {
-      bulkBtn.innerHTML = `<i data-lucide="eye-off" style="width:15px;height:15px;"></i> Unwatch`;
-      bulkBtn.setAttribute('onclick', 'markSelectedUnwatched()');
-    } else {
-      bulkBtn.innerHTML = `<i data-lucide="check-circle" style="width:15px;height:15px;"></i> Watched`;
-      bulkBtn.setAttribute('onclick', 'markSelectedWatched()');
-    }
-    if (window.lucide) lucide.createIcons();
-  }
-}
-
-function toggleSelection(id) {
-  if (selectedForDelete.has(id)) selectedForDelete.delete(id);
-  else selectedForDelete.add(id);
-  updateSelectUI();
-  const card = document.getElementById(`card-${id}`);
-  if (card) card.classList.toggle('selected', selectedForDelete.has(id));
-}
-
-function confirmRemoveSelected() {
-  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
-  const count = selectedForDelete.size;
-  if (!confirm(`Remove ${count} title(s) from your watchlist?\n\nThis action cannot be undone.`)) return;
-  recentlyDeletedItems = watchlist.filter(w => selectedForDelete.has(w.id));
-  watchlist = watchlist.filter(w => !selectedForDelete.has(w.id));
+function removeTitle(id, mediaType, event) {
+  event.stopPropagation();
+  if (!confirm('Remove this title from your watchlist?')) return;
+  watchlist = watchlist.filter(w => w.id !== id);
   save();
-  toggleSelectMode();
-  showToast(`Removed ${recentlyDeletedItems.length} title(s)`, true);
+  renderGrid();
 }
 
-async function markSelectedWatched() {
-  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
-  snapshotStatsCounts();
-  pendingStatsBadge = true;
-  const date = todayDate();
-  selectedForDelete.forEach(id => {
-    const item = watchlist.find(w => w.id === id);
-    if (item) { item.watched = true; if (item.episodes) item.episodesWatched = item.episodes; item.watchedAt = date; }
-  });
-  const count = selectedForDelete.size;
-  await save();
-  toggleSelectMode();
-  showToast(`Marked ${count} title(s) as watched ✓`);
-  pendingStatsBadge = false;
+function toggleRandomDropdown() {
+  const dropdown = document.getElementById('randomDropdown');
+  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
 }
 
-async function markSelectedUnwatched() {
-  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
-  selectedForDelete.forEach(id => {
-    const item = watchlist.find(w => w.id === id);
-    if (item) { item.watched = false; item.episodesWatched = 0; item.watchedAt = null; }
-  });
-  const count = selectedForDelete.size;
-  await save();
-  toggleSelectMode();
-  showToast(`Marked ${count} title(s) as unwatched`);
+function pickRandom(genre) {
+  const items = watchlist.filter(w => !w.watched && !w.archived && !(w.media_type === 'tv' && (w.episodesWatched || 0) > 0));
+  const filtered = genre === 'all' ? items : items.filter(w => w._genres && w._genres.some(g => g.toLowerCase() === genre.toLowerCase()));
+  if (filtered.length === 0) { showToast(`No unwatched ${genre === 'all' ? '' : genre} titles found`); return; }
+  const item = filtered[Math.floor(Math.random() * filtered.length)];
+  openModal(item.id, item.media_type);
+  toggleRandomDropdown();
 }
 
 // ===== RENDER GRID =====
@@ -1497,22 +1444,23 @@ function renderGrid() {
       return true;
     });
   }
+  if (advFilters.genre !== 'all') {
+    items = items.filter(w => {
+      if (!w._genres || w._genres.length === 0) return false;
+      return w._genres.some(g => g.toLowerCase() === advFilters.genre.toLowerCase() || (advFilters.genre === 'Doc' && g.toLowerCase() === 'documentary'));
+    });
+  }
 
   const showEpCounter = (currentFilter === 'watching');
 
   const sortFilterBtn = document.getElementById('sortFilterBtn');
-  const selectModeToggleBtn = document.getElementById('selectModeToggleBtn');
   const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
-  const pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
-  const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all';
+  const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all' || advFilters.genre !== 'all';
   
   let showSort = !(baseItems.length <= 1 && !hasAdvFilter && !flowModeActive);
-  let showSelect = items.length > 0;
 
   if (sortFilterBtn) sortFilterBtn.style.display = showSort ? '' : 'none';
-  if (selectModeToggleBtn) selectModeToggleBtn.style.display = showSelect ? '' : 'none';
-  if (pillDivider) pillDivider.style.display = (showSort && showSelect) ? '' : 'none';
-  if (sortSelectPillGroup) sortSelectPillGroup.style.display = (showSort || showSelect) ? '' : 'none';
+  if (sortSelectPillGroup) sortSelectPillGroup.style.display = showSort ? '' : 'none';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
@@ -1554,8 +1502,6 @@ function renderGrid() {
     `).join('');
     empty.style.display = 'none';
     if (sortFilterBtn) sortFilterBtn.style.display = 'none';
-    if (selectModeToggleBtn) selectModeToggleBtn.style.display = 'none';
-    if (pillDivider) pillDivider.style.display = 'none';
     if (sortSelectPillGroup) sortSelectPillGroup.style.display = 'none';
     return;
   }
@@ -3256,5 +3202,25 @@ window.addEventListener('DOMContentLoaded', () => {
       "max-glare": 0.2,
       scale: 1.05
     });
+  }
+});
+
+// Global Dropdown Helpers
+window.toggleRandomDropdown = function(btn) {
+  const p = btn.parentElement;
+  document.querySelectorAll('.styled-dropdown.open').forEach(el => {
+    if(el !== p) el.classList.remove('open');
+  });
+  p.classList.toggle('open');
+};
+window.setRandomPick = function(idName, value, labelText, itemEl) {
+  const parent = itemEl.closest('.styled-dropdown');
+  parent.querySelector('input').value = value;
+  parent.querySelector('span').textContent = labelText;
+  parent.classList.remove('open');
+};
+document.addEventListener('click', e => {
+  if(!e.target.closest('.styled-dropdown')) {
+    document.querySelectorAll('.styled-dropdown.open').forEach(el => el.classList.remove('open'));
   }
 });

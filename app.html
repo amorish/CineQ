@@ -137,6 +137,18 @@
           <button class="sort-pill" onclick="setAdvFilter('length', 'long', this)">Long (&gt;120m)</button>
         </div>
       </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Genre</div>
+        <div class="sort-pills" id="advFilterGenre">
+          <button class="sort-pill active" onclick="setAdvFilter('genre', 'all', this)">All</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Action', this)">Action</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Comedy', this)">Comedy</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Drama', this)">Drama</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Sci-Fi', this)">Sci-Fi</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Horror', this)">Horror</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Romance', this)">Romance</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -181,7 +193,10 @@
       
       <!-- Notifications dropdown -->
       <div class="profile-menu" id="notifMenu" style="display:none;right:50px;width:300px;max-height:400px;overflow-y:auto;">
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-heading);font-weight:600;">Notifications</div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--font-heading);font-weight:600;">Notifications</span>
+          <button class="icon-btn" onclick="document.getElementById('notifMenu').style.display='none'" style="width:24px;height:24px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+        </div>
         <div id="notifList">
           <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No new notifications</div>
         </div>
@@ -234,23 +249,7 @@
           <button class="pill-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
             <i data-lucide="sliders-horizontal"></i>
           </button>
-          <div class="pill-divider"></div>
-          <button class="pill-btn" id="selectModeToggleBtn" onclick="toggleSelectMode()" title="Select">
-            <i data-lucide="list-checks"></i>
-          </button>
         </div>
-      </div>
-      <div class="tabs-container select-bar" id="selectFilters" style="display:none;align-items:center;gap:8px;">
-        <span style="font-size:13px;color:var(--accent);font-weight:600;flex:1;" id="selectCountText">0 Selected</span>
-        <button class="sel-action-btn sel-watched" onclick="markSelectedWatched()">
-          <i data-lucide="check-circle" style="width:15px;height:15px;"></i> Watched
-        </button>
-        <button class="sel-action-btn sel-remove" onclick="confirmRemoveSelected()">
-          <i data-lucide="trash-2" style="width:15px;height:15px;"></i> Remove
-        </button>
-        <button class="icon-btn sel-close-btn" onclick="toggleSelectMode()" title="Cancel">
-          <i data-lucide="x"></i>
-        </button>
       </div>
     </nav>
 
@@ -273,33 +272,49 @@
             <h2>Random Pick</h2>
             <p>Don't know what to watch?</p>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px;">
-            <select id="randomPickType" class="random-filter-select">
-              <option value="all">Type: All</option>
-              <option value="movie">Movie</option>
-              <option value="tv">TV Series</option>
-              <option value="anime">Anime</option>
-              <option value="documentary">Documentary</option>
-            </select>
-            <select id="randomPickGenre" class="random-filter-select">
-              <option value="all">Genre: All</option>
-              <option value="mystery">Mystery</option>
-              <option value="horror">Horror</option>
-              <option value="scifi">Sci-Fi</option>
-              <option value="action">Action</option>
-              <option value="adventure">Adventure</option>
-              <option value="drama">Drama</option>
-              <option value="bio">Bio</option>
-              <option value="sports">Sports</option>
-              <option value="animation">Animation</option>
-            </select>
-            <select id="randomPickRating" class="random-filter-select">
-              <option value="all">Rating: All</option>
-              <option value="6">6+</option>
-              <option value="7">7+</option>
-              <option value="8">8+</option>
-              <option value="9">9+</option>
-            </select>
+          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px; z-index:20;">
+            <div class="styled-dropdown" id="randomPickTypeDropdown">
+              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
+                <span id="randomPickTypeLabel">Type: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+              </div>
+              <div class="styled-dropdown-menu">
+                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'all', 'Type: All', this)">Type: All</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'movie', 'Movie', this)">Movie</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'tv', 'TV Series', this)">TV Series</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'anime', 'Anime', this)">Anime</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'documentary', 'Documentary', this)">Documentary</div>
+              </div>
+              <input type="hidden" id="randomPickType" value="all">
+            </div>
+
+            <div class="styled-dropdown" id="randomPickGenreDropdown">
+              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
+                <span id="randomPickGenreLabel">Genre: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+              </div>
+              <div class="styled-dropdown-menu" style="max-height:200px;overflow-y:auto;">
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'all', 'Genre: All', this)">Genre: All</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'mystery', 'Mystery', this)">Mystery</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'horror', 'Horror', this)">Horror</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'scifi', 'Sci-Fi', this)">Sci-Fi</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'action', 'Action', this)">Action</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'drama', 'Drama', this)">Drama</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'animation', 'Animation', this)">Animation</div>
+              </div>
+              <input type="hidden" id="randomPickGenre" value="all">
+            </div>
+
+            <div class="styled-dropdown" id="randomPickRatingDropdown">
+              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
+                <span id="randomPickRatingLabel">Rating: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+              </div>
+              <div class="styled-dropdown-menu">
+                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', 'all', 'Rating: All', this)">Rating: All</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '6', '6+', this)">6+</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '7', '7+', this)">7+</div>
+                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '8', '8+', this)">8+</div>
+              </div>
+              <input type="hidden" id="randomPickRating" value="all">
+            </div>
           </div>
           <button class="random-action-btn" id="randomPickBtn" onclick="fetchRandomTitle(true)">
             <svg class="shuffle-custom-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><g stroke-width="1.5"><path stroke="currentColor" stroke-linecap="round" d="M15.473 8.41a5 5 0 10.939 5.952"/><path fill="currentColor" stroke="currentColor" d="M17.195 10.373l-2.308-.347a.065.065 0 01-.018-.005.023.023 0 01-.007-.005.056.056 0 01-.015-.024.056.056 0 01-.002-.03.03.03 0 01.002-.007.069.069 0 01.013-.015l1.995-1.964a.066.066 0 01.015-.012.027.027 0 01.007-.003.056.056 0 01.029.003c.012.004.02.01.024.015a.027.027 0 01.005.007.069.069 0 01.004.019l.313 2.312a.047.047 0 01-.002.023.053.053 0 01-.013.02.053.053 0 01-.02.012.046.046 0 01-.022.001z"/></g></svg> Suggest Another <span id="randomLimitText"></span>
@@ -462,7 +477,7 @@
       </div>
     </div>
     <div class="auth-scroll-wrap">
-      <div class="auth-card" style="margin: 0 auto; transition: height 0.4s ease;">
+      <div class="auth-card" style="margin: 0 auto;">
         <div class="auth-main">
           <div class="auth-logo-wrap">
             <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
