@@ -1536,7 +1536,7 @@ function renderGrid() {
     const epCount = isTV ? epDisplay(a) : null;
     return `
     <div class="card-wrapper">
-      <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
+      <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
         <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
@@ -1562,7 +1562,7 @@ function renderGrid() {
           </div>` : ''}
         </div>
       </article>
-      ${!deleteMode ? `<div class="card-sl">${i + 1}</div>` : ''}
+      <div class="card-sl">${i + 1}</div>
     </div>`;
   }).join('');
   lucide.createIcons();
@@ -1570,11 +1570,6 @@ function renderGrid() {
 
 // ===== MODAL =====
 async function openModal(id, mediaType, event) {
-  if (deleteMode) {
-    if (event) event.preventDefault();
-    toggleSelection(id);
-    return;
-  }
   document.body.style.overflow = 'hidden';
   const backdrop = document.getElementById('modalBackdrop');
   const content = document.getElementById('modalContent');
@@ -2776,7 +2771,6 @@ function resetToHome() {
   if (headerSearchClear) headerSearchClear.style.display = 'none';
   closeDropdown();
   
-  if (deleteMode) toggleSelectMode();
   const tabList = document.getElementById('tabList');
   if (tabList) setFilter('list', tabList);
   window.scrollTo({ top: 0, behavior: 'smooth' });
