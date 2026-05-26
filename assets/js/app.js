@@ -61,6 +61,7 @@ let userSettings = {
   defaultSort: 'added',
   defaultSortOrder: 'desc',
   sfwFilter: true,
+  rewatchSort: 'latest',
   customList: { name: '', position: '6' }
 };
 
@@ -87,9 +88,10 @@ function isValidEmailFormat(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-function togglePassword() {
-  const pwdInput = document.getElementById('authPwd');
-  const icon = document.getElementById('pwdEyeIcon');
+function togglePassword(inputId = 'authPwd', iconId = 'pwdEyeIcon') {
+  const pwdInput = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (!pwdInput || !icon) return;
   if (pwdInput.type === 'password') {
     pwdInput.type = 'text';
     icon.setAttribute('data-lucide', 'eye');
@@ -252,24 +254,34 @@ function verifyLogout() { firebase.auth().signOut(); }
 
 function toggleAuthMode() {
   isSignupMode = !isSignupMode;
-  document.getElementById('authTitle').textContent = isSignupMode ? "Create Account" : "Sign In";
-  document.getElementById('authActionBtn').textContent = isSignupMode ? "Sign Up" : "Sign In";
-  document.getElementById('authFooterText').textContent = isSignupMode ? "Already have an account?" : "New here?";
-  document.getElementById('authToggleBtn').textContent = isSignupMode ? "Sign in" : "Sign up";
-  document.getElementById('authUsernameGroup').style.display = isSignupMode ? "block" : "none";
+  const flipper = document.getElementById('authFlipper');
+  if (flipper) {
+    if (isSignupMode) flipper.classList.add('flipped');
+    else flipper.classList.remove('flipped');
+  }
 }
 
-async function handleAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const pwd = document.getElementById('authPwd').value;
-  const username = document.getElementById('authUsername').value.trim();
-  if (isSignupMode && (!email || !pwd || !username)) return showToast('Enter username, email, and password');
-  if (isSignupMode && username.length > 15) return showToast('Username cannot be more than 15 characters');
-  if (!isSignupMode && (!email || !pwd)) return showToast('Enter email and password');
+async function handleAuth(isSignupForm = false) {
+  isSignupMode = isSignupForm;
+  let email, pwd, username, btn;
+  if (isSignupMode) {
+    email = document.getElementById('authEmailUp').value.trim();
+    pwd = document.getElementById('authPwdUp').value;
+    username = document.getElementById('authUsernameUp').value.trim();
+    btn = document.querySelector('.back .auth-btn');
+    if (!email || !pwd || !username) return showToast('Enter username, email, and password');
+    if (username.length > 15) return showToast('Username cannot be more than 15 characters');
+    if (isDisposableEmail(email)) return showToast('Temporary/disposable emails are not allowed.');
+  } else {
+    email = document.getElementById('authEmailIn').value.trim();
+    pwd = document.getElementById('authPwdIn').value;
+    btn = document.querySelector('.front .auth-btn');
+    if (!email || !pwd) return showToast('Enter email and password');
+  }
   if (!isValidEmailFormat(email)) return showToast('Please enter a valid email address');
-  if (isSignupMode && isDisposableEmail(email)) return showToast('Temporary/disposable emails are not allowed.');
-  const btn = document.getElementById('authActionBtn');
-  btn.textContent = "Please wait..."; btn.disabled = true;
+  
+  if (btn) { btn.textContent = "Please wait..."; btn.disabled = true; }
+  
   try {
     if (isSignupMode) {
       const cred = await firebase.auth().createUserWithEmailAndPassword(email, pwd);
@@ -286,19 +298,18 @@ async function handleAuth() {
       try {
         const methods = await firebase.auth().fetchSignInMethodsForEmail(email);
         if (methods.length === 0) {
-          isSignupMode = true;
-          document.getElementById('authTitle').textContent = "Create Account";
-          document.getElementById('authActionBtn').textContent = "Sign Up";
-          document.getElementById('authFooterText').textContent = "Already have an account?";
-          document.getElementById('authToggleBtn').textContent = "Sign in";
-          document.getElementById('authUsernameGroup').style.display = "block";
+          toggleAuthMode();
+          const emailUp = document.getElementById('authEmailUp');
+          if (emailUp) emailUp.value = email;
           showToast("No account found - sign up instead!");
         } else { showToast("Incorrect password. Try again."); }
       } catch (_) { showToast(friendlyAuthError(code)); }
     } else { showToast(friendlyAuthError(code)); }
   } finally {
-    btn.disabled = false;
-    btn.textContent = isSignupMode ? "Sign Up" : "Sign In";
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = isSignupMode ? "Create Account" : "Sign In";
+    }
   }
 }
 
@@ -356,7 +367,8 @@ async function signInWithGoogle() {
 }
 
 async function forgotPassword() {
-  const email = document.getElementById('authEmail').value.trim();
+  const emailInput = document.getElementById('authEmailIn');
+  const email = emailInput ? emailInput.value.trim() : '';
   if (!email) return showToast('Enter your email first, then click Forgot Password');
   try {
     await firebase.auth().sendPasswordResetEmail(email);
@@ -1347,7 +1359,27 @@ function renderGrid() {
     if (currentSort === 'rating')   items.sort((a,b) => asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0));
     else if (currentSort === 'name') items.sort((a,b) => asc ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title));
     else if (currentSort === 'year') items.sort((a,b) => asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0));
-    else { if (!asc) items.reverse(); }
+    else {
+      if (currentFilter === 'watched') {
+        const pref = userSettings.rewatchSort || 'latest';
+        items.sort((a, b) => {
+          const parseD = (val) => {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            const pts = val.split('/');
+            if(pts.length === 3) return new Date(`20${pts[2]}-${pts[1]}-${pts[0]}`).getTime();
+            return 0;
+          };
+          const getT = (obj) => {
+            if (pref === 'latest') return parseD(obj.latestWatchedAt || obj.watchedAt || obj.addedAt);
+            return parseD(obj.firstWatchedAt || obj.watchedAt || obj.addedAt);
+          };
+          return asc ? getT(a) - getT(b) : getT(b) - getT(a);
+        });
+      } else {
+        if (!asc) items.reverse();
+      }
+    }
   }
 
   if (items.length === 0) {
@@ -1377,6 +1409,7 @@ function renderGrid() {
         <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
+        ${a.rewatchCount > 0 ? `<div class="rewatch-badge" title="Rewatched ${a.rewatchCount} time${a.rewatchCount>1?'s':''}"><i data-lucide="repeat" style="width:12px;height:12px;"></i> ${a.rewatchCount}</div>` : ''}
         ${!a.watched ? `
         <button class="watched-btn ${a.watched ? 'checked' : ''}" onclick="toggleWatched(${a.id}, '${a.media_type}', event)" title="Mark watched">
           <i data-lucide="check" style="width:14px;height:14px;stroke-width:3;"></i>
@@ -1607,16 +1640,26 @@ async function openModal(id, mediaType, event) {
           </div>`;
           })() : ''}
           ${(inList && existingItem.watched) ? `
-          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
-            <div style="display:flex; flex-direction:column; gap:2px;">
+          <div style="grid-column: 1 / -1; background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); flex-wrap: wrap; gap: 8px;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
               <span class="detail-label" style="margin: 0; color: #22c55e; display: flex; align-items: center; gap: 4px;">
                 <i data-lucide="check-circle" style="width:14px;height:14px;"></i> Watched
               </span>
-              <span style="font-size:11px; color:var(--muted);">Completed on ${existingItem.watchedAt || '-'}</span>
+              <span style="font-size:11px; color:var(--muted); line-height: 1.4;">
+                ${existingItem.rewatchCount > 0 
+                  ? `Rewatched ${existingItem.rewatchCount} time${existingItem.rewatchCount > 1 ? 's' : ''} on ${existingItem.latestWatchedAt || existingItem.watchedAt}<br>1st Watched on ${existingItem.firstWatchedAt || existingItem.watchedAt}`
+                  : `Completed on ${existingItem.watchedAt || '-'}`
+                }
+              </span>
             </div>
-            <button class="modal-unwatch-btn" onclick="markUnwatchedFromModal(${detail.id}, '${type}')">
-              <i data-lucide="eye-off" style="width:12px;height:12px;"></i> Mark Unwatched
-            </button>
+            <div style="display: flex; gap: 8px;">
+              <button class="modal-unwatch-btn" style="background: transparent; border: 1px solid var(--accent); color: var(--accent);" onclick="handleRewatch(${detail.id}, '${type}')">
+                <i data-lucide="repeat" style="width:12px;height:12px;"></i> Rewatch
+              </button>
+              <button class="modal-unwatch-btn" onclick="markUnwatchedFromModal(${detail.id}, '${type}')">
+                <i data-lucide="eye-off" style="width:12px;height:12px;"></i> Unwatch
+              </button>
+            </div>
           </div>` : ''}
         </div>
 
@@ -1693,6 +1736,7 @@ async function markWatchedFromModal(id, mediaType) {
     item.watched = true;
     if (item.episodes) item.episodesWatched = item.episodes;
     item.watchedAt = todayDate();
+    item.firstWatchedAt = item.firstWatchedAt || item.watchedAt;
     await save();
     renderGrid();
     openModal(id, mediaType);
@@ -1710,6 +1754,19 @@ async function markUnwatchedFromModal(id, mediaType) {
     renderGrid();
     openModal(id, mediaType);
     showToast('Marked as unwatched');
+  }
+}
+
+async function handleRewatch(id, mediaType) {
+  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  if (item && item.watched) {
+    item.rewatchCount = (item.rewatchCount || 0) + 1;
+    item.latestWatchedAt = todayDate();
+    item.firstWatchedAt = item.firstWatchedAt || item.watchedAt || todayDate();
+    await save();
+    renderGrid();
+    openModal(id, mediaType);
+    showToast('Rewatch logged! 🍿');
   }
 }
 
@@ -2263,6 +2320,8 @@ function updateSettingsModalUI() {
   if (defaultSortOrderSel) defaultSortOrderSel.value = userSettings.defaultSortOrder;
   const sfwFilterChk = document.getElementById('settingsSfwFilter');
   if (sfwFilterChk) sfwFilterChk.checked = userSettings.sfwFilter;
+  const rewatchSortSel = document.getElementById('settingsRewatchSort');
+  if (rewatchSortSel) rewatchSortSel.value = userSettings.rewatchSort || 'latest';
   
   const customName = document.getElementById('settingsCustomListName');
   if (customName) customName.value = userSettings.customList?.name || '';
@@ -2344,6 +2403,7 @@ function updateWatchlistPreference(key, value) {
   saveSettings();
   if (key === 'defaultSort') { currentSort = value; renderGrid(); }
   else if (key === 'defaultSortOrder') { currentSortOrder = value; renderGrid(); }
+  else if (key === 'rewatchSort') { renderGrid(); }
   showToast('Preferences updated');
 }
 
