@@ -442,7 +442,7 @@
     .mig-card { grid-column: 2; grid-row: 2; }
 
     .mig-flow {
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: center; gap: 32px;
       margin-bottom: 18px;
     }
     .mig-pill {
@@ -786,7 +786,7 @@
         <!-- Animated ghost cards -->
         <div class="flow-graphic" aria-hidden="true">
           <svg class="flow-line" viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice">
-            <path d="M -50 220 C 150 220, 250 40, 450 40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="6,6" />
+            <polyline points="-20,120 120,140 180,210 240,130 320,150 420,110" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" stroke-dasharray="6,6" stroke-linejoin="round" style="transition: stroke 0.5s;" />
           </svg>
           <div class="ghost ghost-l">
             <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false">
@@ -807,23 +807,23 @@
           <h4 class="card-h-sm">Smart Content Classification</h4>
           <div class="class-icons">
             <div class="class-item">
-              <div class="class-icon amber"><i data-lucide="swords"></i></div>
+              <div class="class-icon amber" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/anime.png" alt="Anime" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
               <span class="class-label">Anime</span>
             </div>
             <div class="class-item">
-              <div class="class-icon"><i data-lucide="tv"></i></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/K-drama.png" alt="K-Drama" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
               <span class="class-label">K-Drama</span>
             </div>
             <div class="class-item">
-              <div class="class-icon"><i data-lucide="compass"></i></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/docs.png" alt="Docs" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
               <span class="class-label">Docs</span>
             </div>
             <div class="class-item">
-              <div class="class-icon"><i data-lucide="timer"></i></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Short Films.png" alt="Short Films" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
               <span class="class-label">Short Films</span>
             </div>
             <div class="class-item">
-              <div class="class-icon"><i data-lucide="users"></i></div>
+              <div class="class-icon" style="padding:0; overflow:hidden; border:none; background:transparent;"><img src="assets/images/mediatypeicons/Reality Tv.png" alt="Reality TV" style="width:100%; height:100%; object-fit:cover; border-radius:12px;"></div>
               <span class="class-label">Reality TV</span>
             </div>
           </div>
@@ -836,14 +836,23 @@
         <div class="card-inner">
           <h4 class="card-h-sm">Seamless Migration</h4>
           <div class="mig-flow">
-            <div class="mig-pill mig-lboxd">
-              <img src="https://cdn.simpleicons.org/letterboxd/FFFFFF" height="20" alt="Letterboxd" />
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="mig-pill mig-lboxd">
+                  <img src="https://thesvg.org/icons/letterboxd/default.svg" height="20" alt="Letterboxd" onerror="this.src='https://cdn.simpleicons.org/letterboxd/FFFFFF'" />
+                </div>
+                <span class="mig-arrow" style="transform: rotate(15deg); margin-top: 10px;"><i data-lucide="arrow-right"></i></span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="mig-pill mig-imdb">
+                  <img src="https://thesvg.org/icons/imdb/default.svg" height="20" alt="IMDb" onerror="this.src='https://cdn.simpleicons.org/imdb/000000'" />
+                </div>
+                <span class="mig-arrow" style="transform: rotate(-15deg); margin-bottom: 10px;"><i data-lucide="arrow-right"></i></span>
+              </div>
             </div>
-            <span class="mig-arrow"><i data-lucide="arrow-right"></i></span>
-            <div class="mig-pill mig-cineq"><img src="assets/images/cineqFavicon.png" alt="CineQ" /></div>
-            <span class="mig-arrow"><i data-lucide="arrow-left"></i></span>
-            <div class="mig-pill mig-imdb">
-              <img src="https://cdn.simpleicons.org/imdb/000000" height="20" alt="IMDb" />
+            
+            <div class="mig-pill mig-cineq" style="background: #fff; border-color: #fff; width: 56px; height: 56px;">
+              <img src="assets/images/cineqFavicon.png" width="32" alt="CineQ" style="border-radius:0;" />
             </div>
           </div>
           <p class="card-p">Switch from Letterboxd or IMDb without losing your history. Your entire watch catalogue comes with you in minutes.</p>
