@@ -419,60 +419,42 @@
     .flow-fade {
       position: absolute; inset: 0;
       background: linear-gradient(to top, var(--card) 0%, transparent 55%);
-      z-index: 4; pointer-events:    /* ----- Classification Chips ----- */
+      z-index: 4; pointer-events:    /* ----- Classification Images ----- */
     .class-chips {
-      display: flex; gap: 10px; flex-wrap: wrap;
+      display: flex; gap: 12px; flex-wrap: wrap;
       margin-bottom: 24px;
     }
     .class-chip {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.02);
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(25,25,25,0.6);
       border: 1px solid var(--border);
-      padding: 8px 14px;
-      border-radius: var(--r-md);
+      padding: 6px 14px 6px 6px;
+      border-radius: 40px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: default;
     }
-    .class-chip .chip-icon {
-      width: 20px; height: 20px;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-2);
-      transition: color 0.3s;
-    }
-    .class-chip .chip-icon i {
-      width: 16px; height: 16px;
+    .class-chip .chip-img {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
     }
     .class-chip .chip-label {
       font-size: 11px;
       font-weight: 600;
       color: var(--text-2);
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
       transition: color 0.3s;
     }
     .class-chip:hover {
       transform: translateY(-2px);
-      background: rgba(255,255,255,0.04);
-      border-color: var(--border-hover);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(234,179,8,0.4);
+      box-shadow: 0 4px 12px rgba(234,179,8,0.15);
     }
-    .class-chip.chip-anime:hover { border-color: rgba(239, 68, 68, 0.3); }
-    .class-chip.chip-anime:hover .chip-icon { color: #ef4444; filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5)); }
-    .class-chip.chip-anime:hover .chip-label { color: #fca5a5; }
-    
-    .class-chip.chip-kdrama:hover { border-color: rgba(236, 72, 153, 0.3); }
-    .class-chip.chip-kdrama:hover .chip-icon { color: #ec4899; filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.5)); }
-    .class-chip.chip-kdrama:hover .chip-label { color: #fbcfe8; }
-    
-    .class-chip.chip-docs:hover { border-color: rgba(59, 130, 246, 0.3); }
-    .class-chip.chip-docs:hover .chip-icon { color: #3b82f6; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5)); }
-    .class-chip.chip-docs:hover .chip-label { color: #bfdbfe; }
-    
-    .class-chip.chip-shorts:hover { border-color: rgba(139, 92, 246, 0.3); }
-    .class-chip.chip-shorts:hover .chip-icon { color: #8b5cf6; filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5)); }
-    .class-chip.chip-shorts:hover .chip-label { color: #ddd6fe; }
-    
-    .class-chip.chip-reality:hover { border-color: rgba(234, 179, 8, 0.3); }
-    .class-chip.chip-reality:hover .chip-icon { color: #eab308; filter: drop-shadow(0 0 6px rgba(234, 179, 8, 0.5)); }
-    .class-chip.chip-reality:hover .chip-label { color: #fde047; }ar    /* ----- Migration Card Custom Layout ----- */
+    .class-chip:hover .chip-label { color: var(--text); }
+    .class-chip:hover .chip-img { border-color: var(--accent); }ar    /* ----- Migration Card Custom Layout ----- */
     .mig-flow {
       display: flex; align-items: center; justify-content: center; gap: 14px;
       margin-bottom: 18px;
@@ -842,8 +824,8 @@
         </div>
         <!-- Animated ghost cards -->
         <div class="flow-graphic" aria-hidden="true">
-          <svg class="flow-curve-svg" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M -20 160 C 120 180, 100 20, 240 40 C 340 50, 320 170, 420 140" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="6 6" fill="none" class="flow-curve-path" />
+          <svg class="flow-curve-svg" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <path d="M 0 160 C 120 180, 100 20, 240 40 C 340 50, 320 170, 420 140" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="8 8" fill="none" class="flow-curve-path" />
           </svg>
           <div class="ghost ghost-l">
             <img src="assets/images/posters/Dune.webp" alt="" draggable="false" oncontextmenu="return false">
@@ -863,24 +845,24 @@
         <div class="card-inner">
           <h4 class="card-h-sm">Smart Content Classification</h4>
           <div class="class-chips">
-            <div class="class-chip chip-anime">
-              <div class="chip-icon"><i data-lucide="flame"></i></div>
+            <div class="class-chip">
+              <img class="chip-img" src="assets/images/posters/Your Name.webp" alt="Anime" />
               <span class="chip-label">Anime</span>
             </div>
-            <div class="class-chip chip-kdrama">
-              <div class="chip-icon"><i data-lucide="heart"></i></div>
+            <div class="class-chip">
+              <img class="chip-img" src="assets/images/posters/Parasite.webp" alt="K-Drama" />
               <span class="chip-label">K-Drama</span>
             </div>
-            <div class="class-chip chip-docs">
-              <div class="chip-icon"><i data-lucide="globe"></i></div>
+            <div class="class-chip">
+              <img class="chip-img" src="assets/images/posters/Planet Earth II.webp" alt="Docs" />
               <span class="chip-label">Docs</span>
             </div>
-            <div class="class-chip chip-shorts">
-              <div class="chip-icon"><i data-lucide="clapperboard"></i></div>
-              <span class="chip-label">Shorts</span>
+            <div class="class-chip">
+              <img class="chip-img" src="assets/images/posters/Fire of Love.webp" alt="Short Films" />
+              <span class="chip-label">Short Films</span>
             </div>
-            <div class="class-chip chip-reality">
-              <div class="chip-icon"><i data-lucide="crown"></i></div>
+            <div class="class-chip">
+              <img class="chip-img" src="assets/images/posters/Succession.webp" alt="Reality TV" />
               <span class="chip-label">Reality TV</span>
             </div>
           </div>
