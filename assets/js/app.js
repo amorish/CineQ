@@ -2852,15 +2852,27 @@ async function saveCroppedImage() {
     
     fileRef.put(blob, { contentType: 'image/webp' }).then(async () => {
       const downloadURL = await fileRef.getDownloadURL();
-      await currentUser.updateProfile({ photoURL: downloadURL });
-      await currentUser.reload(); // Force Firebase to flush changes to local IndexedDB cache
-      await currentUser.getIdToken(true); // Force JWT refresh to persist token payload
-      if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
+      
+      try {
+        await currentUser.updateProfile({ photoURL: downloadURL });
+        await currentUser.reload();
+        await currentUser.getIdToken(true);
+      } catch(e) { console.warn("Auth update failed", e); }
+      
       userPhotoURL = downloadURL;
       localStorage.setItem(`profile_pic_${currentUser.uid}`, downloadURL);
       applyProfilePhoto(downloadURL);
-      profilePicCache = null; // bust cache
-      updateStats(); // re-render chart with new profile pic
+      profilePicCache = null;
+      if (typeof updateStats === 'function') updateStats();
+      
+      if (db) {
+        try {
+          await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
+        } catch (err) {
+          console.warn("Direct Firestore write blocked, saving locally only.");
+        }
+      }
+      
       showToast('Profile picture saved successfully');
     }).catch(e => {
       console.error(e);
