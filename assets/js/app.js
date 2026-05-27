@@ -2471,11 +2471,20 @@ async function syncSettingsFromFirestore() {
     const docSnap = await db.collection("cineq_users").doc(currentUser.uid).get();
     if (docSnap.exists) {
       const data = docSnap.data();
+      if (data.photoURL) {
+        // Apply custom photo URL from Firestore (overrides auth provider)
+        Object.defineProperty(currentUser, 'photoURL', { value: data.photoURL, writable: true, configurable: true });
+        const navImg = document.getElementById('navProfileImg');
+        const navIcon = document.getElementById('navProfileIcon');
+        if (navImg) { navImg.src = data.photoURL; navImg.style.display = 'block'; }
+        if (navIcon) { navIcon.style.display = 'none'; }
+      }
       if (data.settings) {
         userSettings = { ...userSettings, ...data.settings };
         localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
         applySettings();
       }
+      if (typeof updateStats === 'function') updateStats();
     }
   } catch (e) { console.error("Error syncing settings", e); }
 }
