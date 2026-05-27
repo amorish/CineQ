@@ -1151,7 +1151,8 @@ function updateStats() {
           const { ctx: c, chartArea } = chart;
           const centerX = (chartArea.left + chartArea.right) / 2;
           const centerY = (chartArea.top + chartArea.bottom) / 2;
-          const innerRadius = chart._metasets[0]?.data[0]?.innerRadius || 0;
+          const meta = chart.getDatasetMeta(0);
+          const innerRadius = meta.data[0]?.innerRadius || 0;
           const imgSize = innerRadius * 1.5;
           if (imgSize <= 0) return;
 

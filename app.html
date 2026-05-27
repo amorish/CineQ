@@ -665,7 +665,7 @@
           <!-- Account Tab -->
           <div class="settings-pane active" id="pane-account">
             <h3>Account Settings</h3>
-            <div class="setting-group" style="display:flex; align-items:center; gap:16px;">
+            <div class="setting-group" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px;">
               <div class="profile-avatar-wrapper" onclick="document.getElementById('profileImageInput').click()" style="position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; cursor:pointer; border:1px solid var(--border); background:var(--elevated); display:flex; align-items:center; justify-content:center;">
                 <img id="settingsProfileImg" src="" style="width:100%; height:100%; object-fit:cover; display:none;" />
                 <i data-lucide="camera" id="settingsProfileIcon" style="width:24px; height:24px; color:var(--muted);"></i>
@@ -674,7 +674,7 @@
                 </div>
               </div>
               <div>
-                <label style="margin:0;">Profile Picture</label>
+                <label style="margin:0; text-transform:uppercase; letter-spacing:0.05em; font-size:11px;">Profile Picture</label>
                 <p class="setting-description" style="margin-top:4px;">Upload a custom image (max 5MB).</p>
                 <input type="file" id="profileImageInput" accept="image/*" style="display:none;" />
               </div>
