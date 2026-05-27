@@ -365,17 +365,22 @@
       background: var(--elevated);
       border: 1px solid rgba(255,255,255,0.07);
       overflow: hidden;
-      transition: transform 0.55s cubic-bezier(0.4,0,0.2,1), border-color 0.4s, box-shadow 0.4s;
+      transition: transform 0.55s cubic-bezier(0.4,0,0.2,1), border-color 0.4s, box-shadow 0.4s, width 0.55s cubic-bezier(0.4,0,0.2,1), height 0.55s cubic-bezier(0.4,0,0.2,1);
     }
     .ghost img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
 
-    .ghost-l { width: 86px; height: 128px; transform: translateX(-120px) rotate(-12deg) translateY(30px); z-index: 1; }
-    .ghost-c { width: 100px; height: 150px; transform: translateY(-10px); border-color: rgba(255,255,255,0.14); z-index: 3; }
-    .ghost-r { width: 76px; height: 114px; transform: translateX(120px) rotate(12deg) translateY(30px); z-index: 1; }
+    /* Initial state: 3 in a single row, same size */
+    .ghost-l { width: 90px; height: 135px; transform: translateX(-110px); z-index: 1; }
+    .ghost-c { width: 90px; height: 135px; transform: translateX(0px); border-color: rgba(255,255,255,0.14); z-index: 3; }
+    .ghost-r { width: 90px; height: 135px; transform: translateX(110px); z-index: 1; }
 
-    .flowmode-card:hover .ghost-l { transform: translateX(-130px) rotate(-16deg) translateY(20px);  border-color: #6d28d9; box-shadow: -12px 12px 32px rgba(109,40,217,0.3); }
-    .flowmode-card:hover .ghost-c { border-color: #9333ea; box-shadow: 0 0 36px rgba(147,51,234,0.5), 0 20px 40px rgba(0,0,0,0.5); }
-    .flowmode-card:hover .ghost-r { transform: translateX(130px) rotate(16deg) translateY(20px); border-color: #6d28d9; box-shadow: 12px 12px 32px rgba(109,40,217,0.3); }
+    /* Hover state */
+    /* Left: Medium */
+    .flowmode-card:hover .ghost-l { width: 94px; height: 141px; transform: translateX(-120px) rotate(-10deg) translateY(15px);  border-color: #6d28d9; box-shadow: -12px 12px 32px rgba(109,40,217,0.3); }
+    /* Center: Big */
+    .flowmode-card:hover .ghost-c { width: 104px; height: 156px; transform: translateY(-10px); border-color: #9333ea; box-shadow: 0 0 36px rgba(147,51,234,0.5), 0 20px 40px rgba(0,0,0,0.5); }
+    /* Right: Small */
+    .flowmode-card:hover .ghost-r { width: 84px; height: 126px; transform: translateX(110px) rotate(10deg) translateY(25px); border-color: #6d28d9; box-shadow: 12px 12px 32px rgba(109,40,217,0.3); }
 
     /* Flow gradient overlay */
     .flow-fade {
@@ -1086,6 +1091,52 @@
           hoveredItem = null;
           updateIcons();
         });
+      });
+    }
+
+    // ── FlowMode Particles Logic
+    const flowCard = document.querySelector('.flowmode-card');
+    const flowBtn = document.querySelector('.flowmode-state-btn');
+    if (flowCard && flowBtn) {
+      // Clear static particles initially
+      flowBtn.querySelectorAll('.particle').forEach(p => p.remove());
+
+      let particleInterval;
+      let isFlowHovered = false;
+
+      const createParticle = () => {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 3 + 2; // 2px to 5px
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.left = (Math.random() * 80 + 10) + '%'; // 10% to 90%
+        p.style.top = (Math.random() * 20 + 80) + '%';  // Starts near the bottom
+        
+        // Faster speed when hovered
+        const duration = isFlowHovered ? (Math.random() * 0.4 + 0.4) : (Math.random() * 1.5 + 1.5);
+        p.style.animationDuration = duration + 's';
+        
+        flowBtn.appendChild(p);
+
+        setTimeout(() => {
+          if (p.parentNode) p.remove();
+        }, duration * 1000);
+      };
+
+      // Spawn baseline particles
+      particleInterval = setInterval(createParticle, 400);
+
+      flowCard.addEventListener('mouseenter', () => {
+        isFlowHovered = true;
+        clearInterval(particleInterval);
+        particleInterval = setInterval(createParticle, 70); // Increased amount
+      });
+
+      flowCard.addEventListener('mouseleave', () => {
+        isFlowHovered = false;
+        clearInterval(particleInterval);
+        particleInterval = setInterval(createParticle, 400); // Normal amount
       });
     }
   </script>
