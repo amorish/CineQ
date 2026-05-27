@@ -39,12 +39,13 @@
     ]
   }
   </script>
+  <!-- Preload LCP images -->
+  <link rel="preload" href="assets/images/cineqLogoDarkmode.png" as="image" />
+  <link rel="preload" href="assets/images/cineqLogoLightmode.png" as="image" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
-  <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="assets/css/style.css?v=19">
@@ -159,9 +160,9 @@
     <div class="header-container">
       <!-- LEFT: Logo -->
       <div class="logo-wrap" onclick="resetToHome()" style="cursor:pointer;display:flex;align-items:center;">
-        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img logo-desktop logo-dark" draggable="false" oncontextmenu="return false" />
-        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img logo-desktop logo-light" draggable="false" oncontextmenu="return false" />
-        <img src="assets/images/cineqFavicon.png" alt="CineQ" class="logo-img logo-mobile" draggable="false" oncontextmenu="return false" />
+        <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img logo-desktop logo-dark" draggable="false" oncontextmenu="return false" fetchpriority="high" />
+        <img src="assets/images/cineqLogoLightmode.png" alt="CineQ" class="logo-img logo-desktop logo-light" draggable="false" oncontextmenu="return false" fetchpriority="high" />
+        <img src="assets/images/cineqFavicon.png" alt="CineQ" class="logo-img logo-mobile" draggable="false" oncontextmenu="return false" fetchpriority="high" />
       </div>
 
       <!-- MIDDLE: Inline search bar -->
@@ -999,6 +1000,9 @@
   <script src="assets/js/env.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
   <script src="assets/js/app.js?v=19"></script>
+  <!-- Google API scripts loaded AFTER app.js so gapiLoaded/gisLoaded are defined -->
+  <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
+  <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // Auto-toggle auth mode based on hash in URL (for landing page links)
