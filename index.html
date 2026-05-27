@@ -1030,6 +1030,15 @@
     const classCard = document.querySelector('.class-card');
     const classItems = document.querySelectorAll('.class-item');
     if (classCard && classItems.length) {
+      // Preload the GIFs so they appear instantly
+      classItems.forEach(item => {
+        const img = item.querySelector('img');
+        if (img && img.getAttribute('data-animated')) {
+          const p = new Image();
+          p.src = img.getAttribute('data-animated');
+        }
+      });
+
       let isCardHovered = false;
       let hoveredItem = null;
 
@@ -1048,8 +1057,11 @@
             }
           }
           
-          if (img.getAttribute('src') !== targetSrc) {
-            img.setAttribute('src', targetSrc);
+          const targetFile = decodeURIComponent(targetSrc.split('/').pop());
+          const currentFile = decodeURIComponent(img.src.split('/').pop());
+          
+          if (currentFile !== targetFile) {
+            img.src = targetSrc;
           }
         });
       };
