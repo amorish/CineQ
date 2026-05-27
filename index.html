@@ -655,6 +655,17 @@
     .animated-path { transition: stroke 0.3s ease; }
     .mig-card:hover .animated-path { color: #ffffff; animation: flowArrows 0.5s linear infinite; }
     @keyframes flowArrows { to { stroke-dashoffset: -10; } }
+    /* FAQ Section */
+    .faq-section { padding: 120px 24px; max-width: 800px; margin: 0 auto; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item details { width: 100%; }
+    .faq-item summary { padding: 24px 0; font-size: 18px; font-weight: 500; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; transition: color 0.2s; }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary:hover { color: var(--accent); }
+    .faq-item summary::after { content: '+'; font-size: 24px; font-weight: 300; color: var(--muted); transition: transform 0.3s ease; }
+    .faq-item details[open] summary::after { content: '−'; transform: rotate(180deg); }
+    .faq-answer { padding-bottom: 24px; color: var(--muted); line-height: 1.6; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -878,6 +889,53 @@
     </div>
   </section>
 
+
+  <!-- ===== FAQ ===== -->
+  <section class="faq-section" id="faq">
+    <div class="section-head" style="text-align: center; margin-bottom: 60px;">
+      <p class="section-eye">Got Questions?</p>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+    </div>
+    
+    <div class="faq-list">
+      <div class="faq-item">
+        <details>
+          <summary>What is FlowMode?</summary>
+          <div class="faq-answer">FlowMode is CineQ's intelligent algorithm that automatically organizes your watchlist. It balances factors like ratings, genres, and your watch progress to suggest the perfect viewing order, eliminating decision fatigue.</div>
+        </details>
+      </div>
+      <div class="faq-item">
+        <details>
+          <summary>Can I import my data from Letterboxd or IMDb?</summary>
+          <div class="faq-answer">Yes! CineQ has a built-in import feature that allows you to upload your Letterboxd or IMDb history. It instantly moves your entire catalog over so you don't have to start from scratch. (Limit: 500 items per import, up to 3 imports daily).</div>
+        </details>
+      </div>
+      <div class="faq-item">
+        <details>
+          <summary>How does the Stats Ticket work?</summary>
+          <div class="faq-answer">CineQ transforms your watch history into a beautifully designed digital cinema ticket. You can track your total watch time, movies watched, and instantly share your unique "Cinematic Identity" with your friends.</div>
+        </details>
+      </div>
+      <div class="faq-item">
+        <details>
+          <summary>How do I track movies that aren't released yet?</summary>
+          <div class="faq-answer">If a movie or TV show hasn't been released, simply click the "Notify Me" bell icon. CineQ will add it to your reminders list so you won't forget when it finally drops.</div>
+        </details>
+      </div>
+      <div class="faq-item">
+        <details>
+          <summary>Can I review movies I've already watched?</summary>
+          <div class="faq-answer">Absolutely. Our "Experience" feature allows you to rate watched content using a dynamic half-heart system and leave a brief comment to remember your thoughts.</div>
+        </details>
+      </div>
+      <div class="faq-item">
+        <details>
+          <summary>Is CineQ completely free to use?</summary>
+          <div class="faq-answer">Yes, CineQ is completely free and ad-free. We built this platform out of pure passion for film enthusiasts to enjoy without paywalls.</div>
+        </details>
+      </div>
+    </div>
+  </section>
 
   <!-- ===== CTA ===== -->
   <section class="cta">
