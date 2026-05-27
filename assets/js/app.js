@@ -128,7 +128,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
 
     // Try loading cached photo URL from localStorage immediately
-    let cachedPhoto = localStorage.getItem('cineq_photoURL');
+    let cachedPhoto = localStorage.getItem(`profile_pic_${user.uid}`);
     if (!cachedPhoto && user.photoURL) {
       cachedPhoto = user.photoURL; // Fallback to Auth profile if cache is cleared and Firestore is blocked by adblockers
     }
@@ -436,7 +436,7 @@ async function forgotPassword() {
   } catch (e) { showToast(friendlyAuthError(e.code || '')); }
 }
 
-function logout() { userPhotoURL = null; profilePicCache = null; localStorage.removeItem('cineq_photoURL'); firebase.auth().signOut(); }
+function logout() { userPhotoURL = null; profilePicCache = null; if (currentUser) localStorage.removeItem(`profile_pic_${currentUser.uid}`); firebase.auth().signOut(); }
 
 // ===== WATCHLIST RECLASSIFICATION & MIGRATION =====
 function reclassifyWatchlistItems() {
@@ -2468,25 +2468,48 @@ function loadLocalSettings() {
 }
 
 async function syncSettingsFromFirestore() {
-  if (!db || !currentUser) return;
-  try {
-    const docSnap = await db.collection("cineq_users").doc(currentUser.uid).get();
-    if (docSnap.exists) {
-      const data = docSnap.data();
-      if (data.photoURL) {
-        userPhotoURL = data.photoURL;
-        localStorage.setItem('cineq_photoURL', data.photoURL);
-        applyProfilePhoto(data.photoURL);
-      }
-      if (data.settings) {
-        userSettings = { ...userSettings, ...data.settings };
-        localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
-        applySettings();
-      }
-      profilePicCache = null;
-      if (typeof updateStats === 'function') updateStats();
+  if (!currentUser) return;
+  
+  let data = null;
+  if (db) {
+    try {
+      const docSnap = await db.collection("cineq_users").doc(currentUser.uid).get();
+      if (docSnap.exists) data = docSnap.data();
+    } catch (e) {
+      console.warn("Direct Firestore blocked, trying API proxy...", e);
     }
-  } catch (e) { console.error("Error syncing settings", e); }
+  }
+
+  // Fallback to Serverless API if Firestore is blocked by adblockers
+  if (!data) {
+    try {
+      const token = await currentUser.getIdToken();
+      const res = await fetch('/api/get-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        data = json.data;
+      }
+    } catch (e) {
+      console.error("API proxy failed", e);
+    }
+  }
+
+  if (data) {
+    if (data.photoURL) {
+      userPhotoURL = data.photoURL;
+      localStorage.setItem(`profile_pic_${currentUser.uid}`, data.photoURL);
+      applyProfilePhoto(data.photoURL);
+    }
+    if (data.settings) {
+      userSettings = { ...userSettings, ...data.settings };
+      localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
+      applySettings();
+    }
+    profilePicCache = null;
+    if (typeof updateStats === 'function') updateStats();
+  }
 }
 
 async function saveSettings() {
@@ -2831,9 +2854,10 @@ async function saveCroppedImage() {
       const downloadURL = await fileRef.getDownloadURL();
       await currentUser.updateProfile({ photoURL: downloadURL });
       await currentUser.reload(); // Force Firebase to flush changes to local IndexedDB cache
+      await currentUser.getIdToken(true); // Force JWT refresh to persist token payload
       if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
       userPhotoURL = downloadURL;
-      localStorage.setItem('cineq_photoURL', downloadURL);
+      localStorage.setItem(`profile_pic_${currentUser.uid}`, downloadURL);
       applyProfilePhoto(downloadURL);
       profilePicCache = null; // bust cache
       updateStats(); // re-render chart with new profile pic
