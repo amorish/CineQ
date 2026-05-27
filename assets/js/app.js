@@ -2673,7 +2673,11 @@ async function saveCroppedImage() {
       imageSmoothingEnabled: true,
       imageSmoothingQuality: 'high'
     });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.80));
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+    if (!blob) {
+      showToast('Failed to process image.');
+      return;
+    }
     // Delete existing profile pics
     const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
     try {
@@ -2681,9 +2685,9 @@ async function saveCroppedImage() {
       await Promise.all(listResult.items.map(item => item.delete()));
     } catch(e) { /* No existing files, ok */ }
     // Upload new
-    const fileName = `avatar_${Date.now()}.webp`;
+    const fileName = `avatar_${Date.now()}.jpg`;
     const fileRef = storageRef.child(fileName);
-    await fileRef.put(blob, { contentType: 'image/webp' });
+    await fileRef.put(blob, { contentType: 'image/jpeg' });
     const downloadURL = await fileRef.getDownloadURL();
     // Update auth profile
     await currentUser.updateProfile({ photoURL: downloadURL });
@@ -3167,8 +3171,20 @@ window.toggleStreamingName = function(el) {
 };
 
 // ===== VANILLA TILT PARALLAX AUTO-INITIALIZER =====
+window.initTilt = function(elements) {
+  if (typeof VanillaTilt === 'undefined' || !elements) return;
+  if (elements.length === 0) return;
+  VanillaTilt.init(elements, {
+    max: 15,
+    speed: 400,
+    glare: true,
+    "max-glare": 0.2,
+    scale: 1.05,
+    gyroscope: false
+  });
+};
+
 const tiltObserver = new MutationObserver((mutations) => {
-  if (typeof VanillaTilt === 'undefined') return;
   const newCards = [];
   mutations.forEach(m => {
     m.addedNodes.forEach(node => {
@@ -3181,29 +3197,12 @@ const tiltObserver = new MutationObserver((mutations) => {
       }
     });
   });
-  if (newCards.length > 0) {
-    VanillaTilt.init(newCards, {
-      max: 15,
-      speed: 400,
-      glare: true,
-      "max-glare": 0.2,
-      scale: 1.05,
-      gyroscope: false // Disable motion sensors to prevent browser warnings
-    });
-  }
+  window.initTilt(newCards);
 });
 tiltObserver.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (typeof VanillaTilt !== 'undefined') {
-    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'), {
-      max: 15,
-      speed: 400,
-      glare: true,
-      "max-glare": 0.2,
-      scale: 1.05
-    });
-  }
+  window.initTilt(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'));
 });
 
 // Global Dropdown Helpers

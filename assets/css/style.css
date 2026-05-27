@@ -50,6 +50,7 @@ select option { background: var(--surface, #141414); color: var(--text, #fff); }
 .styled-dropdown-btn:hover { border-color:var(--border-hover); }
 .styled-dropdown-menu { position:absolute; top:100%; right:0; margin-top:4px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; z-index:100; display:none; flex-direction:column; min-width:120px; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
 .styled-dropdown.open .styled-dropdown-menu { display:flex; }
+.styled-dropdown.open { z-index:101; }
 .styled-dropdown-item { padding:8px 12px; color:var(--text); transition:background 0.2s; white-space:nowrap; }
 .styled-dropdown-item:hover { background:var(--elevated); color:var(--accent); }
 
