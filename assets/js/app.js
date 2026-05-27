@@ -128,7 +128,11 @@ firebase.auth().onAuthStateChanged(async (user) => {
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
 
     // Try loading cached photo URL from localStorage immediately
-    const cachedPhoto = localStorage.getItem('cineq_photoURL');
+    let cachedPhoto = localStorage.getItem('cineq_photoURL');
+    if (!cachedPhoto && user.photoURL) {
+      cachedPhoto = user.photoURL; // Fallback to Auth profile if cache is cleared and Firestore is blocked by adblockers
+    }
+    
     if (cachedPhoto) {
       userPhotoURL = cachedPhoto;
       applyProfilePhoto(cachedPhoto);
