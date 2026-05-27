@@ -2830,6 +2830,7 @@ async function saveCroppedImage() {
     fileRef.put(blob, { contentType: 'image/webp' }).then(async () => {
       const downloadURL = await fileRef.getDownloadURL();
       await currentUser.updateProfile({ photoURL: downloadURL });
+      await currentUser.reload(); // Force Firebase to flush changes to local IndexedDB cache
       if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
       userPhotoURL = downloadURL;
       localStorage.setItem('cineq_photoURL', downloadURL);
