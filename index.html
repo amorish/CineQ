@@ -652,8 +652,9 @@
     .sparkle-icon { width: 20px; height: 20px; }
     .particle { position: absolute; background: white; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); opacity: 0; pointer-events: none; z-index: -1; animation: floatUp linear forwards; }
     @keyframes floatUp { 0% { transform: translateY(0) scale(0.3); opacity: 0.8; } 100% { transform: translateY(-35px) scale(1); opacity: 0; } }
-    .animated-path { transition: stroke 0.3s ease; }
-    .mig-card:hover .animated-path { color: #ffffff; animation: flowArrows 0.5s linear infinite; }
+    .mig-arrows-svg { color: var(--muted); transition: color 0.3s ease; }
+    .mig-card:hover .mig-arrows-svg { color: #ffffff !important; }
+    .mig-card:hover .animated-path { animation: flowArrows 0.5s linear infinite; }
     @keyframes flowArrows { to { stroke-dashoffset: -10; } }
     /* FAQ Section */
     .faq-section { padding: 120px 24px; max-width: 800px; margin: 0 auto; }
@@ -835,9 +836,9 @@
             </div>
             
             <div style="display:flex; flex-direction:column; gap:16px; align-items:center; position:relative; width:44px;">
-              <svg width="44" height="68" viewBox="0 0 44 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="color:var(--muted);">
-                <path class="animated-path" d="M 0 15 C 20 15, 20 28, 40 28" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" fill="none" marker-end="url(#arrow)" />
-                <path class="animated-path" d="M 0 53 C 20 53, 20 40, 40 40" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" fill="none" marker-end="url(#arrow)" />
+              <svg class="mig-arrows-svg" width="44" height="68" viewBox="0 0 44 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path class="animated-path" d="M 0 15 C 20 15, 20 22, 40 22" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" fill="none" marker-end="url(#arrow)" />
+                <path class="animated-path" d="M 0 53 C 20 53, 20 46, 40 46" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" fill="none" marker-end="url(#arrow)" />
                 <defs>
                   <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                     <path d="M 0 1 L 8 5 L 0 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
