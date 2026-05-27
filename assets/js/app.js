@@ -1147,9 +1147,9 @@ function updateStats() {
       window.mediaChartInstance = new window.Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
-          labels: ['Movies', 'TV Shows', 'Anime', 'K-Dramas', 'Documentaries', 'Short Films', 'Reality TV'],
+          labels: ['Movies', 'TV Series'],
           datasets: [{
-            data: [moviePct, tvPct, animePct, kdramaPct, docPct, shortPct, realityPct],
+            data: [moviePct, tvPct],
             backgroundColor: colors,
             borderWidth: 3,
             borderColor: elevatedColor,
