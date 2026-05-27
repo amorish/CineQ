@@ -1577,6 +1577,10 @@ function renderGrid() {
           const parseD = (val) => {
             if (!val) return 0;
             if (typeof val === 'number') return val;
+            if (val.includes('-')) {
+              const d = new Date(val);
+              if (!isNaN(d)) return d.getTime();
+            }
             const pts = val.split('/');
             if(pts.length === 3) return new Date(`20${pts[2]}-${pts[1]}-${pts[0]}`).getTime();
             return 0;
