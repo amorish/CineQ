@@ -3407,6 +3407,13 @@ function initExperienceComponent(itemId, type, item) {
     let lightness = 100; 
     if (rating > 0) lightness = 100 - (rating * 10); 
     wrapper.style.setProperty('--active-color', `hsl(350, 100%, ${lightness}%)`);
+    if (rating > 0) {
+      wrapper.style.setProperty('--btn-bg', `hsl(350, 100%, ${lightness}%)`);
+      wrapper.style.setProperty('--btn-hover', `hsl(350, 100%, ${Math.max(0, lightness - 10)}%)`);
+    } else {
+      wrapper.style.removeProperty('--btn-bg');
+      wrapper.style.removeProperty('--btn-hover');
+    }
 
     const hearts = container.querySelectorAll('.heart-wrapper');
     hearts.forEach((heart, index) => {
