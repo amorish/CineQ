@@ -137,7 +137,6 @@ firebase.auth().onAuthStateChanged(async (user) => {
     watchlist = [];
     epCache = {};
     epCacheKey = 'cineq_ep_cache';
-    localStorage.removeItem('cineq_cached_watchlist');
     document.getElementById('authOverlay').style.display = 'flex';
     document.getElementById('verifyOverlay').style.display = 'none';
     document.getElementById('userBadge').style.display = 'none';
@@ -288,8 +287,8 @@ function toggleAuthMode() {
     if(toggleBtn) toggleBtn.textContent = 'Sign In';
     
     if(forgotWrap) {
+      forgotWrap.style.maxHeight = '0';
       forgotWrap.style.opacity = '0';
-      setTimeout(() => { forgotWrap.style.display = 'none'; }, 300);
     }
   } else {
     if(usernameGroup) {
@@ -306,8 +305,8 @@ function toggleAuthMode() {
     if(toggleBtn) toggleBtn.textContent = 'Sign Up';
     
     if(forgotWrap) {
-      forgotWrap.style.display = 'flex';
-      setTimeout(() => { forgotWrap.style.opacity = '1'; }, 10);
+      forgotWrap.style.maxHeight = '30px';
+      forgotWrap.style.opacity = '1';
     }
   }
 }
@@ -472,7 +471,6 @@ async function loadWatchlist() {
       const data = docSnap.data();
       watchlist = data.items || [];
       notifications = data.notifications || [];
-      localStorage.setItem('cineq_cached_watchlist', JSON.stringify(watchlist));
       if (data.epCache) { epCache = { ...epCache, ...data.epCache }; saveEpCache(); }
       if (data.randomPickState) {
         const todayStr = todayDate();
@@ -489,14 +487,12 @@ async function loadWatchlist() {
 // ===== STATE =====
 let isWatchlistLoading = true;
 let watchlist = [];
-try {
-  const cached = localStorage.getItem('cineq_cached_watchlist');
-  if (cached) watchlist = JSON.parse(cached);
-} catch(e) {}
 let currentFilter = 'list'; // list, watching, watched, explore, archive
 let currentSort = 'added'; // added, name, rating, year
 let currentSortOrder = 'desc'; // desc, asc
 let advFilters = { type: 'all', year: 'all', length: 'all', genre: 'all' };
+let deleteMode = false;
+let selectedForDelete = new Set();
 let flowModeActive = false;
 let searchTimeout;
 let lastQuery = '';
@@ -937,7 +933,6 @@ async function save() {
   updateStats();
   if (!db || !currentUser) return;
   try {
-    localStorage.setItem('cineq_cached_watchlist', JSON.stringify(watchlist));
     let randomPickState = null;
     try { const stored = localStorage.getItem('cineq_random_pick_state'); if (stored) randomPickState = JSON.parse(stored); } catch(e) {}
     await db.collection("cineq_watchlists").doc(currentUser.uid).set({ items: watchlist, epCache, randomPickState, notifications });
@@ -1380,32 +1375,83 @@ function setFilter(f, btn) {
     gridWrap.style.display = 'block';
     exploreSection.style.display = 'none';
     if (sortFilterBtn) sortFilterBtn.style.display = '';
+    if (selectModeToggleBtn) selectModeToggleBtn.style.display = '';
     if (advancedFilterBtn) advancedFilterBtn.style.display = '';
-    if (sortSelectPillGroup) advancedFilterBtn.style.display = '';
+    if (sortSelectPillGroup) sortSelectPillGroup.style.display = '';
     renderGrid();
   }
 }
 
-function removeTitle(id, mediaType, event) {
-  event.stopPropagation();
-  if (!confirm('Remove this title from your watchlist?')) return;
-  watchlist = watchlist.filter(w => w.id !== id);
-  save();
+function toggleSelectMode() {
+  deleteMode = !deleteMode;
+  selectedForDelete.clear();
+  document.getElementById('normalFilters').style.display = deleteMode ? 'none' : 'flex';
+  document.getElementById('selectFilters').style.display = deleteMode ? 'flex' : 'none';
   renderGrid();
+  updateSelectUI();
 }
 
-function toggleRandomDropdown() {
-  const dropdown = document.getElementById('randomDropdown');
-  dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+function updateSelectUI() {
+  const countText = document.getElementById('selectCountText');
+  if (countText) countText.textContent = `${selectedForDelete.size} Selected`;
+  const bulkBtn = document.querySelector('.sel-watched');
+  if (bulkBtn) {
+    if (currentFilter === 'watched') {
+      bulkBtn.innerHTML = `<i data-lucide="eye-off" style="width:15px;height:15px;"></i> Unwatch`;
+      bulkBtn.setAttribute('onclick', 'markSelectedUnwatched()');
+    } else {
+      bulkBtn.innerHTML = `<i data-lucide="check-circle" style="width:15px;height:15px;"></i> Watched`;
+      bulkBtn.setAttribute('onclick', 'markSelectedWatched()');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
 }
 
-function pickRandom(genre) {
-  const items = watchlist.filter(w => !w.watched && !w.archived && !(w.media_type === 'tv' && (w.episodesWatched || 0) > 0));
-  const filtered = genre === 'all' ? items : items.filter(w => w._genres && w._genres.some(g => g.toLowerCase() === genre.toLowerCase()));
-  if (filtered.length === 0) { showToast(`No unwatched ${genre === 'all' ? '' : genre} titles found`); return; }
-  const item = filtered[Math.floor(Math.random() * filtered.length)];
-  openModal(item.id, item.media_type);
-  toggleRandomDropdown();
+function toggleSelection(id) {
+  if (selectedForDelete.has(id)) selectedForDelete.delete(id);
+  else selectedForDelete.add(id);
+  updateSelectUI();
+  const card = document.getElementById(`card-${id}`);
+  if (card) card.classList.toggle('selected', selectedForDelete.has(id));
+}
+
+function confirmRemoveSelected() {
+  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
+  const count = selectedForDelete.size;
+  if (!confirm(`Remove ${count} title(s) from your watchlist?\n\nThis action cannot be undone.`)) return;
+  recentlyDeletedItems = watchlist.filter(w => selectedForDelete.has(w.id));
+  watchlist = watchlist.filter(w => !selectedForDelete.has(w.id));
+  save();
+  toggleSelectMode();
+  showToast(`Removed ${recentlyDeletedItems.length} title(s)`, true);
+}
+
+async function markSelectedWatched() {
+  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
+  snapshotStatsCounts();
+  pendingStatsBadge = true;
+  const date = todayDate();
+  selectedForDelete.forEach(id => {
+    const item = watchlist.find(w => w.id === id);
+    if (item) { item.watched = true; if (item.episodes) item.episodesWatched = item.episodes; item.watchedAt = date; }
+  });
+  const count = selectedForDelete.size;
+  await save();
+  toggleSelectMode();
+  showToast(`Marked ${count} title(s) as watched ✓`);
+  pendingStatsBadge = false;
+}
+
+async function markSelectedUnwatched() {
+  if (selectedForDelete.size === 0) { toggleSelectMode(); return; }
+  selectedForDelete.forEach(id => {
+    const item = watchlist.find(w => w.id === id);
+    if (item) { item.watched = false; item.episodesWatched = 0; item.watchedAt = null; }
+  });
+  const count = selectedForDelete.size;
+  await save();
+  toggleSelectMode();
+  showToast(`Marked ${count} title(s) as unwatched`);
 }
 
 // ===== RENDER GRID =====
@@ -1451,23 +1497,24 @@ function renderGrid() {
       return true;
     });
   }
+
   if (advFilters.genre !== 'all') {
-    items = items.filter(w => {
-      if (!w._genres || w._genres.length === 0) return false;
-      return w._genres.some(g => g.toLowerCase() === advFilters.genre.toLowerCase() || (advFilters.genre === 'Doc' && g.toLowerCase() === 'documentary'));
-    });
+    items = items.filter(w => w._genres && w._genres.includes(advFilters.genre));
   }
 
   const showEpCounter = (currentFilter === 'watching');
 
   const sortFilterBtn = document.getElementById('sortFilterBtn');
   const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
+  const pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
   const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all' || advFilters.genre !== 'all';
   
   let showSort = !(baseItems.length <= 1 && !hasAdvFilter && !flowModeActive);
+  let showSelect = items.length > 0;
 
   if (sortFilterBtn) sortFilterBtn.style.display = showSort ? '' : 'none';
-  if (sortSelectPillGroup) sortSelectPillGroup.style.display = showSort ? '' : 'none';
+  if (pillDivider) pillDivider.style.display = (showSort && showSelect) ? '' : 'none';
+  if (sortSelectPillGroup) sortSelectPillGroup.style.display = (showSort || showSelect) ? '' : 'none';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
@@ -1509,6 +1556,7 @@ function renderGrid() {
     `).join('');
     empty.style.display = 'none';
     if (sortFilterBtn) sortFilterBtn.style.display = 'none';
+    if (pillDivider) pillDivider.style.display = 'none';
     if (sortSelectPillGroup) sortSelectPillGroup.style.display = 'none';
     return;
   }
@@ -1536,7 +1584,7 @@ function renderGrid() {
     const epCount = isTV ? epDisplay(a) : null;
     return `
     <div class="card-wrapper">
-      <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
+      <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
         <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
@@ -1562,7 +1610,7 @@ function renderGrid() {
           </div>` : ''}
         </div>
       </article>
-      <div class="card-sl">${i + 1}</div>
+      ${!deleteMode ? `<div class="card-sl">${i + 1}</div>` : ''}
     </div>`;
   }).join('');
   lucide.createIcons();
@@ -1570,6 +1618,11 @@ function renderGrid() {
 
 // ===== MODAL =====
 async function openModal(id, mediaType, event) {
+  if (deleteMode) {
+    if (event) event.preventDefault();
+    toggleSelection(id);
+    return;
+  }
   document.body.style.overflow = 'hidden';
   const backdrop = document.getElementById('modalBackdrop');
   const content = document.getElementById('modalContent');
@@ -2454,20 +2507,20 @@ function updateSettingsModalUI() {
   const themeToggle = document.getElementById('settingsThemeToggle');
   if (themeToggle) themeToggle.checked = (userSettings.theme === 'light');
   const defaultViewSel = document.getElementById('settingsDefaultView');
-  if (defaultViewSel) { defaultViewSel.value = userSettings.defaultView; syncDropdownLabel('settingsDefaultView'); }
+  if (defaultViewSel) defaultViewSel.value = userSettings.defaultView;
   const defaultSortSel = document.getElementById('settingsDefaultSort');
-  if (defaultSortSel) { defaultSortSel.value = userSettings.defaultSort; syncDropdownLabel('settingsDefaultSort'); }
+  if (defaultSortSel) defaultSortSel.value = userSettings.defaultSort;
   const defaultSortOrderSel = document.getElementById('settingsDefaultSortOrder');
-  if (defaultSortOrderSel) { defaultSortOrderSel.value = userSettings.defaultSortOrder; syncDropdownLabel('settingsDefaultSortOrder'); }
+  if (defaultSortOrderSel) defaultSortOrderSel.value = userSettings.defaultSortOrder;
   const sfwFilterChk = document.getElementById('settingsSfwFilter');
   if (sfwFilterChk) sfwFilterChk.checked = userSettings.sfwFilter;
   const rewatchSortSel = document.getElementById('settingsRewatchSort');
-  if (rewatchSortSel) { rewatchSortSel.value = userSettings.rewatchSort || 'latest'; syncDropdownLabel('settingsRewatchSort'); }
+  if (rewatchSortSel) rewatchSortSel.value = userSettings.rewatchSort || 'latest';
   
   const customName = document.getElementById('settingsCustomListName');
   if (customName) customName.value = userSettings.customList?.name || '';
   const customPos = document.getElementById('settingsCustomListPos');
-  if (customPos) { customPos.value = userSettings.customList?.position || '6'; syncDropdownLabel('settingsCustomListPos'); }
+  if (customPos) customPos.value = userSettings.customList?.position || '6';
   
   // Inject Custom List tab dynamically
   const normalFilters = document.getElementById('normalFilters');
@@ -2673,31 +2726,41 @@ async function saveCroppedImage() {
       imageSmoothingEnabled: true,
       imageSmoothingQuality: 'high'
     });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
-    if (!blob) {
-      showToast('Failed to process image.');
-      return;
-    }
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.80));
     // Delete existing profile pics
     const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
     try {
       const listResult = await storageRef.listAll();
       await Promise.all(listResult.items.map(item => item.delete()));
     } catch(e) { /* No existing files, ok */ }
-    // Upload new
-    const fileName = `avatar_${Date.now()}.jpg`;
-    const fileRef = storageRef.child(fileName);
-    await fileRef.put(blob, { contentType: 'image/jpeg' });
-    const downloadURL = await fileRef.getDownloadURL();
-    // Update auth profile
-    await currentUser.updateProfile({ photoURL: downloadURL });
-    // Update Firestore
-    if (db) {
-      await db.collection('cineq_users').doc(currentUser.uid).update({ photoURL: downloadURL });
-    }
-    profilePicCache = null; // bust cache
+    const localUrl = URL.createObjectURL(blob);
     closeCropper();
-    renderSettingsProfilePic();
+    
+    // Optimistic UI Update
+    const settingsImg = document.getElementById('settingsProfileImg');
+    const settingsIcon = document.getElementById('settingsProfileIcon');
+    if (settingsImg) { settingsImg.src = localUrl; settingsImg.style.display = 'block'; }
+    if (settingsIcon) { settingsIcon.style.display = 'none'; }
+    
+    const navImg = document.getElementById('navProfileImg');
+    const navIcon = document.getElementById('navProfileIcon');
+    if (navImg) { navImg.src = localUrl; navImg.style.display = 'block'; }
+    if (navIcon) { navIcon.style.display = 'none'; }
+
+    // Upload new in background
+    const fileName = `avatar_${Date.now()}.webp`;
+    const fileRef = storageRef.child(fileName);
+    
+    fileRef.put(blob, { contentType: 'image/webp' }).then(async () => {
+      const downloadURL = await fileRef.getDownloadURL();
+      await currentUser.updateProfile({ photoURL: downloadURL });
+      if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
+      showToast('Profile picture saved successfully');
+    }).catch(e => {
+      console.error(e);
+      showToast('Failed to save profile picture');
+    });
+    profilePicCache = null; // bust cache
     updateStats(); // re-render chart with new profile pic
     showToast('Profile picture updated! 🎉');
   } catch(e) {
@@ -2775,6 +2838,7 @@ function resetToHome() {
   if (headerSearchClear) headerSearchClear.style.display = 'none';
   closeDropdown();
   
+  if (deleteMode) toggleSelectMode();
   const tabList = document.getElementById('tabList');
   if (tabList) setFilter('list', tabList);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3171,20 +3235,8 @@ window.toggleStreamingName = function(el) {
 };
 
 // ===== VANILLA TILT PARALLAX AUTO-INITIALIZER =====
-window.initTilt = function(elements) {
-  if (typeof VanillaTilt === 'undefined' || !elements) return;
-  if (elements.length === 0) return;
-  VanillaTilt.init(elements, {
-    max: 15,
-    speed: 400,
-    glare: true,
-    "max-glare": 0.2,
-    scale: 1.05,
-    gyroscope: false
-  });
-};
-
 const tiltObserver = new MutationObserver((mutations) => {
+  if (typeof VanillaTilt === 'undefined') return;
   const newCards = [];
   mutations.forEach(m => {
     m.addedNodes.forEach(node => {
@@ -3197,47 +3249,102 @@ const tiltObserver = new MutationObserver((mutations) => {
       }
     });
   });
-  window.initTilt(newCards);
+  if (newCards.length > 0) {
+    VanillaTilt.init(newCards, {
+      max: 15,
+      speed: 400,
+      glare: true,
+      "max-glare": 0.2,
+      scale: 1.05,
+      gyroscope: false // Disable motion sensors to prevent browser warnings
+    });
+  }
 });
 tiltObserver.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('DOMContentLoaded', () => {
-  window.initTilt(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'));
+  if (typeof VanillaTilt !== 'undefined') {
+    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'), {
+      max: 15,
+      speed: 400,
+      glare: true,
+      "max-glare": 0.2,
+      scale: 1.05
+    });
+  }
+  initCustomDropdowns();
 });
 
-// Global Dropdown Helpers
-window.toggleDropdown = function(btn) {
-  const p = btn.parentElement;
-  document.querySelectorAll('.styled-dropdown.open').forEach(el => {
-    if(el !== p) el.classList.remove('open');
+function initCustomDropdowns() {
+  document.querySelectorAll('select').forEach(select => {
+    if (select.dataset.customized) return;
+    select.dataset.customized = "true";
+    select.style.display = 'none';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper ' + (select.className || '');
+    
+    const selectedDiv = document.createElement('div');
+    selectedDiv.className = 'custom-select-trigger';
+    
+    const textSpan = document.createElement('span');
+    textSpan.innerHTML = select.options[select.selectedIndex]?.innerHTML || '';
+    
+    const chevron = document.createElement('i');
+    chevron.dataset.lucide = 'chevron-down';
+    chevron.style.width = '14px';
+    chevron.style.height = '14px';
+    
+    selectedDiv.appendChild(textSpan);
+    selectedDiv.appendChild(chevron);
+
+    const optionsDiv = document.createElement('div');
+    optionsDiv.className = 'custom-select-options';
+
+    Array.from(select.options).forEach((opt, idx) => {
+      const optionDiv = document.createElement('div');
+      optionDiv.className = 'custom-select-option';
+      if (idx === select.selectedIndex) optionDiv.classList.add('selected');
+      optionDiv.innerHTML = opt.innerHTML;
+      
+      optionDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        select.selectedIndex = idx;
+        textSpan.innerHTML = opt.innerHTML;
+        optionsDiv.classList.remove('open');
+        
+        Array.from(optionsDiv.children).forEach(c => c.classList.remove('selected'));
+        optionDiv.classList.add('selected');
+        
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      optionsDiv.appendChild(optionDiv);
+    });
+
+    wrapper.appendChild(selectedDiv);
+    wrapper.appendChild(optionsDiv);
+    select.parentNode.insertBefore(wrapper, select.nextSibling);
+
+    selectedDiv.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = optionsDiv.classList.contains('open');
+      document.querySelectorAll('.custom-select-options').forEach(o => o.classList.remove('open'));
+      if (!isOpen) optionsDiv.classList.add('open');
+    });
+
+    // Handle updates if original select changes externally
+    select.addEventListener('change', () => {
+      textSpan.innerHTML = select.options[select.selectedIndex]?.innerHTML || '';
+      Array.from(optionsDiv.children).forEach((c, idx) => {
+        if (idx === select.selectedIndex) c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+    });
   });
-  p.classList.toggle('open');
-};
-window.toggleRandomDropdown = window.toggleDropdown; // alias for backwards compatibility
-window.setDropdownVal = function(itemEl, value, labelText) {
-  const parent = itemEl.closest('.styled-dropdown');
-  const input = parent.querySelector('input');
-  if(input) input.value = value;
-  const span = parent.querySelector('.styled-dropdown-btn span');
-  if(span) span.textContent = labelText;
-  parent.classList.remove('open');
-};
-window.setRandomPick = function(idName, value, labelText, itemEl) {
-  window.setDropdownVal(itemEl, value, labelText);
-};
-window.syncDropdownLabel = function(id) {
-  const input = document.getElementById(id);
-  if (!input) return;
-  const parent = input.closest('.styled-dropdown');
-  if (!parent) return;
-  const option = Array.from(parent.querySelectorAll('.styled-dropdown-item')).find(item => item.getAttribute('data-value') === input.value);
-  if (option) {
-    const span = parent.querySelector('.styled-dropdown-btn span');
-    if(span) span.textContent = option.textContent;
-  }
-};
-document.addEventListener('click', e => {
-  if(!e.target.closest('.styled-dropdown')) {
-    document.querySelectorAll('.styled-dropdown.open').forEach(el => el.classList.remove('open'));
-  }
+  
+  if (window.lucide) lucide.createIcons();
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.custom-select-options').forEach(o => o.classList.remove('open'));
 });

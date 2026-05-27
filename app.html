@@ -129,24 +129,26 @@
         </div>
       </div>
       <div style="margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Length (Movies)</div>
-        <div class="sort-pills" id="advFilterLength">
+        <div class="sort-section-title">Length</div>
+        <div class="sort-pills" id="advFilterLength" style="margin-bottom: 24px;">
           <button class="sort-pill active" onclick="setAdvFilter('length', 'all', this)">All</button>
           <button class="sort-pill" onclick="setAdvFilter('length', 'short', this)">Short (&lt;90m)</button>
           <button class="sort-pill" onclick="setAdvFilter('length', 'medium', this)">Medium (90-120m)</button>
           <button class="sort-pill" onclick="setAdvFilter('length', 'long', this)">Long (&gt;120m)</button>
         </div>
-      </div>
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;">Genre</div>
-        <div class="sort-pills" id="advFilterGenre">
+        
+        <div class="sort-section-title">Genre</div>
+        <div class="sort-pills" id="advFilterGenre" style="overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; padding-bottom: 4px;">
           <button class="sort-pill active" onclick="setAdvFilter('genre', 'all', this)">All</button>
           <button class="sort-pill" onclick="setAdvFilter('genre', 'Action', this)">Action</button>
           <button class="sort-pill" onclick="setAdvFilter('genre', 'Comedy', this)">Comedy</button>
           <button class="sort-pill" onclick="setAdvFilter('genre', 'Drama', this)">Drama</button>
-          <button class="sort-pill" onclick="setAdvFilter('genre', 'Sci-Fi', this)">Sci-Fi</button>
           <button class="sort-pill" onclick="setAdvFilter('genre', 'Horror', this)">Horror</button>
           <button class="sort-pill" onclick="setAdvFilter('genre', 'Romance', this)">Romance</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Sci-Fi', this)">Sci-Fi</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Thriller', this)">Thriller</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Animation', this)">Animation</button>
+          <button class="sort-pill" onclick="setAdvFilter('genre', 'Documentary', this)">Doc</button>
         </div>
       </div>
     </div>
@@ -193,9 +195,9 @@
       
       <!-- Notifications dropdown -->
       <div class="profile-menu" id="notifMenu" style="display:none;right:50px;width:300px;max-height:400px;overflow-y:auto;">
-        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-family:var(--font-heading);font-weight:600;">Notifications</span>
-          <button class="icon-btn" onclick="document.getElementById('notifMenu').style.display='none'" style="width:24px;height:24px;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-family:var(--font-heading);font-weight:600;display:flex;justify-content:space-between;align-items:center;">
+          <span>Notifications</span>
+          <button class="icon-btn" onclick="toggleNotifMenu()" style="width:24px;height:24px;padding:0;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
         </div>
         <div id="notifList">
           <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No new notifications</div>
@@ -249,7 +251,23 @@
           <button class="pill-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
             <i data-lucide="sliders-horizontal"></i>
           </button>
+          <div class="pill-divider"></div>
+          <button class="pill-btn flowmode-btn" id="flowModeBtn" onclick="toggleFlowMode()">
+            <i data-lucide="sparkles" style="width:14px;height:14px;"></i> FlowMode
+          </button>
         </div>
+      </div>
+      <div class="tabs-container select-bar" id="selectFilters" style="display:none;align-items:center;gap:8px;">
+        <span style="font-size:13px;color:var(--accent);font-weight:600;flex:1;" id="selectCountText">0 Selected</span>
+        <button class="sel-action-btn sel-watched" onclick="markSelectedWatched()">
+          <i data-lucide="check-circle" style="width:15px;height:15px;"></i> Watched
+        </button>
+        <button class="sel-action-btn sel-remove" onclick="confirmRemoveSelected()">
+          <i data-lucide="trash-2" style="width:15px;height:15px;"></i> Remove
+        </button>
+        <button class="icon-btn sel-close-btn" onclick="toggleSelectMode()" title="Cancel">
+          <i data-lucide="x"></i>
+        </button>
       </div>
     </nav>
 
@@ -272,49 +290,33 @@
             <h2>Random Pick</h2>
             <p>Don't know what to watch?</p>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px; z-index:20;">
-            <div class="styled-dropdown" id="randomPickTypeDropdown">
-              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
-                <span id="randomPickTypeLabel">Type: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-              </div>
-              <div class="styled-dropdown-menu">
-                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'all', 'Type: All', this)">Type: All</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'movie', 'Movie', this)">Movie</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'tv', 'TV Series', this)">TV Series</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'anime', 'Anime', this)">Anime</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Type', 'documentary', 'Documentary', this)">Documentary</div>
-              </div>
-              <input type="hidden" id="randomPickType" value="all">
-            </div>
-
-            <div class="styled-dropdown" id="randomPickGenreDropdown">
-              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
-                <span id="randomPickGenreLabel">Genre: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-              </div>
-              <div class="styled-dropdown-menu" style="max-height:200px;overflow-y:auto;">
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'all', 'Genre: All', this)">Genre: All</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'mystery', 'Mystery', this)">Mystery</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'horror', 'Horror', this)">Horror</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'scifi', 'Sci-Fi', this)">Sci-Fi</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'action', 'Action', this)">Action</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'drama', 'Drama', this)">Drama</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Genre', 'animation', 'Animation', this)">Animation</div>
-              </div>
-              <input type="hidden" id="randomPickGenre" value="all">
-            </div>
-
-            <div class="styled-dropdown" id="randomPickRatingDropdown">
-              <div class="styled-dropdown-btn" onclick="toggleRandomDropdown(this)">
-                <span id="randomPickRatingLabel">Rating: All</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-              </div>
-              <div class="styled-dropdown-menu">
-                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', 'all', 'Rating: All', this)">Rating: All</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '6', '6+', this)">6+</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '7', '7+', this)">7+</div>
-                <div class="styled-dropdown-item" onclick="setRandomPick('Rating', '8', '8+', this)">8+</div>
-              </div>
-              <input type="hidden" id="randomPickRating" value="all">
-            </div>
+          <div style="display:flex; gap:8px; align-items:center; margin-left:auto; margin-right:12px;">
+            <select id="randomPickType" class="random-filter-select">
+              <option value="all">Type: All</option>
+              <option value="movie">Movie</option>
+              <option value="tv">TV Series</option>
+              <option value="anime">Anime</option>
+              <option value="documentary">Documentary</option>
+            </select>
+            <select id="randomPickGenre" class="random-filter-select">
+              <option value="all">Genre: All</option>
+              <option value="mystery">Mystery</option>
+              <option value="horror">Horror</option>
+              <option value="scifi">Sci-Fi</option>
+              <option value="action">Action</option>
+              <option value="adventure">Adventure</option>
+              <option value="drama">Drama</option>
+              <option value="bio">Bio</option>
+              <option value="sports">Sports</option>
+              <option value="animation">Animation</option>
+            </select>
+            <select id="randomPickRating" class="random-filter-select">
+              <option value="all">Rating: All</option>
+              <option value="6">6+</option>
+              <option value="7">7+</option>
+              <option value="8">8+</option>
+              <option value="9">9+</option>
+            </select>
           </div>
           <button class="random-action-btn" id="randomPickBtn" onclick="fetchRandomTitle(true)">
             <svg class="shuffle-custom-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"><g stroke-width="1.5"><path stroke="currentColor" stroke-linecap="round" d="M15.473 8.41a5 5 0 10.939 5.952"/><path fill="currentColor" stroke="currentColor" d="M17.195 10.373l-2.308-.347a.065.065 0 01-.018-.005.023.023 0 01-.007-.005.056.056 0 01-.015-.024.056.056 0 01-.002-.03.03.03 0 01.002-.007.069.069 0 01.013-.015l1.995-1.964a.066.066 0 01.015-.012.027.027 0 01.007-.003.056.056 0 01.029.003c.012.004.02.01.024.015a.027.027 0 01.005.007.069.069 0 01.004.019l.313 2.312a.047.047 0 01-.002.023.053.053 0 01-.013.02.053.053 0 01-.02.012.046.046 0 01-.022.001z"/></g></svg> Suggest Another <span id="randomLimitText"></span>
@@ -477,7 +479,7 @@
       </div>
     </div>
     <div class="auth-scroll-wrap">
-      <div class="auth-card" style="margin: 0 auto;">
+      <div class="auth-card" style="margin: 0 auto; transition: height 0.4s ease;">
         <div class="auth-main">
           <div class="auth-logo-wrap">
             <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
@@ -500,7 +502,7 @@
                 <input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" required />
                 <button class="pwd-toggle" type="button" onclick="togglePassword('authPwd', 'pwdEyeIcon')" tabindex="-1"><i data-lucide="eye-off" id="pwdEyeIcon"></i></button>
               </div>
-              <div class="forgot-link-wrapper" id="authForgotWrap" style="transition: opacity 0.3s; opacity: 1;"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
+              <div class="forgot-link-wrapper" id="authForgotWrap" style="overflow:hidden; max-height:30px; opacity:1; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
             </div>
             <button class="auth-btn" type="submit" id="authSubmitBtn">Sign In</button>
           </form>
@@ -721,17 +723,11 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <h3 style="margin: 0; white-space: nowrap;">Your Overview</h3>
-                <div class="styled-dropdown">
-                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
-                    <span>Total</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="styled-dropdown-menu">
-                    <div class="styled-dropdown-item" data-value="total" onclick="setDropdownVal(this, 'total', 'Total'); updateStats()">Total</div>
-                    <div class="styled-dropdown-item" data-value="yearly" onclick="setDropdownVal(this, 'yearly', 'This Year'); updateStats()">This Year</div>
-                    <div class="styled-dropdown-item" data-value="monthly" onclick="setDropdownVal(this, 'monthly', 'This Month'); updateStats()">This Month</div>
-                  </div>
-                  <input type="hidden" id="statsFilter" value="total">
-                </div>
+                <select id="statsFilter" class="settings-select" style="width: auto; padding: 4px 8px; font-size: 13px;" onchange="updateStats()">
+                  <option value="total">Total</option>
+                  <option value="yearly">This Year</option>
+                  <option value="monthly">This Month</option>
+                </select>
               </div>
               <button class="settings-action-btn secondary" id="shareBtn" onclick="shareStats()" title="Share Ticket" style="padding: 8px;">
                 <i data-lucide="share-2" style="width:18px;height:18px;display:flex;"></i>
@@ -831,19 +827,12 @@
             <div class="setting-group">
               <label for="settingsDefaultView">Default View</label>
               <p class="setting-description">Choose which tab opens automatically when loading the app.</p>
-              <div class="styled-dropdown">
-                <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
-                  <span>List</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                </div>
-                <div class="styled-dropdown-menu">
-                  <div class="styled-dropdown-item" data-value="list" onclick="setDropdownVal(this, 'list', 'List'); updateWatchlistPreference('defaultView', 'list')">List</div>
-                  <div class="styled-dropdown-item" data-value="watching" onclick="setDropdownVal(this, 'watching', 'Watching'); updateWatchlistPreference('defaultView', 'watching')">Watching</div>
-                  <div class="styled-dropdown-item" data-value="watched" onclick="setDropdownVal(this, 'watched', 'Watched'); updateWatchlistPreference('defaultView', 'watched')">Watched</div>
-                  <div class="styled-dropdown-item" data-value="archive" onclick="setDropdownVal(this, 'archive', 'Archive'); updateWatchlistPreference('defaultView', 'archive')">Archive</div>
-                  <div class="styled-dropdown-item" data-value="explore" onclick="setDropdownVal(this, 'explore', 'Explore'); updateWatchlistPreference('defaultView', 'explore')">Explore</div>
-                </div>
-                <input type="hidden" id="settingsDefaultView" value="list">
-              </div>
+              <select id="settingsDefaultView" class="settings-select" onchange="updateWatchlistPreference('defaultView', this.value)">
+                <option value="list">List (Unwatched)</option>
+                <option value="watching">Watching</option>
+                <option value="watched">Watched</option>
+                <option value="explore">Explore</option>
+              </select>
             </div>
             <div class="setting-group">
               <label>Custom List</label>
@@ -852,19 +841,14 @@
                 <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
               </div>
               <div class="input-wrapper-settings" style="align-items: center;">
-                <div class="styled-dropdown" style="flex:1;">
-                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)" style="width:100%;justify-content:space-between;">
-                    <span>After Explore</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="styled-dropdown-menu" style="width:100%;">
-                    <div class="styled-dropdown-item" data-value="1" onclick="setDropdownVal(this, '1', 'After List')">After List</div>
-                    <div class="styled-dropdown-item" data-value="2" onclick="setDropdownVal(this, '2', 'After Watching')">After Watching</div>
-                    <div class="styled-dropdown-item" data-value="3" onclick="setDropdownVal(this, '3', 'After Watched')">After Watched</div>
-                    <div class="styled-dropdown-item" data-value="4" onclick="setDropdownVal(this, '4', 'After Archive')">After Archive</div>
-                    <div class="styled-dropdown-item" data-value="5" onclick="setDropdownVal(this, '5', 'After Explore')">After Explore</div>
-                  </div>
-                  <input type="hidden" id="settingsCustomListPos" value="5">
-                </div>
+                <select id="settingsCustomListPos" class="settings-select" style="flex: 1;">
+                  <option value="1">Position 1 (First)</option>
+                  <option value="2">Position 2</option>
+                  <option value="3">Position 3</option>
+                  <option value="4">Position 4</option>
+                  <option value="5">Position 5</option>
+                  <option value="6">Position 6 (Last)</option>
+                </select>
                 <button class="settings-action-btn" onclick="saveCustomListSettings()" style="gap: 6px; padding: 0 20px;">
                   <i data-lucide="save" style="width:14px;height:14px;"></i> Save
                 </button>
@@ -874,43 +858,25 @@
               <label for="settingsDefaultSort">Default Sort</label>
               <p class="setting-description">Select how your cards are ordered by default.</p>
               <div class="select-row">
-                <div class="styled-dropdown">
-                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
-                    <span>Recently Added</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="styled-dropdown-menu">
-                    <div class="styled-dropdown-item" data-value="added" onclick="setDropdownVal(this, 'added', 'Recently Added'); updateWatchlistPreference('defaultSort', 'added')">Recently Added</div>
-                    <div class="styled-dropdown-item" data-value="name" onclick="setDropdownVal(this, 'name', 'Alphabetical'); updateWatchlistPreference('defaultSort', 'name')">Alphabetical</div>
-                    <div class="styled-dropdown-item" data-value="rating" onclick="setDropdownVal(this, 'rating', 'Rating'); updateWatchlistPreference('defaultSort', 'rating')">Rating</div>
-                    <div class="styled-dropdown-item" data-value="year" onclick="setDropdownVal(this, 'year', 'Release Year'); updateWatchlistPreference('defaultSort', 'year')">Release Year</div>
-                  </div>
-                  <input type="hidden" id="settingsDefaultSort" value="added">
-                </div>
-                <div class="styled-dropdown">
-                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
-                    <span>Descending</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                  </div>
-                  <div class="styled-dropdown-menu">
-                    <div class="styled-dropdown-item" data-value="desc" onclick="setDropdownVal(this, 'desc', 'Descending'); updateWatchlistPreference('defaultSortOrder', 'desc')">Descending</div>
-                    <div class="styled-dropdown-item" data-value="asc" onclick="setDropdownVal(this, 'asc', 'Ascending'); updateWatchlistPreference('defaultSortOrder', 'asc')">Ascending</div>
-                  </div>
-                  <input type="hidden" id="settingsDefaultSortOrder" value="desc">
-                </div>
+                <select id="settingsDefaultSort" class="settings-select" onchange="updateWatchlistPreference('defaultSort', this.value)">
+                  <option value="added">Date Added</option>
+                  <option value="name">Name</option>
+                  <option value="rating">Rating</option>
+                  <option value="year">Year</option>
+                </select>
+                <select id="settingsDefaultSortOrder" class="settings-select" onchange="updateWatchlistPreference('defaultSortOrder', this.value)">
+                  <option value="desc">Descending</option>
+                  <option value="asc">Ascending</option>
+                </select>
               </div>
             </div>
             <div class="setting-group">
               <label for="settingsRewatchSort">Rewatch Sort Date</label>
               <p class="setting-description">When sorting your timeline by date, decide whether a rewatched item uses its latest watch date or its original watch date.</p>
-              <div class="styled-dropdown">
-                <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
-                  <span>Most Recent</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
-                </div>
-                <div class="styled-dropdown-menu">
-                  <div class="styled-dropdown-item" data-value="latest" onclick="setDropdownVal(this, 'latest', 'Most Recent'); updateWatchlistPreference('rewatchSort', 'latest')">Most Recent</div>
-                  <div class="styled-dropdown-item" data-value="first" onclick="setDropdownVal(this, 'first', 'First Watched'); updateWatchlistPreference('rewatchSort', 'first')">First Watched</div>
-                </div>
-                <input type="hidden" id="settingsRewatchSort" value="latest">
-              </div>
+              <select id="settingsRewatchSort" class="settings-select" onchange="updateWatchlistPreference('rewatchSort', this.value)">
+                <option value="latest">Latest Watched Date</option>
+                <option value="oldest">Original (Oldest) Watched Date</option>
+              </select>
             </div>
             <div class="setting-group toggle-group">
               <div class="setting-row">
