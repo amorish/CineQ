@@ -1593,9 +1593,9 @@ function renderGrid() {
 
   const showEpCounter = (currentFilter === 'watching');
 
-  const sortFilterBtn = document.getElementById('sortFilterBtn');
-  const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
-  const pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
+  sortFilterBtn = document.getElementById('sortFilterBtn');
+  sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
+  pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
   const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all' || advFilters.genre !== 'all';
   
   let showSort = !(baseItems.length <= 1 && !hasAdvFilter && !flowModeActive);
