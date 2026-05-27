@@ -1582,7 +1582,10 @@ function renderGrid() {
               if (!isNaN(d)) return d.getTime();
             }
             const pts = val.split('/');
-            if(pts.length === 3) return new Date(`20${pts[2]}-${pts[1]}-${pts[0]}`).getTime();
+            if(pts.length === 3) {
+              const yr = pts[2].length === 4 ? pts[2] : `20${pts[2]}`;
+              return new Date(`${yr}-${pts[1]}-${pts[0]}`).getTime();
+            }
             return 0;
           };
           const getT = (obj) => {
