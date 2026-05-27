@@ -2454,20 +2454,20 @@ function updateSettingsModalUI() {
   const themeToggle = document.getElementById('settingsThemeToggle');
   if (themeToggle) themeToggle.checked = (userSettings.theme === 'light');
   const defaultViewSel = document.getElementById('settingsDefaultView');
-  if (defaultViewSel) defaultViewSel.value = userSettings.defaultView;
+  if (defaultViewSel) { defaultViewSel.value = userSettings.defaultView; syncDropdownLabel('settingsDefaultView'); }
   const defaultSortSel = document.getElementById('settingsDefaultSort');
-  if (defaultSortSel) defaultSortSel.value = userSettings.defaultSort;
+  if (defaultSortSel) { defaultSortSel.value = userSettings.defaultSort; syncDropdownLabel('settingsDefaultSort'); }
   const defaultSortOrderSel = document.getElementById('settingsDefaultSortOrder');
-  if (defaultSortOrderSel) defaultSortOrderSel.value = userSettings.defaultSortOrder;
+  if (defaultSortOrderSel) { defaultSortOrderSel.value = userSettings.defaultSortOrder; syncDropdownLabel('settingsDefaultSortOrder'); }
   const sfwFilterChk = document.getElementById('settingsSfwFilter');
   if (sfwFilterChk) sfwFilterChk.checked = userSettings.sfwFilter;
   const rewatchSortSel = document.getElementById('settingsRewatchSort');
-  if (rewatchSortSel) rewatchSortSel.value = userSettings.rewatchSort || 'latest';
+  if (rewatchSortSel) { rewatchSortSel.value = userSettings.rewatchSort || 'latest'; syncDropdownLabel('settingsRewatchSort'); }
   
   const customName = document.getElementById('settingsCustomListName');
   if (customName) customName.value = userSettings.customList?.name || '';
   const customPos = document.getElementById('settingsCustomListPos');
-  if (customPos) customPos.value = userSettings.customList?.position || '6';
+  if (customPos) { customPos.value = userSettings.customList?.position || '6'; syncDropdownLabel('settingsCustomListPos'); }
   
   // Inject Custom List tab dynamically
   const normalFilters = document.getElementById('normalFilters');
@@ -3207,18 +3207,35 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Global Dropdown Helpers
-window.toggleRandomDropdown = function(btn) {
+window.toggleDropdown = function(btn) {
   const p = btn.parentElement;
   document.querySelectorAll('.styled-dropdown.open').forEach(el => {
     if(el !== p) el.classList.remove('open');
   });
   p.classList.toggle('open');
 };
-window.setRandomPick = function(idName, value, labelText, itemEl) {
+window.toggleRandomDropdown = window.toggleDropdown; // alias for backwards compatibility
+window.setDropdownVal = function(itemEl, value, labelText) {
   const parent = itemEl.closest('.styled-dropdown');
-  parent.querySelector('input').value = value;
-  parent.querySelector('span').textContent = labelText;
+  const input = parent.querySelector('input');
+  if(input) input.value = value;
+  const span = parent.querySelector('.styled-dropdown-btn span');
+  if(span) span.textContent = labelText;
   parent.classList.remove('open');
+};
+window.setRandomPick = function(idName, value, labelText, itemEl) {
+  window.setDropdownVal(itemEl, value, labelText);
+};
+window.syncDropdownLabel = function(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  const parent = input.closest('.styled-dropdown');
+  if (!parent) return;
+  const option = Array.from(parent.querySelectorAll('.styled-dropdown-item')).find(item => item.getAttribute('data-value') === input.value);
+  if (option) {
+    const span = parent.querySelector('.styled-dropdown-btn span');
+    if(span) span.textContent = option.textContent;
+  }
 };
 document.addEventListener('click', e => {
   if(!e.target.closest('.styled-dropdown')) {

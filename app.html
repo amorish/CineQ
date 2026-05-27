@@ -721,11 +721,17 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
               <div style="display: flex; align-items: center; gap: 12px;">
                 <h3 style="margin: 0; white-space: nowrap;">Your Overview</h3>
-                <select id="statsFilter" class="settings-select" style="width: auto; padding: 4px 8px; font-size: 13px;" onchange="updateStats()">
-                  <option value="total">Total</option>
-                  <option value="yearly">This Year</option>
-                  <option value="monthly">This Month</option>
-                </select>
+                <div class="styled-dropdown">
+                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
+                    <span>Total</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                  </div>
+                  <div class="styled-dropdown-menu">
+                    <div class="styled-dropdown-item" data-value="total" onclick="setDropdownVal(this, 'total', 'Total'); updateStats()">Total</div>
+                    <div class="styled-dropdown-item" data-value="yearly" onclick="setDropdownVal(this, 'yearly', 'This Year'); updateStats()">This Year</div>
+                    <div class="styled-dropdown-item" data-value="monthly" onclick="setDropdownVal(this, 'monthly', 'This Month'); updateStats()">This Month</div>
+                  </div>
+                  <input type="hidden" id="statsFilter" value="total">
+                </div>
               </div>
               <button class="settings-action-btn secondary" id="shareBtn" onclick="shareStats()" title="Share Ticket" style="padding: 8px;">
                 <i data-lucide="share-2" style="width:18px;height:18px;display:flex;"></i>
@@ -825,12 +831,19 @@
             <div class="setting-group">
               <label for="settingsDefaultView">Default View</label>
               <p class="setting-description">Choose which tab opens automatically when loading the app.</p>
-              <select id="settingsDefaultView" class="settings-select" onchange="updateWatchlistPreference('defaultView', this.value)">
-                <option value="list">List (Unwatched)</option>
-                <option value="watching">Watching</option>
-                <option value="watched">Watched</option>
-                <option value="explore">Explore</option>
-              </select>
+              <div class="styled-dropdown">
+                <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
+                  <span>List</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                </div>
+                <div class="styled-dropdown-menu">
+                  <div class="styled-dropdown-item" data-value="list" onclick="setDropdownVal(this, 'list', 'List'); updateWatchlistPreference('defaultView', 'list')">List</div>
+                  <div class="styled-dropdown-item" data-value="watching" onclick="setDropdownVal(this, 'watching', 'Watching'); updateWatchlistPreference('defaultView', 'watching')">Watching</div>
+                  <div class="styled-dropdown-item" data-value="watched" onclick="setDropdownVal(this, 'watched', 'Watched'); updateWatchlistPreference('defaultView', 'watched')">Watched</div>
+                  <div class="styled-dropdown-item" data-value="archive" onclick="setDropdownVal(this, 'archive', 'Archive'); updateWatchlistPreference('defaultView', 'archive')">Archive</div>
+                  <div class="styled-dropdown-item" data-value="explore" onclick="setDropdownVal(this, 'explore', 'Explore'); updateWatchlistPreference('defaultView', 'explore')">Explore</div>
+                </div>
+                <input type="hidden" id="settingsDefaultView" value="list">
+              </div>
             </div>
             <div class="setting-group">
               <label>Custom List</label>
@@ -839,14 +852,19 @@
                 <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
               </div>
               <div class="input-wrapper-settings" style="align-items: center;">
-                <select id="settingsCustomListPos" class="settings-select" style="flex: 1;">
-                  <option value="1">Position 1 (First)</option>
-                  <option value="2">Position 2</option>
-                  <option value="3">Position 3</option>
-                  <option value="4">Position 4</option>
-                  <option value="5">Position 5</option>
-                  <option value="6">Position 6 (Last)</option>
-                </select>
+                <div class="styled-dropdown" style="flex:1;">
+                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)" style="width:100%;justify-content:space-between;">
+                    <span>After Explore</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                  </div>
+                  <div class="styled-dropdown-menu" style="width:100%;">
+                    <div class="styled-dropdown-item" data-value="1" onclick="setDropdownVal(this, '1', 'After List')">After List</div>
+                    <div class="styled-dropdown-item" data-value="2" onclick="setDropdownVal(this, '2', 'After Watching')">After Watching</div>
+                    <div class="styled-dropdown-item" data-value="3" onclick="setDropdownVal(this, '3', 'After Watched')">After Watched</div>
+                    <div class="styled-dropdown-item" data-value="4" onclick="setDropdownVal(this, '4', 'After Archive')">After Archive</div>
+                    <div class="styled-dropdown-item" data-value="5" onclick="setDropdownVal(this, '5', 'After Explore')">After Explore</div>
+                  </div>
+                  <input type="hidden" id="settingsCustomListPos" value="5">
+                </div>
                 <button class="settings-action-btn" onclick="saveCustomListSettings()" style="gap: 6px; padding: 0 20px;">
                   <i data-lucide="save" style="width:14px;height:14px;"></i> Save
                 </button>
@@ -856,25 +874,43 @@
               <label for="settingsDefaultSort">Default Sort</label>
               <p class="setting-description">Select how your cards are ordered by default.</p>
               <div class="select-row">
-                <select id="settingsDefaultSort" class="settings-select" onchange="updateWatchlistPreference('defaultSort', this.value)">
-                  <option value="added">Date Added</option>
-                  <option value="name">Name</option>
-                  <option value="rating">Rating</option>
-                  <option value="year">Year</option>
-                </select>
-                <select id="settingsDefaultSortOrder" class="settings-select" onchange="updateWatchlistPreference('defaultSortOrder', this.value)">
-                  <option value="desc">Descending</option>
-                  <option value="asc">Ascending</option>
-                </select>
+                <div class="styled-dropdown">
+                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
+                    <span>Recently Added</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                  </div>
+                  <div class="styled-dropdown-menu">
+                    <div class="styled-dropdown-item" data-value="added" onclick="setDropdownVal(this, 'added', 'Recently Added'); updateWatchlistPreference('defaultSort', 'added')">Recently Added</div>
+                    <div class="styled-dropdown-item" data-value="name" onclick="setDropdownVal(this, 'name', 'Alphabetical'); updateWatchlistPreference('defaultSort', 'name')">Alphabetical</div>
+                    <div class="styled-dropdown-item" data-value="rating" onclick="setDropdownVal(this, 'rating', 'Rating'); updateWatchlistPreference('defaultSort', 'rating')">Rating</div>
+                    <div class="styled-dropdown-item" data-value="year" onclick="setDropdownVal(this, 'year', 'Release Year'); updateWatchlistPreference('defaultSort', 'year')">Release Year</div>
+                  </div>
+                  <input type="hidden" id="settingsDefaultSort" value="added">
+                </div>
+                <div class="styled-dropdown">
+                  <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
+                    <span>Descending</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                  </div>
+                  <div class="styled-dropdown-menu">
+                    <div class="styled-dropdown-item" data-value="desc" onclick="setDropdownVal(this, 'desc', 'Descending'); updateWatchlistPreference('defaultSortOrder', 'desc')">Descending</div>
+                    <div class="styled-dropdown-item" data-value="asc" onclick="setDropdownVal(this, 'asc', 'Ascending'); updateWatchlistPreference('defaultSortOrder', 'asc')">Ascending</div>
+                  </div>
+                  <input type="hidden" id="settingsDefaultSortOrder" value="desc">
+                </div>
               </div>
             </div>
             <div class="setting-group">
               <label for="settingsRewatchSort">Rewatch Sort Date</label>
               <p class="setting-description">When sorting your timeline by date, decide whether a rewatched item uses its latest watch date or its original watch date.</p>
-              <select id="settingsRewatchSort" class="settings-select" onchange="updateWatchlistPreference('rewatchSort', this.value)">
-                <option value="latest">Latest Watched Date</option>
-                <option value="oldest">Original (Oldest) Watched Date</option>
-              </select>
+              <div class="styled-dropdown">
+                <div class="styled-dropdown-btn" onclick="toggleDropdown(this)">
+                  <span>Most Recent</span> <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                </div>
+                <div class="styled-dropdown-menu">
+                  <div class="styled-dropdown-item" data-value="latest" onclick="setDropdownVal(this, 'latest', 'Most Recent'); updateWatchlistPreference('rewatchSort', 'latest')">Most Recent</div>
+                  <div class="styled-dropdown-item" data-value="first" onclick="setDropdownVal(this, 'first', 'First Watched'); updateWatchlistPreference('rewatchSort', 'first')">First Watched</div>
+                </div>
+                <input type="hidden" id="settingsRewatchSort" value="latest">
+              </div>
             </div>
             <div class="setting-group toggle-group">
               <div class="setting-row">
