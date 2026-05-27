@@ -25,7 +25,7 @@ select option { background: var(--surface, #141414); color: var(--text, #fff); }
 .theater-background {
   background-image: 
     linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.85)),
-    url('../images/cinema%20theatre%20bg.png');
+    url('../images/cinema%20theatre%20bg.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
