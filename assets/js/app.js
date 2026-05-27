@@ -125,6 +125,17 @@ firebase.auth().onAuthStateChanged(async (user) => {
     const displayName = user.displayName || user.email;
     document.getElementById('userEmail').innerHTML =
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
+
+    const navImg = document.getElementById('navProfileImg');
+    const navIcon = document.getElementById('navProfileIcon');
+    if (user.photoURL) {
+      if (navImg) { navImg.src = user.photoURL; navImg.style.display = 'block'; }
+      if (navIcon) { navIcon.style.display = 'none'; }
+    } else {
+      if (navImg) { navImg.style.display = 'none'; }
+      if (navIcon) { navIcon.style.display = 'block'; }
+    }
+
     isWatchlistLoading = true;
     try {
       await Promise.all([syncSettingsFromFirestore(), loadWatchlist()]);
