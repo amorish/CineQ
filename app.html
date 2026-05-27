@@ -247,7 +247,7 @@
         <button class="tab-btn" onclick="setFilter('watched', this)" id="tabWatched">Watched</button>
         <button class="tab-btn" onclick="setFilter('explore', this)" id="tabExplore">Explore</button>
         <button class="tab-btn" onclick="setFilter('archive', this)" id="tabArchive" title="Dropped"><i data-lucide="x-circle" style="width:18px;height:18px;vertical-align:middle;"></i></button>
-        <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom" style="display:none;"></button>
+        <button class="tab-btn" onclick="setFilter('custom', this)" id="tabCustom">Lists</button>
         <div style="flex:1"></div>
         <div class="icon-pill-group" id="sortSelectPillGroup">
           <button class="pill-btn sort-filter-btn" id="sortFilterBtn" onclick="toggleSortPanel()" title="Sort">
@@ -269,7 +269,6 @@
       </div>
     </nav>
 
-    <!-- Main Grid -->
     <div class="grid-wrap" id="gridWrap">
       <div class="grid" id="grid"></div>
       <div class="empty-state" id="emptyState" style="display:none">
@@ -277,6 +276,8 @@
         <p>Your watchlist is empty</p>
         <small>Search movies &amp; TV series to get started</small>
       </div>
+      <!-- Custom Lists of Lists Container -->
+      <div id="customListsContainer" style="display:none;"></div>
     </div>
 
     <!-- ===== EXPLORE SECTION ===== -->
@@ -410,6 +411,19 @@
     <div class="modal schedule-modal" id="scheduleModal">
       <button class="modal-close" onclick="closeScheduleDirect()">✕</button>
       <div id="scheduleContent"></div>
+    </div>
+  </div>
+
+  <!-- ===== CUSTOM LIST SEARCH MODAL ===== -->
+  <div class="modal-backdrop" id="customSearchBackdrop" onclick="if(event.target.id==='customSearchBackdrop') closeCustomSearch()" style="display:none; z-index:400;">
+    <div class="modal" style="width: 100%; max-width: 500px; padding: 24px; text-align: center;">
+      <h3 style="margin-bottom: 16px;">Add to List</h3>
+      <div class="header-search-bar" style="margin-bottom: 16px; background: rgba(255,255,255,0.06); width: 100%;">
+        <i data-lucide="search" class="header-search-icon"></i>
+        <input type="text" id="customSearchInput" placeholder="Search movies & TV series..." class="header-search-input" oninput="debounceCustomSearch(this.value)" autocomplete="off" />
+      </div>
+      <div id="customSearchResults" style="max-height: 40vh; overflow-y: auto; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 8px; display:none;"></div>
+      <button class="settings-action-btn secondary" onclick="closeCustomSearch()" style="margin-top: 16px; width: 100%;">Close</button>
     </div>
   </div>
 
@@ -831,13 +845,18 @@
               </select>
             </div>
             <div class="setting-group">
-              <label>Custom List</label>
-              <p class="setting-description">Create your own custom tab (e.g. "Favorites") and place it anywhere in the top navigation.</p>
-              <div class="input-wrapper-settings" style="margin-bottom:12px;">
-                <input type="text" id="settingsCustomListName" placeholder="List Name" maxlength="15" />
+              <label>Custom Lists View</label>
+              <p class="setting-description">Choose how you want your Custom Lists to be displayed, and where the tab should appear.</p>
+              <div class="input-wrapper-settings" style="margin-bottom:12px; align-items: center;">
+                <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Display Style</label>
+                <select id="settingsCustomListsDisplay" class="settings-select" style="flex: 2;">
+                  <option value="poster">Posters (Horizontal Scroll)</option>
+                  <option value="text">Text (Vertical List)</option>
+                </select>
               </div>
               <div class="input-wrapper-settings" style="align-items: center;">
-                <select id="settingsCustomListPos" class="settings-select" style="flex: 1;">
+                <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Tab Position</label>
+                <select id="settingsCustomListPos" class="settings-select" style="flex: 2;">
                   <option value="1">Position 1 (First)</option>
                   <option value="2">Position 2</option>
                   <option value="3">Position 3</option>
@@ -845,8 +864,10 @@
                   <option value="5">Position 5</option>
                   <option value="6">Position 6 (Last)</option>
                 </select>
+              </div>
+              <div style="display:flex; justify-content:flex-end; margin-top: 12px;">
                 <button class="settings-action-btn" onclick="saveCustomListSettings()" style="gap: 6px; padding: 0 20px;">
-                  <i data-lucide="save" style="width:14px;height:14px;"></i> Save
+                  <i data-lucide="save" style="width:14px;height:14px;"></i> Save Settings
                 </button>
               </div>
             </div>

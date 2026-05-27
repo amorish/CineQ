@@ -69,7 +69,9 @@ let userSettings = {
   defaultSortOrder: 'desc',
   sfwFilter: true,
   rewatchSort: 'latest',
-  customList: { name: '', position: '6' }
+  customLists: [],
+  customListsDisplay: 'poster',
+  customListPos: '6' // position in tab bar
 };
 
 // ===== DISPOSABLE EMAIL BLOCKLIST =====
@@ -1501,17 +1503,57 @@ async function markSelectedUnwatched() {
   showToast(`Marked ${count} title(s) as unwatched`);
 }
 
+// ===== CUSTOM LISTS STATE =====
+let isCustomListEditMode = false;
+
 // ===== RENDER GRID =====
 function renderGrid() {
   const grid = document.getElementById('grid');
   const empty = document.getElementById('emptyState');
+  const customContainer = document.getElementById('customListsContainer');
+  const advFilterBtn = document.getElementById('advancedFilterBtn');
+  const sortFilterBtn = document.getElementById('sortFilterBtn');
+  const sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
+  const pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
+  
   updateStats();
+
+  if (currentFilter === 'custom') {
+    grid.style.display = 'none';
+    empty.style.display = 'none';
+    if (advFilterBtn) advFilterBtn.style.display = 'none';
+    
+    if (sortFilterBtn) {
+      sortFilterBtn.style.display = '';
+      sortFilterBtn.innerHTML = `<i data-lucide="${isCustomListEditMode ? 'check' : 'pencil'}"></i>`;
+      sortFilterBtn.onclick = toggleCustomListEditMode;
+      sortFilterBtn.title = isCustomListEditMode ? "Finish Editing" : "Edit Lists";
+      if (isCustomListEditMode) sortFilterBtn.classList.add('editing-active');
+      else sortFilterBtn.classList.remove('editing-active');
+    }
+    if (pillDivider) pillDivider.style.display = 'none';
+    if (sortSelectPillGroup) sortSelectPillGroup.style.display = '';
+    
+    customContainer.style.display = 'block';
+    renderCustomLists();
+    lucide.createIcons();
+    return;
+  } else {
+    grid.style.display = '';
+    customContainer.style.display = 'none';
+    if (advFilterBtn) advFilterBtn.style.display = '';
+    if (sortFilterBtn) {
+      sortFilterBtn.innerHTML = `<i data-lucide="sliders-horizontal"></i>`;
+      sortFilterBtn.onclick = toggleSortPanel;
+      sortFilterBtn.title = "Sort";
+      sortFilterBtn.classList.remove('editing-active');
+    }
+  }
 
   let baseItems = [...watchlist];
   if (currentFilter === 'watched')  baseItems = baseItems.filter(w => w.watched && !w.archived);
   else if (currentFilter === 'watching') baseItems = baseItems.filter(w => !w.watched && !w.archived && w.media_type === 'tv' && (w.episodesWatched || 0) > 0);
   else if (currentFilter === 'archive') baseItems = baseItems.filter(w => w.archived);
-  else if (currentFilter === 'custom') baseItems = baseItems.filter(w => w.inCustomList);
   else baseItems = baseItems.filter(w => !w.watched && !w.archived && !(w.media_type === 'tv' && (w.episodesWatched || 0) > 0));
 
   let items = [...baseItems];
@@ -1725,7 +1767,12 @@ async function openModal(id, mediaType, event) {
     let syn = detail.overview || 'No synopsis available.';
     syn = escHtml(syn);
 
-    const existingItem = watchlist.find(w => w.id === id && w.media_type === type);
+    const existingItem = watchlist.find(w => String(w.id) === String(detail.id));
+    // Migrate item boolean to array
+    if (existingItem && existingItem.inCustomList && !existingItem.inCustomLists) {
+      existingItem.inCustomLists = userSettings.customLists[0] ? [userSettings.customLists[0].id] : [];
+      delete existingItem.inCustomList;
+    }
     const inList = !!existingItem;
 
     // Collection / watch order
@@ -1788,7 +1835,11 @@ async function openModal(id, mediaType, event) {
               })() : `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>`) : ''}
               ${(inList && !existingItem.archived && !existingItem.watched) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Drop</button>` : ''}
               ${(inList && existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="unarchive(${detail.id}, '${type}')"><i data-lucide="corner-up-left" style="width:12px;height:12px;"></i> Restore</button>` : ''}
-              ${(inList && userSettings.customList?.name) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);" onclick="toggleCustomList(${detail.id}, '${type}', event)"><i data-lucide="${existingItem.inCustomList ? 'check' : 'plus'}" style="width:12px;height:12px;"></i> ${existingItem.inCustomList ? 'In ' : 'Add to '}${escHtml(userSettings.customList.name)}</button>` : ''}
+              ${(inList && userSettings.customLists?.length > 0) ? (() => {
+                const list = userSettings.customLists[0];
+                const active = existingItem.inCustomLists && existingItem.inCustomLists.includes(list.id);
+                return `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);" onclick="toggleCustomList(${detail.id}, '${type}', event)"><i data-lucide="${active ? 'check' : 'plus'}" style="width:12px;height:12px;"></i> ${active ? 'In ' : 'Add to '}${escHtml(list.name)}</button>`;
+              })() : ''}
               <button class="modal-cal-btn" onclick="openSchedule(${detail.id})"><i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule</button>
               ${showNotify ? (notifications.some(n => n.id === detail.id && n.mediaType === type) ? `<button class="modal-cal-btn" style="background:rgba(239,68,68,1);color:#fff;border-color:transparent;" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell-off" style="width:12px;height:12px;"></i> Cancel Notify</button>` : `<button class="modal-cal-btn" style="background:rgba(239,68,68,0.1);color:#ef4444;border-color:rgba(239,68,68,0.2);" onclick="toggleNotify(${detail.id}, '${type}', '${escHtml(title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="bell" style="width:12px;height:12px;"></i> Notify Me</button>`) : ''}
             </div>
@@ -1990,7 +2041,8 @@ async function markWatchedFromModal(id, mediaType) {
       status: a.status || null,
       releaseDate: type === 'tv' ? (a.first_air_date || null) : (a.release_date || null),
       studio: (a.production_companies || [])[0]?.name || null,
-      watched: false, episodesWatched: 0, addedAt: Date.now()
+      watched: false, episodesWatched: 0, addedAt: Date.now(),
+      inCustomLists: []
     };
     watchlist.push(newItem);
     item = newItem;
@@ -2516,8 +2568,38 @@ function hideSplash() {
 function loadLocalSettings() {
   try {
     const saved = localStorage.getItem('cineq_settings');
-    if (saved) userSettings = { ...userSettings, ...JSON.parse(saved) };
+    if (saved) {
+      let parsed = JSON.parse(saved);
+      // Migration from old single customList to new customLists array
+      if (parsed.customList) {
+        if (parsed.customList.name && !parsed.customLists) {
+          parsed.customLists = [{ id: 'list_' + Date.now(), name: parsed.customList.name }];
+          parsed.customListPos = parsed.customList.position || '6';
+        }
+        delete parsed.customList;
+      }
+      userSettings = { ...userSettings, ...parsed };
+    }
   } catch (e) { console.error('Error loading settings', e); }
+  
+  try {
+    let listStr = localStorage.getItem('cineq_watchlist');
+    if (listStr) {
+      watchlist = JSON.parse(listStr);
+      // Data migration: ensure inCustomLists exists
+      watchlist.forEach(w => {
+        if (w.inCustomList && !w.inCustomLists) {
+          w.inCustomLists = userSettings.customLists[0] ? [userSettings.customLists[0].id] : [];
+          delete w.inCustomList;
+        } else if (!w.inCustomLists) {
+          w.inCustomLists = [];
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Failed to parse watchlist:', e);
+    watchlist = [];
+  }
   applySettings();
 }
 
@@ -2551,7 +2633,15 @@ async function syncSettingsFromFirestore() {
   }
 
   if (data) {
-    if (data.settings) {
+    if (data && data.settings) {
+      // Migration for cloud data
+      if (data.settings.customList) {
+        if (data.settings.customList.name && !data.settings.customLists) {
+          data.settings.customLists = [{ id: 'list_' + Date.now(), name: data.settings.customList.name }];
+          data.settings.customListPos = data.settings.customList.position || '6';
+        }
+        delete data.settings.customList;
+      }
       userSettings = { ...userSettings, ...data.settings };
       localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
       applySettings();
@@ -2638,52 +2728,40 @@ function updateSettingsModalUI() {
   const rewatchSortSel = document.getElementById('settingsRewatchSort');
   if (rewatchSortSel) rewatchSortSel.value = userSettings.rewatchSort || 'latest';
   
-  const customName = document.getElementById('settingsCustomListName');
-  if (customName) customName.value = userSettings.customList?.name || '';
+  const displaySel = document.getElementById('settingsCustomListsDisplay');
+  if (displaySel) displaySel.value = userSettings.customListsDisplay || 'poster';
   const customPos = document.getElementById('settingsCustomListPos');
-  if (customPos) customPos.value = userSettings.customList?.position || '6';
+  if (customPos) customPos.value = userSettings.customListPos || '6';
   
   // Inject Custom List tab dynamically
   const normalFilters = document.getElementById('normalFilters');
   const tabCustom = document.getElementById('tabCustom');
   if (normalFilters && tabCustom) {
-    if (userSettings.customList && userSettings.customList.name) {
-      tabCustom.textContent = userSettings.customList.name;
-      tabCustom.style.display = 'block';
-      const pos = parseInt(userSettings.customList.position) || 6;
-      // standard buttons are 5 (list, watching, watched, archive, explore). 
-      // Flex spacer is child 5. Sort buttons are after.
-      // We'll insert at pos-1 index among the first 5 buttons.
-      const children = Array.from(normalFilters.children).filter(c => c.classList.contains('tab-btn') && c.id !== 'tabCustom');
-      if (pos - 1 < children.length) {
-        normalFilters.insertBefore(tabCustom, children[pos - 1]);
-      } else {
-        normalFilters.insertBefore(tabCustom, normalFilters.querySelector('div[style*="flex:1"]') || null);
-      }
+    tabCustom.style.display = 'block';
+    const pos = parseInt(userSettings.customListPos) || 6;
+    const children = Array.from(normalFilters.children).filter(c => c.classList.contains('tab-btn') && c.id !== 'tabCustom');
+    if (pos - 1 < children.length) {
+      normalFilters.insertBefore(tabCustom, children[pos - 1]);
     } else {
-      tabCustom.style.display = 'none';
-      if (currentFilter === 'custom') {
-        const listBtn = document.getElementById('tabList');
-        if (listBtn) setFilter('list', listBtn);
-      }
+      normalFilters.insertBefore(tabCustom, normalFilters.querySelector('div[style*="flex:1"]') || null);
     }
   }
 }
 
 function saveCustomListSettings() {
-  const nameInput = document.getElementById('settingsCustomListName');
+  const displaySel = document.getElementById('settingsCustomListsDisplay');
   const posInput = document.getElementById('settingsCustomListPos');
-  if (!nameInput || !posInput) return;
+  if (!displaySel || !posInput) return;
   
-  const name = nameInput.value.trim();
+  const display = displaySel.value;
   const pos = posInput.value;
   
-  if (name.length > 15) return showToast('Custom list name too long');
-  
-  userSettings.customList = { name, position: pos };
+  userSettings.customListsDisplay = display;
+  userSettings.customListPos = pos;
   saveSettings();
   applySettings();
-  showToast('Custom List updated');
+  if (currentFilter === 'custom') renderGrid(); // Re-render to show layout changes
+  showToast('Custom Lists settings updated');
 }
 
 // ===== ACCOUNT ACTIONS =====
@@ -3625,3 +3703,298 @@ function initExperienceComponent(itemId, type, item) {
     triggerBtn.style.display = 'block';
   }
 }
+
+// ===== CUSTOM LISTS OF LISTS LOGIC =====
+
+function toggleCustomListEditMode() {
+  isCustomListEditMode = !isCustomListEditMode;
+  renderGrid();
+}
+
+function renderCustomLists() {
+  const container = document.getElementById('customListsContainer');
+  const lists = userSettings.customLists || [];
+  const displayMode = userSettings.customListsDisplay || 'poster';
+  
+  let html = '<div class="custom-lists-wrap">';
+  
+  lists.forEach((list, index) => {
+    html += `<div class="custom-list-group" data-id="${list.id}" data-index="${index}">`;
+    
+    // Header
+    html += `<div class="custom-list-header">`;
+    if (isCustomListEditMode) {
+      if (lists.length > 1) {
+        html += `<div class="custom-list-drag" draggable="true" ondragstart="handleListDragStart(event, ${index})" ondragover="handleListDragOver(event)" ondrop="handleListDrop(event, ${index})"><i data-lucide="grip-vertical"></i></div>`;
+      }
+      html += `<input type="text" class="custom-list-title-input" value="${escHtml(list.name)}" onchange="updateCustomListName('${list.id}', this.value)" placeholder="List Name" />`;
+      html += `<button class="custom-list-delete-list-btn" onclick="deleteCustomList('${list.id}')"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>`;
+      html += `<button class="custom-list-save-btn" onclick="toggleCustomListEditMode()"><i data-lucide="check" style="width:16px;height:16px;"></i></button>`;
+    } else {
+      html += `<div class="custom-list-title">${escHtml(list.name)}</div>`;
+    }
+    html += `</div>`; // End Header
+    
+    // Items
+    const listItems = watchlist.filter(w => w.inCustomLists && w.inCustomLists.includes(list.id));
+    
+    if (displayMode === 'poster') {
+      html += `<div class="custom-list-row">`;
+      listItems.forEach(a => {
+        html += `
+        <div class="card-wrapper" style="width:140px; position:relative;">
+          <article class="card ${a.watched ? 'watched' : ''}" ${isCustomListEditMode ? '' : `onclick="openModal(${a.id}, '${a.media_type}', event)"`} style="${isCustomListEditMode ? 'cursor:default; opacity:0.8;' : ''}">
+            <img class="poster-img img-loading" src="${a.poster || ''}" alt="${escHtml(a.title)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" draggable="false" oncontextmenu="return false" />
+            <div class="card-gradient"></div>
+            <div class="card-content" style="padding:8px;">
+              <h3 class="card-title" style="font-size:11px;">${escHtml(a.title)}</h3>
+            </div>
+          </article>
+          ${isCustomListEditMode ? `<button class="custom-item-remove" onclick="removeTitleFromCustomList(${a.id}, '${a.media_type}', '${list.id}')"><i data-lucide="x" style="width:12px;height:12px;"></i></button>` : ''}
+        </div>`;
+      });
+      if (isCustomListEditMode) {
+        html += `<div class="custom-list-add-box" onclick="openCustomListSearch('${list.id}')"><i data-lucide="plus" style="width:24px;height:24px;"></i></div>`;
+      }
+      html += `</div>`; // End Row
+    } else {
+      // Text Mode
+      html += `<div class="custom-list-column">`;
+      listItems.forEach(a => {
+        const isTV = a.media_type === 'tv';
+        const typePill = isTV ? `<span class="type-pill tv-pill">TV</span>` : `<span class="type-pill">Movie</span>`;
+        html += `
+        <div class="custom-list-text-item" ${isCustomListEditMode ? '' : `onclick="openModal(${a.id}, '${a.media_type}', event)" style="cursor:pointer;"`}>
+          <img src="${a.poster}" style="width:32px; height:48px; object-fit:cover; border-radius:4px; background:var(--elevated);" />
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; ${a.watched?'color:var(--muted);':''}">${escHtml(a.title)}</div>
+          </div>
+          ${typePill}
+          ${isCustomListEditMode ? `<button class="custom-item-remove" onclick="removeTitleFromCustomList(${a.id}, '${a.media_type}', '${list.id}')"><i data-lucide="x" style="width:14px;height:14px;"></i></button>` : ''}
+        </div>`;
+      });
+      if (isCustomListEditMode) {
+        html += `<div class="custom-list-add-row" onclick="openCustomListSearch('${list.id}')"><i data-lucide="plus" style="width:16px;height:16px;"></i> ADD TITLE</div>`;
+      }
+      html += `</div>`; // End Column
+    }
+    
+    html += `</div>`; // End Group
+  });
+  
+  if (isCustomListEditMode) {
+    if (lists.length < 10) {
+      html += `<button class="new-list-btn" onclick="addNewCustomList()"><i data-lucide="plus"></i> NEW LIST</button>`;
+    } else {
+      html += `<div style="text-align:center; color:var(--muted); font-size:13px; margin-top:16px;">Maximum list limit (10) reached.</div>`;
+    }
+  }
+  
+  html += '</div>';
+  container.innerHTML = html;
+  lucide.createIcons();
+}
+
+function updateCustomListName(id, newName) {
+  const list = userSettings.customLists.find(l => l.id === id);
+  if (list) {
+    list.name = newName || 'Untitled List';
+    saveSettings();
+  }
+}
+
+function deleteCustomList(id) {
+  if (!confirm("Delete this list? Items will not be removed from your watchlist, just from this list.")) return;
+  userSettings.customLists = userSettings.customLists.filter(l => l.id !== id);
+  watchlist.forEach(w => {
+    if (w.inCustomLists) {
+      w.inCustomLists = w.inCustomLists.filter(listId => listId !== id);
+    }
+  });
+  saveSettings();
+  save();
+  renderGrid();
+}
+
+function addNewCustomList() {
+  if (!userSettings.customLists) userSettings.customLists = [];
+  if (userSettings.customLists.length >= 10) return showToast("Maximum of 10 lists allowed");
+  userSettings.customLists.push({ id: 'list_' + Date.now(), name: 'New List' });
+  saveSettings();
+  renderGrid();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.custom-list-title-input');
+    if (inputs.length > 0) {
+      inputs[inputs.length - 1].focus();
+      inputs[inputs.length - 1].select();
+    }
+  }, 50);
+}
+
+function removeTitleFromCustomList(itemId, mediaType, listId) {
+  const item = watchlist.find(w => w.id === itemId && w.media_type === mediaType);
+  if (item && item.inCustomLists) {
+    item.inCustomLists = item.inCustomLists.filter(id => id !== listId);
+    save();
+    renderGrid();
+  }
+}
+
+let draggedListIndex = null;
+function handleListDragStart(e, index) {
+  draggedListIndex = index;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.closest('.custom-list-group').classList.add('dragging'), 0);
+}
+function handleListDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const group = e.target.closest('.custom-list-group');
+  document.querySelectorAll('.custom-list-group').forEach(el => el.classList.remove('drag-over'));
+  if (group && parseInt(group.dataset.index) !== draggedListIndex) {
+    group.classList.add('drag-over');
+  }
+}
+function handleListDrop(e, targetIndex) {
+  e.preventDefault();
+  document.querySelectorAll('.custom-list-group').forEach(el => {
+    el.classList.remove('dragging');
+    el.classList.remove('drag-over');
+  });
+  if (draggedListIndex === null || draggedListIndex === targetIndex) return;
+  
+  const lists = userSettings.customLists;
+  const item = lists.splice(draggedListIndex, 1)[0];
+  lists.splice(targetIndex, 0, item);
+  
+  saveSettings();
+  renderGrid();
+}
+
+let customListSearchTargetId = null;
+let customSearchTimeout = null;
+
+function openCustomListSearch(listId) {
+  customListSearchTargetId = listId;
+  const backdrop = document.getElementById('customSearchBackdrop');
+  const input = document.getElementById('customSearchInput');
+  const results = document.getElementById('customSearchResults');
+  
+  input.value = '';
+  results.innerHTML = '';
+  results.style.display = 'none';
+  backdrop.style.display = 'flex';
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeCustomSearch() {
+  document.getElementById('customSearchBackdrop').style.display = 'none';
+  customListSearchTargetId = null;
+}
+
+function debounceCustomSearch(query) {
+  clearTimeout(customSearchTimeout);
+  customSearchTimeout = setTimeout(() => doCustomSearch(query), 500);
+}
+
+async function doCustomSearch(query) {
+  query = query.trim();
+  const results = document.getElementById('customSearchResults');
+  if (!query) {
+    results.style.display = 'none';
+    return;
+  }
+  
+  results.style.display = 'block';
+  results.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);">Searching...</div>';
+  
+  try {
+    const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
+    const data = await tmdbFetch(`/search/multi?query=${encodeURIComponent(query)}${adult}&language=en-US&page=1`);
+    const filtered = (data.results || []).filter(r => r.media_type === 'movie' || r.media_type === 'tv').slice(0, 10);
+    
+    if (filtered.length === 0) {
+      results.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);">No results found.</div>';
+      return;
+    }
+    
+    let html = '';
+    filtered.forEach(item => {
+      const title = item.title || item.name;
+      const year = (item.release_date || item.first_air_date || '').substring(0,4);
+      const typeStr = item.media_type === 'tv' ? 'TV' : 'Movie';
+      const posterUrl = item.poster_path ? `https://image.tmdb.org/t/p/w92${item.poster_path}` : '';
+      
+      const existingItem = watchlist.find(w => String(w.id) === String(item.id) && w.media_type === item.media_type);
+      const isAlreadyInList = existingItem && existingItem.inCustomLists && existingItem.inCustomLists.includes(customListSearchTargetId);
+      
+      html += `
+      <div class="drop-item" style="padding:8px;">
+        ${posterUrl ? `<img src="${posterUrl}" class="drop-poster" style="width:32px;height:48px;" />` : `<div class="drop-poster" style="width:32px;height:48px;"></div>`}
+        <div class="drop-info">
+          <div class="drop-title" style="font-size:13px;">${escHtml(title)}</div>
+          <div class="drop-meta">${year} • ${typeStr}</div>
+        </div>
+        <button class="drop-add ${isAlreadyInList ? 'added' : ''}" style="padding:4px 12px; min-height:28px; font-size:11px;" ${isAlreadyInList ? 'disabled' : ''} onclick="addResultToCustomList(${item.id}, '${item.media_type}', this)">
+          ${isAlreadyInList ? 'Added' : 'Add'}
+        </button>
+      </div>`;
+    });
+    results.innerHTML = html;
+  } catch (e) {
+    results.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);">Search failed.</div>';
+  }
+}
+
+async function addResultToCustomList(id, type, btn) {
+  if (btn.classList.contains('added')) return;
+  const listId = customListSearchTargetId;
+  if (!listId) return;
+  
+  btn.innerHTML = '...';
+  
+  try {
+    let existingItem = watchlist.find(w => String(w.id) === String(id) && w.media_type === type);
+    
+    if (!existingItem) {
+      // Need to fetch full details first to add to watchlist
+      const detail = await tmdbFetch(`/${type}/${id}?append_to_response=credits`);
+      
+      existingItem = {
+        id: detail.id,
+        media_type: type,
+        title: detail.title || detail.name,
+        poster: detail.poster_path ? `https://image.tmdb.org/t/p/w342${detail.poster_path}` : '',
+        backdrop: detail.backdrop_path ? `https://image.tmdb.org/t/p/w780${detail.backdrop_path}` : '',
+        score: Math.round((detail.vote_average || 0) * 10),
+        year: parseInt((detail.release_date || detail.first_air_date || '').substring(0,4)) || 0,
+        runtime: type === 'movie' ? detail.runtime : (detail.episode_run_time ? detail.episode_run_time[0] : 0),
+        _genres: (detail.genres || []).map(g => g.name),
+        status: detail.status || null,
+        releaseDate: type === 'tv' ? (detail.first_air_date || null) : (detail.release_date || null),
+        studio: (detail.production_companies || [])[0]?.name || null,
+        watched: false, episodesWatched: 0, addedAt: Date.now(),
+        inCustomLists: []
+      };
+      watchlist.push(existingItem);
+    }
+    
+    if (!existingItem.inCustomLists) existingItem.inCustomLists = [];
+    if (!existingItem.inCustomLists.includes(listId)) {
+      existingItem.inCustomLists.push(listId);
+      await save();
+    }
+    
+    btn.classList.add('added');
+    btn.innerHTML = 'Added';
+    btn.disabled = true;
+    showToast('Added to list');
+    renderGrid(); // update UI behind modal
+    
+  } catch (e) {
+    console.error(e);
+    btn.innerHTML = 'Add';
+    showToast('Failed to add title');
+  }
+}
+
