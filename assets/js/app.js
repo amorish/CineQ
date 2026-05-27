@@ -1832,7 +1832,7 @@ async function openModal(id, mediaType, event) {
               </span>
             </div>
             <div style="display: flex; gap: 8px;">
-              <button class="modal-unwatch-btn" style="background: transparent; border: 1px solid var(--accent); color: var(--accent);" onclick="handleRewatch(${detail.id}, '${type}')">
+              <button class="modal-rewatch-btn" onclick="handleRewatch(${detail.id}, '${type}')">
                 <i data-lucide="repeat" style="width:12px;height:12px;"></i> Rewatch
               </button>
               <button class="modal-unwatch-btn" onclick="markUnwatchedFromModal(${detail.id}, '${type}')">
