@@ -1588,7 +1588,7 @@ function renderGrid() {
           return asc ? getT(a) - getT(b) : getT(b) - getT(a);
         });
       } else {
-        if (!asc) items.reverse();
+        items.sort((a,b) => asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0));
       }
     }
   }
