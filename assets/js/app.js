@@ -3506,7 +3506,7 @@ function initExperienceComponent(itemId, type, item) {
         staticHeartsContainer.innerHTML += `
           <div class="static-heart">
             <svg class="heart-empty" viewBox="0 0 24 24"><path d="${heartPath}"/></svg>
-            <svg viewBox="0 0 24 24" style="position: absolute; top:0; left:0; width: 100%; height: 100%; fill: ${exactColor}; stroke: ${exactColor}; opacity: ${opacity}; clip-path: ${clip};"><path d="${heartPath}"/></svg>
+            <svg viewBox="0 0 24 24" style="position: absolute; top:0; left:0; width: 100%; height: 100%; fill: ${exactColor}; stroke: ${exactColor}; stroke-width: 2; opacity: ${opacity}; clip-path: ${clip};"><path d="${heartPath}"/></svg>
           </div>
         `;
       }
