@@ -1170,11 +1170,16 @@ function updateStats() {
           if (!profilePicCache || profilePicCache.src !== photoURL) {
             const img = new Image();
             img.crossOrigin = 'anonymous';
-            img.src = photoURL;
             img.onload = () => {
               profilePicCache = img;
-              chart.draw();
+              chart.update('none');
             };
+            img.onerror = () => {
+              const fallbackImg = new Image();
+              fallbackImg.onload = () => { profilePicCache = fallbackImg; chart.update('none'); };
+              fallbackImg.src = photoURL;
+            };
+            img.src = photoURL;
             return;
           }
           c.save();
@@ -2799,14 +2804,13 @@ async function saveCroppedImage() {
       const downloadURL = await fileRef.getDownloadURL();
       await currentUser.updateProfile({ photoURL: downloadURL });
       if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
-      showToast('Profile picture saved successfully');
+      profilePicCache = null; // bust cache
+      updateStats(); // re-render chart with new profile pic
+      showToast('Profile picture saved successfully! 🎉');
     }).catch(e => {
       console.error(e);
       showToast('Failed to save profile picture');
     });
-    profilePicCache = null; // bust cache
-    updateStats(); // re-render chart with new profile pic
-    showToast('Profile picture updated! 🎉');
   } catch(e) {
     console.error('Upload failed:', e);
     showToast('Failed to upload image. Check your connection.');
