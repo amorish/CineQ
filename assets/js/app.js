@@ -1650,7 +1650,7 @@ function renderGrid() {
             <span class="ep-text" id="ep-text-${a.id}">${(() => {
               if (a.seasons) {
                 const epInfo = calculateSeasonAndEpisode(a.episodesWatched, a.seasons);
-                return 'S' + epInfo.season + ' EP' + epInfo.episode;
+                return 'S' + epInfo.season + ' EP' + epInfo.episode + '/' + (epInfo.seasonEpisodes || '?');
               }
               return 'Ep ' + (a.episodesWatched||0) + '/' + (epCount || '?');
             })()}</span>
@@ -2132,7 +2132,7 @@ async function updateProgress(id, change, event, skipSave = false) {
   if (epText) {
     if (item.seasons) {
       const epInfo = calculateSeasonAndEpisode(item.episodesWatched, item.seasons);
-      epText.textContent = `S${epInfo.season} EP${epInfo.episode}`;
+      epText.textContent = `S${epInfo.season} EP${epInfo.episode}/${epInfo.seasonEpisodes || '?'}`;
     } else {
       epText.textContent = `Ep ${item.episodesWatched}/${epTotal}`;
     }
