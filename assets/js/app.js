@@ -13,7 +13,7 @@ let db = null;
 let storage = null;
 let cropperInstance = null;
 let profilePicCache = null;
-let userPhotoURL = null; // Dedicated photo URL, sourced from Firestore (survives refresh)
+
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
@@ -127,15 +127,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
     document.getElementById('userEmail').innerHTML =
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
 
-    // Try loading cached photo URL from localStorage immediately
     let cachedPhoto = localStorage.getItem(`profile_pic_${user.uid}`);
     if (!cachedPhoto && user.photoURL) {
       cachedPhoto = user.photoURL; // Fallback to Auth profile if cache is cleared and Firestore is blocked by adblockers
-    }
-    
-    if (cachedPhoto) {
-      userPhotoURL = cachedPhoto;
-      applyProfilePhoto(cachedPhoto);
     }
 
     isWatchlistLoading = true;
@@ -436,7 +430,7 @@ async function forgotPassword() {
   } catch (e) { showToast(friendlyAuthError(e.code || '')); }
 }
 
-function logout() { userPhotoURL = null; profilePicCache = null; if (currentUser) localStorage.removeItem(`profile_pic_${currentUser.uid}`); firebase.auth().signOut(); }
+function logout() { profilePicCache = null; if (currentUser) localStorage.removeItem(`profile_pic_${currentUser.uid}`); firebase.auth().signOut(); }
 
 // ===== WATCHLIST RECLASSIFICATION & MIGRATION =====
 function reclassifyWatchlistItems() {
@@ -1159,7 +1153,7 @@ function updateStats() {
       const profileImageCenter = {
         id: 'profileImageCenter',
         afterDraw(chart) {
-          const photoURL = userPhotoURL;
+          const photoURL = tempShareImageURL;
           if (!photoURL) return;
           const { ctx: c, chartArea } = chart;
           const centerX = (chartArea.left + chartArea.right) / 2;
@@ -1281,32 +1275,50 @@ function updateStats() {
   }
 }
 
+let tempShareImageURL = null;
+
 function shareStats() {
-  const node = document.getElementById('capture-target');
+  const backdrop = document.getElementById('sharePromptBackdrop');
+  if (backdrop) backdrop.style.display = 'flex';
+}
+
+function skipShareImage() {
+  const backdrop = document.getElementById('sharePromptBackdrop');
+  if (backdrop) backdrop.style.display = 'none';
+  tempShareImageURL = null;
+  executeShare();
+}
+
+function executeShare() {
   const shareBtn = document.getElementById('shareBtn');
-  if (!node) return;
-  
-  if (typeof htmlToImage === 'undefined') {
-    console.error("htmlToImage is blocked or failed to load");
-    showToast("Share failed: Please disable ad-blockers for this site");
-    return;
-  }
-  
-  showToast("Generating image...");
   if (shareBtn) shareBtn.style.visibility = 'hidden';
+  showToast("Generating image...");
 
-  // Ensure canvas background matches the theme
-  const style = getComputedStyle(document.body);
-  const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
-
-  htmlToImage.toBlob(node, {
-    backgroundColor: bgColor,
-    pixelRatio: 2,
-    style: {
-      margin: '0',
-      transform: 'none'
+  // Update chart to show temp image if exists
+  if (typeof updateStats === 'function') updateStats();
+  
+  // Wait for chart to re-render fully before capture
+  setTimeout(() => {
+    const node = document.getElementById('capture-target');
+    if (!node) return;
+    
+    if (typeof htmlToImage === 'undefined') {
+      console.error("htmlToImage is blocked or failed to load");
+      showToast("Share failed: Please disable ad-blockers for this site");
+      return;
     }
-  }).then(async (blob) => {
+
+    const style = getComputedStyle(document.body);
+    const bgColor = style.getPropertyValue('--bg').trim() || '#0a0a0a';
+
+    htmlToImage.toBlob(node, {
+      backgroundColor: bgColor,
+      pixelRatio: 2,
+      style: {
+        margin: '0',
+        transform: 'none'
+      }
+    }).then(async (blob) => {
       // Try native Web Share API first
       if (navigator.canShare) {
         const file = new File([blob], 'CineQ-Stats.png', { type: 'image/png' });
@@ -1318,25 +1330,39 @@ function shareStats() {
               files: [file]
             });
             if (shareBtn) shareBtn.style.visibility = 'visible';
+            cleanupShareImage();
             return;
-          } catch (error) {
-            console.log('Share canceled or failed', error);
+          } catch (e) {
+            console.warn("Share failed or cancelled", e);
+            // fall back to download
           }
         }
       }
-
-      // Fallback: Download image
-      const link = document.createElement('a');
-      link.download = 'CineQ-Stats.png';
-      link.href = URL.createObjectURL(blob);
-      link.click();
+      
+      // Fallback: trigger download
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `CineQ_Stats_${new Date().getTime()}.png`;
+      a.click();
+      window.URL.revokeObjectURL(url);
       
       if (shareBtn) shareBtn.style.visibility = 'visible';
-  }).catch(err => {
-    console.error("Export error", err);
-    showToast("Failed to generate image");
-    if (shareBtn) shareBtn.style.visibility = 'visible';
-  });
+      showToast("Image downloaded!");
+      cleanupShareImage();
+      
+    }).catch(err => {
+      console.error('oops, something went wrong!', err);
+      showToast("Error generating image.");
+      if (shareBtn) shareBtn.style.visibility = 'visible';
+      cleanupShareImage();
+    });
+  }, 300); // 300ms delay to ensure chart draws the image
+}
+
+function cleanupShareImage() {
+  tempShareImageURL = null;
+  if (typeof updateStats === 'function') updateStats(); // revert chart
 }
 
 function toggleSearch() {}
@@ -2497,11 +2523,6 @@ async function syncSettingsFromFirestore() {
   }
 
   if (data) {
-    if (data.photoURL) {
-      userPhotoURL = data.photoURL;
-      localStorage.setItem(`profile_pic_${currentUser.uid}`, data.photoURL);
-      applyProfilePhoto(data.photoURL);
-    }
     if (data.settings) {
       userSettings = { ...userSettings, ...data.settings };
       localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
@@ -2733,28 +2754,10 @@ function renderSettingsProfilePic() {
   }
 }
 
-// Central helper to push a photo URL into the navbar avatar button
-function applyProfilePhoto(url) {
-  const navImg = document.getElementById('navProfileImg');
-  const avatarBtn = document.getElementById('avatarBtn');
-  if (url) {
-    if (navImg) { navImg.src = url; navImg.style.display = 'block'; }
-    // Hide the Lucide SVG icon (can't rely on ID because lucide.createIcons replaces it)
-    if (avatarBtn) {
-      const svg = avatarBtn.querySelector('svg');
-      if (svg) svg.style.display = 'none';
-    }
-  } else {
-    if (navImg) { navImg.src = ''; navImg.style.display = 'none'; }
-    if (avatarBtn) {
-      const svg = avatarBtn.querySelector('svg');
-      if (svg) svg.style.display = '';
-    }
-  }
-}
+// Central helper to push a photo URL into the navbar avatar button (Removed, reverting to default icon)
 
 (function() {
-  const input = document.getElementById('profileImageInput');
+  const input = document.getElementById('shareImageInput');
   if (input) {
     input.addEventListener('change', function(e) {
       const file = e.target.files[0];
@@ -2771,6 +2774,7 @@ function applyProfilePhoto(url) {
       }
       const reader = new FileReader();
       reader.onload = function(ev) {
+        document.getElementById('sharePromptBackdrop').style.display = 'none';
         openCropper(ev.target.result);
         input.value = '';
       };
@@ -2818,13 +2822,11 @@ function closeCropper() {
   if (!settingsOpen || settingsOpen.style.display === 'none') document.body.style.overflow = '';
 }
 
-async function saveCroppedImage() {
-  if (!cropperInstance || !currentUser || !storage) {
-    showToast('Unable to save. Please try again.');
-    return;
-  }
-  const saveBtn = document.getElementById('cropperSaveBtn');
-  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Uploading...'; }
+function applyShareImageCrop() {
+  if (!cropperInstance) return;
+  const btn = document.getElementById('cropperSaveBtn');
+  if (btn) btn.disabled = true;
+  
   try {
     const canvas = cropperInstance.getCroppedCanvas({
       width: 256,
@@ -2832,57 +2834,14 @@ async function saveCroppedImage() {
       imageSmoothingEnabled: true,
       imageSmoothingQuality: 'high'
     });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.80));
-    const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
-    const localUrl = URL.createObjectURL(blob);
+    tempShareImageURL = canvas.toDataURL('image/png');
     closeCropper();
-    
-    // Optimistic UI Update
-    const settingsImg = document.getElementById('settingsProfileImg');
-    const settingsIcon = document.getElementById('settingsProfileIcon');
-    if (settingsImg) { settingsImg.src = localUrl; settingsImg.style.display = 'block'; }
-    if (settingsIcon) { settingsIcon.style.display = 'none'; }
-    
-    userPhotoURL = localUrl;
-    applyProfilePhoto(localUrl);
-
-    // Upload new in background (using a static filename to automatically overwrite the old one without needing listAll)
-    const fileName = `avatar.webp`;
-    const fileRef = storageRef.child(fileName);
-    
-    fileRef.put(blob, { contentType: 'image/webp' }).then(async () => {
-      const downloadURL = await fileRef.getDownloadURL();
-      
-      try {
-        await currentUser.updateProfile({ photoURL: downloadURL });
-        await currentUser.reload();
-        await currentUser.getIdToken(true);
-      } catch(e) { console.warn("Auth update failed", e); }
-      
-      userPhotoURL = downloadURL;
-      localStorage.setItem(`profile_pic_${currentUser.uid}`, downloadURL);
-      applyProfilePhoto(downloadURL);
-      profilePicCache = null;
-      if (typeof updateStats === 'function') updateStats();
-      
-      if (db) {
-        try {
-          await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
-        } catch (err) {
-          console.warn("Direct Firestore write blocked, saving locally only.");
-        }
-      }
-      
-      showToast('Profile picture saved successfully');
-    }).catch(e => {
-      console.error(e);
-      showToast('Failed to save profile picture');
-    });
+    executeShare();
   } catch(e) {
-    console.error('Upload failed:', e);
-    showToast('Failed to upload image. Check your connection.');
+    console.error('Crop failed:', e);
+    showToast('Failed to crop image.');
   } finally {
-    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Picture'; }
+    if (btn) btn.disabled = false;
   }
 }
 

@@ -48,8 +48,8 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=23">
-  <link rel="stylesheet" href="assets/css/ticket.css?v=23">
+  <link rel="stylesheet" href="assets/css/style.css?v=24">
+  <link rel="stylesheet" href="assets/css/ticket.css?v=24">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 </head>
 <body>
@@ -183,7 +183,7 @@
           <span id="notifBadge" style="display:none;position:absolute;top:2px;right:4px;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span>
         </button>
         <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile" style="position:relative; overflow:hidden;">
-          <img id="navProfileImg" src="" style="width:100%; height:100%; object-fit:cover; display:none; border-radius:50%; position:absolute; top:0; left:0;" />
+
           <i data-lucide="user" id="navProfileIcon"></i>
         </button>
       </div>
@@ -375,11 +375,24 @@
     </div>
   </div>
 
+  <!-- ===== SHARE PROMPT MODAL ===== -->
+  <div class="modal-backdrop" id="sharePromptBackdrop" style="display:none; z-index:100000; background:rgba(0,0,0,0.8);">
+    <div class="modal" style="width: 100%; max-width: 320px; text-align: center; padding: 24px;">
+      <h3 style="margin-bottom: 12px; font-size:18px;">Add Custom Image?</h3>
+      <p style="color: var(--muted); margin-bottom: 24px; font-size: 14px;">Would you like to insert a custom image in the center of your donut chart before sharing?</p>
+      <div style="display: flex; gap: 12px; justify-content: center; flex-direction:column;">
+        <button class="settings-action-btn" onclick="document.getElementById('shareImageInput').click()" style="width:100%;">Choose Image</button>
+        <button class="settings-action-btn secondary" onclick="skipShareImage()" style="width:100%;">Skip (Leave Empty)</button>
+        <input type="file" id="shareImageInput" accept="image/*" style="display:none;" />
+      </div>
+    </div>
+  </div>
+
   <!-- ===== CROPPER OVERLAY ===== -->
   <div class="modal-backdrop" id="cropperBackdrop" style="display:none; z-index:100000; background:rgba(0,0,0,0.9);">
     <div class="modal" style="width: 100%; max-width: 500px; padding: 0; overflow: hidden; display:flex; flex-direction:column; max-height:90vh; background: #080808; border: 1px solid var(--border);">
       <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="margin:0;">Crop Profile Picture</h3>
+        <h3 style="margin:0;">Crop Image for Share</h3>
         <button class="modal-close" onclick="closeCropper()" style="position:relative; top:0; right:0; background:var(--elevated);"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
       </div>
       <div style="flex:1; min-height: 300px; max-height: 60vh; background: #000; display: flex; align-items: center; justify-content: center;">
@@ -387,7 +400,7 @@
       </div>
       <div style="padding: 16px; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid var(--border); background: var(--card);">
         <button class="settings-action-btn secondary" onclick="closeCropper()">Cancel</button>
-        <button class="settings-action-btn" onclick="saveCroppedImage()" id="cropperSaveBtn">Save Picture</button>
+        <button class="settings-action-btn" onclick="applyShareImageCrop()" id="cropperSaveBtn">Apply Image</button>
       </div>
     </div>
   </div>
@@ -667,20 +680,6 @@
           <!-- Account Tab -->
           <div class="settings-pane active" id="pane-account">
             <h3>Account Settings</h3>
-            <div class="setting-group" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:12px;">
-              <div class="profile-avatar-wrapper" onclick="document.getElementById('profileImageInput').click()" style="position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; cursor:pointer; border:1px solid var(--border); background:var(--elevated); display:flex; align-items:center; justify-content:center;">
-                <img id="settingsProfileImg" src="" style="width:100%; height:100%; object-fit:cover; display:none;" />
-                <i data-lucide="camera" id="settingsProfileIcon" style="width:24px; height:24px; color:var(--muted);"></i>
-                <div class="avatar-overlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.2s;">
-                  <i data-lucide="edit-2" style="width:16px; height:16px; color:#fff;"></i>
-                </div>
-              </div>
-              <div>
-                <label style="margin:0; text-transform:uppercase; letter-spacing:0.05em; font-size:11px;">Profile Picture</label>
-                <p class="setting-description" style="margin-top:4px;">Upload a custom image (max 5MB).</p>
-                <input type="file" id="profileImageInput" accept="image/*" style="display:none;" />
-              </div>
-            </div>
             <div class="setting-group">
               <label>Username</label>
               <div class="input-wrapper-settings" style="display:flex; align-items:center; gap:8px;">
@@ -999,7 +998,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="assets/js/env.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-  <script src="assets/js/app.js?v=23"></script>
+  <script src="assets/js/app.js?v=24"></script>
   <!-- Google API scripts loaded AFTER app.js so gapiLoaded/gisLoaded are defined -->
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>
