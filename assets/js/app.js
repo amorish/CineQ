@@ -2601,6 +2601,13 @@ function editUsernameInit() {
   input.style.borderRadius = 'var(--radius-sm)';
   input.style.height = '44px';
   input.focus();
+  
+  const btn = document.getElementById('editUsernameBtn');
+  if (btn) {
+    btn.innerHTML = '<i data-lucide="check" style="width:16px; height:16px; color:var(--accent);"></i>';
+    lucide.createIcons();
+    btn.onclick = () => { input.blur(); };
+  }
 }
 
 async function updateProfileUsernameOnBlur() {
@@ -2613,6 +2620,13 @@ async function updateProfileUsernameOnBlur() {
   input.style.padding = '8px 0';
   input.style.height = 'auto';
   input.style.borderRadius = '0';
+  
+  const btn = document.getElementById('editUsernameBtn');
+  if (btn) {
+    btn.innerHTML = '<i data-lucide="pencil" style="width:16px; height:16px;"></i>';
+    lucide.createIcons();
+    setTimeout(() => { btn.onclick = editUsernameInit; }, 100);
+  }
   
   const newName = input.value.trim();
   if (!newName) {
@@ -2750,12 +2764,7 @@ async function saveCroppedImage() {
       imageSmoothingQuality: 'high'
     });
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.80));
-    // Delete existing profile pics
     const storageRef = storage.ref(`users/${currentUser.uid}/profile_pic`);
-    try {
-      const listResult = await storageRef.listAll();
-      await Promise.all(listResult.items.map(item => item.delete()));
-    } catch(e) { /* No existing files, ok */ }
     const localUrl = URL.createObjectURL(blob);
     closeCropper();
     
@@ -2770,8 +2779,8 @@ async function saveCroppedImage() {
     if (navImg) { navImg.src = localUrl; navImg.style.display = 'block'; }
     if (navIcon) { navIcon.style.display = 'none'; }
 
-    // Upload new in background
-    const fileName = `avatar_${Date.now()}.webp`;
+    // Upload new in background (using a static filename to automatically overwrite the old one without needing listAll)
+    const fileName = `avatar.webp`;
     const fileRef = storageRef.child(fileName);
     
     fileRef.put(blob, { contentType: 'image/webp' }).then(async () => {

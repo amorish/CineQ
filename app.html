@@ -683,7 +683,7 @@
               <label>Username</label>
               <div class="input-wrapper-settings" style="display:flex; align-items:center; gap:8px;">
                 <input type="text" id="settingsUsername" placeholder="Username" maxlength="15" readonly style="flex:1; cursor:default; background:transparent; border:1px solid transparent; border-bottom:1px solid var(--border); border-radius:0; padding:8px 0; outline:none; transition:0.2s;" onblur="updateProfileUsernameOnBlur()" onkeydown="if(event.key==='Enter') this.blur();" />
-                <button class="settings-action-btn" onclick="editUsernameInit()" style="padding:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:var(--muted);"><i data-lucide="pencil" style="width:16px; height:16px;"></i></button>
+                <button id="editUsernameBtn" class="settings-action-btn" onclick="editUsernameInit()" style="padding:6px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; background:transparent; border:none; color:var(--muted);"><i data-lucide="pencil" style="width:16px; height:16px;"></i></button>
               </div>
             </div>
             <div class="setting-group">
