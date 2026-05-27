@@ -846,15 +846,26 @@
             </div>
             <div class="setting-group">
               <label>Custom Lists View</label>
-              <p class="setting-description">Choose how you want your Custom Lists to be displayed, and where the tab should appear.</p>
-              <div class="input-wrapper-settings" style="margin-bottom:12px; align-items: center;">
+              <p class="setting-description">Enable and customize your Custom Lists feature.</p>
+              <div class="input-wrapper-settings" style="margin-bottom:12px; align-items: center; display: flex;">
+                <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Enable Custom Lists</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="settingsCustomListsEnabled">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="input-wrapper-settings" style="margin-bottom:12px; align-items: center; display: flex;">
+                <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Tab Name</label>
+                <input type="text" id="settingsCustomListName" class="settings-select" style="flex: 2; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--text-main);" maxlength="15" placeholder="Lists">
+              </div>
+              <div class="input-wrapper-settings" style="margin-bottom:12px; align-items: center; display: flex;">
                 <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Display Style</label>
                 <select id="settingsCustomListsDisplay" class="settings-select" style="flex: 2;">
                   <option value="poster">Posters (Horizontal Scroll)</option>
                   <option value="text">Text (Vertical List)</option>
                 </select>
               </div>
-              <div class="input-wrapper-settings" style="align-items: center;">
+              <div class="input-wrapper-settings" style="align-items: center; display: flex;">
                 <label style="flex: 1; margin:0; font-size: 13px; color: var(--text-main);">Tab Position</label>
                 <select id="settingsCustomListPos" class="settings-select" style="flex: 2;">
                   <option value="1">Position 1 (First)</option>

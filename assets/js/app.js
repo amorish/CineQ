@@ -1040,53 +1040,12 @@ function updateStats() {
   let totalMinutes = 0;
   let moviesCount = 0;
   let tvCount = 0;
-  let animeCount = 0;
-  let kdramaCount = 0;
-  let docCount = 0;
-  let shortCount = 0;
-  let realityCount = 0;
-  
-  const animeStudios = ['Bones', 'MAPPA', 'Madhouse', 'Kyoto Animation', 'ufotable', 'Toei Animation', 'Studio Ghibli', 'CoMix Wave Films', 'A-1 Pictures', 'CloverWorks', 'WIT STUDIO', 'Production I.G', 'Pierrot', 'J.C.Staff', 'TMS Entertainment'];
-  const kdramaStudios = ['Studio Dragon', 'tvN', 'JTBC', 'SBS', 'KBS', 'MBC'];
-  const docStudios = ['National Geographic', 'BBC', 'Discovery', 'History'];
   
   listToUse.forEach(item => {
     const isWatchedContent = item.watched || (item.episodesWatched && item.episodesWatched > 0);
     if (!isWatchedContent) return;
 
-    let isAnime = item.isAnime;
-    let isKDrama = item.isKDrama;
-    let isDoc = item.isDoc;
-    let isShortFilm = item.isShortFilm;
-    let isReality = item.isReality;
-
-    if (isAnime === undefined) {
-      const origText = item.original_title || item.title || '';
-      const hasAsian = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(origText);
-      isAnime = hasAsian || (item.studio && animeStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase())));
-      isKDrama = item.media_type === 'tv' && item.studio && kdramaStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
-      isDoc = item.studio && docStudios.some(s => item.studio.toLowerCase().includes(s.toLowerCase()));
-      isShortFilm = item.media_type === 'movie' && item.runtime > 0 && item.runtime < 40;
-    }
-
-    if (isDoc) {
-      if (item.watched) docCount++;
-      if (item.watched && item.runtime) totalMinutes += item.runtime;
-      else if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
-    } else if (isShortFilm) {
-      if (item.watched) shortCount++;
-      if (item.watched && item.runtime) totalMinutes += item.runtime;
-    } else if (isAnime) {
-      if (item.watched) animeCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 24);
-      else if (item.media_type === 'movie' && item.watched && item.runtime) totalMinutes += item.runtime;
-    } else if (isKDrama) {
-      if (item.watched) kdramaCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 60);
-    } else if (isReality) {
-      if (item.watched) realityCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
-    } else if (item.media_type === 'movie') {
+    if (item.media_type === 'movie') {
       if (item.watched) moviesCount++;
       if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else {
@@ -1095,10 +1054,10 @@ function updateStats() {
     }
   });
   
-  const colors = ['#818cf8', '#fb923c', '#f43f5e', '#a78bfa', '#10b981', '#38bdf8', '#fbbf24']; // Movies, TV, Anime, KDrama, Doc, Short, Reality
+  const colors = ['#818cf8', '#fb923c']; // Movies, TV
   const watchedEl = document.getElementById('statsTitlesWatched');
   if (watchedEl) {
-    const countsArr = [moviesCount, tvCount, animeCount, kdramaCount, docCount, shortCount, realityCount];
+    const countsArr = [moviesCount, tvCount];
     const parts = countsArr.map((c, i) => c > 0 ? `<span style="color: ${colors[i]}; font-weight: 700;">${c}</span>` : null).filter(Boolean);
     watchedEl.innerHTML = parts.length > 0 ? parts.join('+') : '0';
   }
@@ -1108,32 +1067,17 @@ function updateStats() {
   const timeEl = document.getElementById('statsTotalTime');
   if (timeEl) timeEl.textContent = `${days}d ${hours}h`;
   
-  const totalMedia = moviesCount + tvCount + animeCount + kdramaCount + docCount + shortCount + realityCount;
+  const totalMedia = moviesCount + tvCount;
   const getPct = (count) => totalMedia > 0 ? Math.round((count / totalMedia) * 100) : 0;
   
   let moviePct = getPct(moviesCount);
   let tvPct = getPct(tvCount);
-  let animePct = getPct(animeCount);
-  let kdramaPct = getPct(kdramaCount);
-  let docPct = getPct(docCount);
-  let shortPct = getPct(shortCount);
-  let realityPct = getPct(realityCount);
 
   if (totalMedia > 0) {
-    const totalPct = moviePct + tvPct + animePct + kdramaPct + docPct + shortPct + realityPct;
+    const totalPct = moviePct + tvPct;
     if (totalPct !== 100) {
-      const pcts = [
-        {name: 'movie', val: moviePct}, {name: 'tv', val: tvPct}, {name: 'anime', val: animePct}, 
-        {name: 'kdrama', val: kdramaPct}, {name: 'doc', val: docPct}, {name: 'short', val: shortPct}, {name: 'reality', val: realityPct}
-      ].sort((a,b) => b.val - a.val);
-      pcts[0].val += (100 - totalPct);
-      moviePct = pcts.find(p=>p.name==='movie').val;
-      tvPct = pcts.find(p=>p.name==='tv').val;
-      animePct = pcts.find(p=>p.name==='anime').val;
-      kdramaPct = pcts.find(p=>p.name==='kdrama').val;
-      docPct = pcts.find(p=>p.name==='doc').val;
-      shortPct = pcts.find(p=>p.name==='short').val;
-      realityPct = pcts.find(p=>p.name==='reality').val;
+      if (moviePct > tvPct) moviePct += (100 - totalPct);
+      else tvPct += (100 - totalPct);
     }
   }
   
@@ -1237,12 +1181,12 @@ function updateStats() {
 
       const legendContainer = document.getElementById('customLegend');
       if (legendContainer) {
-        const currentCounts = [moviesCount, tvCount, animeCount, kdramaCount, docCount, shortCount, realityCount];
         legendContainer.innerHTML = '';
-        const labels = ['Movies', 'TV Shows', 'Anime', 'K-Dramas', 'Documentaries', 'Short Films', 'Reality TV'];
-        const dataValues = [moviePct, tvPct, animePct, kdramaPct, docPct, shortPct, realityPct];
+        const labels = ['Movies', 'TV Series'];
+        const pctsArr = [moviePct, tvPct];
+        const countsArr = [moviesCount, tvCount];
         labels.forEach((label, index) => {
-          if (dataValues[index] === 0) return;
+          if (pctsArr[index] === 0) return;
           const legendItem = document.createElement('div');
           legendItem.className = 'legend-item';
           const colorBox = document.createElement('div');
@@ -2730,18 +2674,31 @@ function updateSettingsModalUI() {
   if (displaySel) displaySel.value = userSettings.customListsDisplay || 'poster';
   const customPos = document.getElementById('settingsCustomListPos');
   if (customPos) customPos.value = userSettings.customListPos || '6';
+  const customListsEnabled = document.getElementById('settingsCustomListsEnabled');
+  if (customListsEnabled) customListsEnabled.checked = userSettings.customListsEnabled !== false;
+  const customListName = document.getElementById('settingsCustomListName');
+  if (customListName) customListName.value = userSettings.customListName || 'Lists';
   
   // Inject Custom List tab dynamically
   const normalFilters = document.getElementById('normalFilters');
   const tabCustom = document.getElementById('tabCustom');
   if (normalFilters && tabCustom) {
-    tabCustom.style.display = 'block';
-    const pos = parseInt(userSettings.customListPos) || 6;
-    const children = Array.from(normalFilters.children).filter(c => c.classList.contains('tab-btn') && c.id !== 'tabCustom');
-    if (pos - 1 < children.length) {
-      normalFilters.insertBefore(tabCustom, children[pos - 1]);
+    if (userSettings.customListsEnabled === false) {
+      tabCustom.style.display = 'none';
+      if (currentFilter === 'custom') {
+        const listBtn = document.getElementById('tabList');
+        if (listBtn) setFilter('list', listBtn);
+      }
     } else {
-      normalFilters.insertBefore(tabCustom, normalFilters.querySelector('div[style*="flex:1"]') || null);
+      tabCustom.style.display = 'block';
+      tabCustom.textContent = userSettings.customListName || 'Lists';
+      const pos = parseInt(userSettings.customListPos) || 6;
+      const children = Array.from(normalFilters.children).filter(c => c.classList.contains('tab-btn') && c.id !== 'tabCustom');
+      if (pos - 1 < children.length) {
+        normalFilters.insertBefore(tabCustom, children[pos - 1]);
+      } else {
+        normalFilters.insertBefore(tabCustom, normalFilters.querySelector('div[style*="flex:1"]') || null);
+      }
     }
   }
 }
@@ -2749,13 +2706,14 @@ function updateSettingsModalUI() {
 function saveCustomListSettings() {
   const displaySel = document.getElementById('settingsCustomListsDisplay');
   const posInput = document.getElementById('settingsCustomListPos');
+  const enabledChk = document.getElementById('settingsCustomListsEnabled');
+  const nameInp = document.getElementById('settingsCustomListName');
   if (!displaySel || !posInput) return;
   
-  const display = displaySel.value;
-  const pos = posInput.value;
-  
-  userSettings.customListsDisplay = display;
-  userSettings.customListPos = pos;
+  userSettings.customListsDisplay = displaySel.value;
+  userSettings.customListPos = posInput.value;
+  if (enabledChk) userSettings.customListsEnabled = enabledChk.checked;
+  if (nameInp) userSettings.customListName = nameInp.value.trim() || 'Lists';
   saveSettings();
   applySettings();
   if (currentFilter === 'custom') renderGrid(); // Re-render to show layout changes
@@ -3782,7 +3740,7 @@ function renderCustomLists() {
   
   if (isCustomListEditMode) {
     if (lists.length < 10) {
-      html += `<button class="new-list-btn" onclick="addNewCustomList()"><i data-lucide="plus"></i> NEW LIST</button>`;
+      html += `<button class="new-list-btn" onclick="addNewCustomList()" style="width: 100%; padding: 12px; background: transparent; border: 1px dashed var(--border); color: var(--text-main); font-weight: 600; font-size: 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i data-lucide="plus"></i> NEW LIST</button>`;
     } else {
       html += `<div style="text-align:center; color:var(--muted); font-size:13px; margin-top:16px;">Maximum list limit (10) reached.</div>`;
     }

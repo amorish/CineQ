@@ -408,16 +408,6 @@ body.light-theme #selectModeToggleBtn.active {
   box-shadow: inset 0 0 0 1px rgba(234, 179, 8, 0.3);
 }
 
-.pill-divider {
-  width: 1px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-body.light-theme .pill-divider {
-  background: rgba(0, 0, 0, 0.08);
-}
-
 /* ===== ADVANCED FILTER BUTTON (CIRCULAR DESIGN) ===== */
 #advancedFilterBtn {
   background: rgba(255, 255, 255, 0.03);
