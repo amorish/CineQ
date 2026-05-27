@@ -870,6 +870,7 @@ function addTitle(id, itemData, btn, mediaType) {
     episodes: type === 'tv' ? (itemData.number_of_episodes || null) : null,
     runtime: type === 'movie' ? (itemData.runtime || null) : null,
     status: itemData.status || null,
+    releaseDate: type === 'tv' ? (itemData.first_air_date || null) : (itemData.release_date || null),
     original_title: orig,
     original_language: itemData.original_language || null,
     studio: (itemData.production_companies || [])[0]?.name || null,
@@ -1627,6 +1628,7 @@ function renderGrid() {
       ? `<span class="type-pill tv-pill">TV</span>`
       : `<span class="type-pill">Movie</span>`;
     const epCount = isTV ? epDisplay(a) : null;
+    const isUpcomingItem = a.status === 'Planned' || a.status === 'In Production' || a.status === 'Post Production' || (a.releaseDate && new Date(a.releaseDate) > new Date());
     return `
     <div class="card-wrapper">
       <article class="card ${a.watched ? 'watched' : ''} ${a.archived ? 'dropped' : ''} ${deleteMode ? 'delete-mode' : ''} ${selectedForDelete.has(a.id) ? 'selected' : ''}" id="card-${a.id}" onclick="openModal(${a.id}, '${a.media_type}', event)">
@@ -1634,7 +1636,7 @@ function renderGrid() {
         <div class="card-gradient"></div>
         <div class="card-select-overlay"></div>
         ${a.rewatchCount > 0 ? `<div class="rewatch-badge" title="Rewatched ${a.rewatchCount} time${a.rewatchCount>1?'s':''}"><i data-lucide="repeat" style="width:12px;height:12px;"></i> ${a.rewatchCount}</div>` : ''}
-        ${!a.watched ? `
+        ${(!a.watched && !isUpcomingItem) ? `
         <button class="watched-btn ${a.watched ? 'checked' : ''}" onclick="toggleWatched(${a.id}, '${a.media_type}', event)" title="Mark watched">
           <i data-lucide="check" style="width:14px;height:14px;stroke-width:3;"></i>
         </button>` : ''}
@@ -1643,7 +1645,7 @@ function renderGrid() {
           <div class="card-meta">${typePill}</div>
           <h3 class="card-title">${escHtml(a.title)}</h3>
           ${showEpCounter && isTV ? `<div class="card-ep-counter" onclick="event.stopPropagation()">
-            <button class="ep-btn" onmousedown="startProgress(${a.id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},-1,event)" ontouchend="stopProgress(event)">−</button>
+            <button class="ep-btn" style="visibility: ${(a.episodesWatched || 0) <= 0 ? 'hidden' : 'visible'};" onmousedown="startProgress(${a.id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},-1,event)" ontouchend="stopProgress(event)">−</button>
             <span class="ep-text" id="ep-text-${a.id}">${(() => {
               if (a.seasons) {
                 const epInfo = calculateSeasonAndEpisode(a.episodesWatched, a.seasons);
@@ -1651,7 +1653,7 @@ function renderGrid() {
               }
               return 'Ep ' + (a.episodesWatched||0) + '/' + (epCount || '?');
             })()}</span>
-            <button class="ep-btn" onmousedown="startProgress(${a.id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},1,event)" ontouchend="stopProgress(event)">+</button>
+            <button class="ep-btn" style="visibility: ${a.episodes && (a.episodesWatched || 0) >= a.episodes ? 'hidden' : 'visible'};" onmousedown="startProgress(${a.id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},1,event)" ontouchend="stopProgress(event)">+</button>
           </div>` : ''}
         </div>
       </article>
@@ -1771,7 +1773,16 @@ async function openModal(id, mediaType, event) {
             ${inList && existingItem.archived ? `<div style="font-size:11px;color:var(--accent);">Dropped at: ${escHtml(existingItem.archiveTime) || 'Unknown'}</div>` : (inList ? `<div style="font-size:11px;color:var(--muted);">In list</div>` : '')}
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               ${!inList ? `<button class="modal-add-btn" onclick="addTitleFromModal(this)">+ Add</button>` : ''}
-              ${(!existingItem?.watched && !existingItem?.archived) ? `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>` : ''}
+              ${(!existingItem?.watched && !existingItem?.archived) ? (isUpcoming ? (() => {
+                  let upcomingText = 'Upcoming';
+                  const d = type === 'tv' ? detail.first_air_date : detail.release_date;
+                  if (d) {
+                      upcomingText = 'Releasing ' + new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                  } else if (year && year !== '-') {
+                      upcomingText = 'Releasing ' + year;
+                  }
+                  return `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);cursor:default;" disabled><i data-lucide="clock" style="width:12px;height:12px;"></i> ${upcomingText}</button>`;
+              })() : `<button class="modal-watched-btn" onclick="markWatchedFromModal(${detail.id}, '${type}')"><i data-lucide="eye" style="width:12px;height:12px;"></i> Mark Watched</button>`) : ''}
               ${(inList && !existingItem.archived && !existingItem.watched) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="promptArchive(${detail.id}, '${type}')"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Drop</button>` : ''}
               ${(inList && existingItem.archived) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--border);color:var(--text);" onclick="unarchive(${detail.id}, '${type}')"><i data-lucide="corner-up-left" style="width:12px;height:12px;"></i> Restore</button>` : ''}
               ${(inList && userSettings.customList?.name) ? `<button class="modal-watched-btn" style="background:transparent;border:1px solid var(--accent);color:var(--accent);" onclick="toggleCustomList(${detail.id}, '${type}', event)"><i data-lucide="${existingItem.inCustomList ? 'check' : 'plus'}" style="width:12px;height:12px;"></i> ${existingItem.inCustomList ? 'In ' : 'Add to '}${escHtml(userSettings.customList.name)}</button>` : ''}
@@ -1856,9 +1867,9 @@ async function openModal(id, mediaType, event) {
             <div style="background: var(--elevated); padding: 12px 16px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
               <div class="detail-label" style="margin: 0;">Episodes Watched</div>
               <div class="progress-controls">
-                <button class="progress-btn" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
+                <button class="progress-btn" id="modalEpMinus" style="visibility: ${(existingItem.episodesWatched || 0) <= 0 ? 'hidden' : 'visible'};" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
                 <span class="progress-text" id="epProgressTextModal">${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}</span>
-                <button class="progress-btn" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+                <button class="progress-btn" id="modalEpPlus" style="visibility: ${detail.number_of_episodes && (existingItem.episodesWatched || 0) >= detail.number_of_episodes ? 'hidden' : 'visible'};" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
               </div>
             </div>
           </div>`;
@@ -1973,6 +1984,7 @@ async function markWatchedFromModal(id, mediaType) {
       episodes: type === 'tv' ? (a.number_of_episodes || null) : null,
       runtime: type === 'movie' ? (a.runtime || null) : null,
       status: a.status || null,
+      releaseDate: type === 'tv' ? (a.first_air_date || null) : (a.release_date || null),
       studio: (a.production_companies || [])[0]?.name || null,
       watched: false, episodesWatched: 0, addedAt: Date.now()
     };
@@ -2119,6 +2131,10 @@ async function updateProgress(id, change, event, skipSave = false) {
     } else {
       epText.textContent = `Ep ${item.episodesWatched}/${epTotal}`;
     }
+    const cardMinus = epText.previousElementSibling;
+    const cardPlus = epText.nextElementSibling;
+    if (cardMinus && cardMinus.classList.contains('ep-btn')) cardMinus.style.visibility = (item.episodesWatched || 0) <= 0 ? 'hidden' : 'visible';
+    if (cardPlus && cardPlus.classList.contains('ep-btn')) cardPlus.style.visibility = item.episodes && (item.episodesWatched || 0) >= item.episodes ? 'hidden' : 'visible';
   }
   if (wasWatched !== item.watched && !skipSave) renderGrid();
   const modal = document.getElementById('modalBackdrop');
@@ -2134,6 +2150,11 @@ async function updateProgress(id, change, event, skipSave = false) {
       const mPlus = document.getElementById('modalSeasonPlus');
       if (mMinus) mMinus.style.visibility = epInfo.season <= 1 ? 'hidden' : 'visible';
       if (mPlus) mPlus.style.visibility = epInfo.season >= epInfo.totalSeasons ? 'hidden' : 'visible';
+
+      const epMinus = document.getElementById('modalEpMinus');
+      const epPlus = document.getElementById('modalEpPlus');
+      if (epMinus) epMinus.style.visibility = (item.episodesWatched || 0) <= 0 ? 'hidden' : 'visible';
+      if (epPlus) epPlus.style.visibility = currentModalTitle.number_of_episodes && (item.episodesWatched || 0) >= currentModalTitle.number_of_episodes ? 'hidden' : 'visible';
     }
   }
   updateStats();
