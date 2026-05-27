@@ -13,6 +13,7 @@ let db = null;
 let storage = null;
 let cropperInstance = null;
 let profilePicCache = null;
+let userPhotoURL = null; // Dedicated photo URL, sourced from Firestore (survives refresh)
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
@@ -126,14 +127,11 @@ firebase.auth().onAuthStateChanged(async (user) => {
     document.getElementById('userEmail').innerHTML =
       `<span class="profile-hi">Hi</span><span class="profile-username">@${escHtml(displayName)}</span>`;
 
-    const navImg = document.getElementById('navProfileImg');
-    const navIcon = document.getElementById('navProfileIcon');
-    if (user.photoURL) {
-      if (navImg) { navImg.src = user.photoURL; navImg.style.display = 'block'; }
-      if (navIcon) { navIcon.style.display = 'none'; }
-    } else {
-      if (navImg) { navImg.style.display = 'none'; }
-      if (navIcon) { navIcon.style.display = 'block'; }
+    // Try loading cached photo URL from localStorage immediately
+    const cachedPhoto = localStorage.getItem('cineq_photoURL');
+    if (cachedPhoto) {
+      userPhotoURL = cachedPhoto;
+      applyProfilePhoto(cachedPhoto);
     }
 
     isWatchlistLoading = true;
@@ -434,7 +432,7 @@ async function forgotPassword() {
   } catch (e) { showToast(friendlyAuthError(e.code || '')); }
 }
 
-function logout() { firebase.auth().signOut(); }
+function logout() { userPhotoURL = null; profilePicCache = null; localStorage.removeItem('cineq_photoURL'); firebase.auth().signOut(); }
 
 // ===== WATCHLIST RECLASSIFICATION & MIGRATION =====
 function reclassifyWatchlistItems() {
@@ -1157,7 +1155,7 @@ function updateStats() {
       const profileImageCenter = {
         id: 'profileImageCenter',
         afterDraw(chart) {
-          const photoURL = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.photoURL : null;
+          const photoURL = userPhotoURL;
           if (!photoURL) return;
           const { ctx: c, chartArea } = chart;
           const centerX = (chartArea.left + chartArea.right) / 2;
@@ -2472,18 +2470,16 @@ async function syncSettingsFromFirestore() {
     if (docSnap.exists) {
       const data = docSnap.data();
       if (data.photoURL) {
-        // Apply custom photo URL from Firestore (overrides auth provider)
-        Object.defineProperty(currentUser, 'photoURL', { value: data.photoURL, writable: true, configurable: true });
-        const navImg = document.getElementById('navProfileImg');
-        const navIcon = document.getElementById('navProfileIcon');
-        if (navImg) { navImg.src = data.photoURL; navImg.style.display = 'block'; }
-        if (navIcon) { navIcon.style.display = 'none'; }
+        userPhotoURL = data.photoURL;
+        localStorage.setItem('cineq_photoURL', data.photoURL);
+        applyProfilePhoto(data.photoURL);
       }
       if (data.settings) {
         userSettings = { ...userSettings, ...data.settings };
         localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
         applySettings();
       }
+      profilePicCache = null;
       if (typeof updateStats === 'function') updateStats();
     }
   } catch (e) { console.error("Error syncing settings", e); }
@@ -2699,7 +2695,7 @@ function renderSettingsProfilePic() {
   const img = document.getElementById('settingsProfileImg');
   const icon = document.getElementById('settingsProfileIcon');
   if (!img || !icon) return;
-  const url = currentUser && currentUser.photoURL;
+  const url = userPhotoURL;
   if (url) {
     img.src = url;
     img.style.display = 'block';
@@ -2707,6 +2703,26 @@ function renderSettingsProfilePic() {
   } else {
     img.style.display = 'none';
     icon.style.display = 'block';
+  }
+}
+
+// Central helper to push a photo URL into the navbar avatar button
+function applyProfilePhoto(url) {
+  const navImg = document.getElementById('navProfileImg');
+  const avatarBtn = document.getElementById('avatarBtn');
+  if (url) {
+    if (navImg) { navImg.src = url; navImg.style.display = 'block'; }
+    // Hide the Lucide SVG icon (can't rely on ID because lucide.createIcons replaces it)
+    if (avatarBtn) {
+      const svg = avatarBtn.querySelector('svg');
+      if (svg) svg.style.display = 'none';
+    }
+  } else {
+    if (navImg) { navImg.src = ''; navImg.style.display = 'none'; }
+    if (avatarBtn) {
+      const svg = avatarBtn.querySelector('svg');
+      if (svg) svg.style.display = '';
+    }
   }
 }
 
@@ -2800,10 +2816,8 @@ async function saveCroppedImage() {
     if (settingsImg) { settingsImg.src = localUrl; settingsImg.style.display = 'block'; }
     if (settingsIcon) { settingsIcon.style.display = 'none'; }
     
-    const navImg = document.getElementById('navProfileImg');
-    const navIcon = document.getElementById('navProfileIcon');
-    if (navImg) { navImg.src = localUrl; navImg.style.display = 'block'; }
-    if (navIcon) { navIcon.style.display = 'none'; }
+    userPhotoURL = localUrl;
+    applyProfilePhoto(localUrl);
 
     // Upload new in background (using a static filename to automatically overwrite the old one without needing listAll)
     const fileName = `avatar.webp`;
@@ -2813,9 +2827,12 @@ async function saveCroppedImage() {
       const downloadURL = await fileRef.getDownloadURL();
       await currentUser.updateProfile({ photoURL: downloadURL });
       if (db) await db.collection("cineq_users").doc(currentUser.uid).set({ photoURL: downloadURL }, { merge: true });
+      userPhotoURL = downloadURL;
+      localStorage.setItem('cineq_photoURL', downloadURL);
+      applyProfilePhoto(downloadURL);
       profilePicCache = null; // bust cache
       updateStats(); // re-render chart with new profile pic
-      showToast('Profile picture saved successfully! 🎉');
+      showToast('Profile picture saved successfully');
     }).catch(e => {
       console.error(e);
       showToast('Failed to save profile picture');
