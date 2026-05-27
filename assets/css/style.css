@@ -1567,7 +1567,8 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
 .custom-select-options { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: 0 4px 20px rgba(0,0,0,0.5); overflow-y: auto; z-index: 1000; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); max-height: 250px; }
 .custom-select-options.open { opacity: 1; visibility: visible; transform: translateY(0); }
 .custom-select-option { padding: 8px 12px; font-size: 13px; cursor: pointer; color: var(--text); transition: background 0.2s; }
-.custom-select-option:hover { background: var(--hover); }
+.custom-select-option:hover { background: rgba(255, 255, 255, 0.08); }
+body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); }
 .custom-select-option.selected { display: none; }
 .select-row { display: flex; gap: 12px; max-width: 320px; }
 .select-row select { flex: 1; }
@@ -1843,6 +1844,6 @@ body.light-theme .settings-select { background: rgba(0, 0, 0, 0.02); }
 }
 
 .pill-btn.flowmode-btn { width: auto; padding: 0 12px; gap: 6px; font-weight: 600; font-size: 13px; }
-.modal-rewatch-btn { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-.modal-rewatch-btn:hover { background: rgba(139, 92, 246, 0.12); }
+.modal-rewatch-btn { background: rgba(234, 179, 8, 0.05); color: var(--accent); border: 1px solid rgba(234, 179, 8, 0.2); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.modal-rewatch-btn:hover { background: rgba(234, 179, 8, 0.3); }
 
