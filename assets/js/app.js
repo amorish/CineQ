@@ -1069,27 +1069,27 @@ function updateStats() {
 
     if (isDoc) {
       if (item.watched) docCount++;
-      if (item.watched && item.runtime) totalMinutes += item.runtime;
-      else if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     } else if (isShortFilm) {
       if (item.watched) shortCount++;
-      if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else if (isAnime) {
       if (item.watched) animeCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 24);
-      else if (item.media_type === 'movie' && item.watched && item.runtime) totalMinutes += item.runtime;
     } else if (isKDrama) {
       if (item.watched) kdramaCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 60);
     } else if (isReality) {
       if (item.watched) realityCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
     } else if (item.media_type === 'movie') {
       if (item.watched) moviesCount++;
-      if (item.watched && item.runtime) totalMinutes += item.runtime;
     } else {
       if (item.watched) tvCount++;
-      if (item.episodesWatched > 0) totalMinutes += item.episodesWatched * (item.runtime || 45);
+    }
+
+    if (item.media_type === 'tv' && (item.episodesWatched > 0)) {
+      let defaultRuntime = 45;
+      if (isAnime) defaultRuntime = 24;
+      else if (isKDrama) defaultRuntime = 60;
+      totalMinutes += item.episodesWatched * (item.runtime || defaultRuntime);
+    } else if (item.media_type === 'movie' && item.watched) {
+      totalMinutes += (item.runtime || 100);
     }
   });
   
