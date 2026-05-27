@@ -868,6 +868,7 @@ function addTitle(id, itemData, btn, mediaType) {
     year: year ? parseInt(year) : null,
     score: itemData.vote_average || null,
     episodes: type === 'tv' ? (itemData.number_of_episodes || null) : null,
+    releasedEpisodes: type === 'tv' ? calculateReleasedEpisodes(itemData) : null,
     runtime: type === 'movie' ? (itemData.runtime || null) : null,
     status: itemData.status || null,
     releaseDate: type === 'tv' ? (itemData.first_air_date || null) : (itemData.release_date || null),
@@ -1653,7 +1654,7 @@ function renderGrid() {
               }
               return 'Ep ' + (a.episodesWatched||0) + '/' + (epCount || '?');
             })()}</span>
-            <button class="ep-btn" style="visibility: ${a.episodes && (a.episodesWatched || 0) >= a.episodes ? 'hidden' : 'visible'};" onmousedown="startProgress(${a.id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},1,event)" ontouchend="stopProgress(event)">+</button>
+            <button class="ep-btn" style="visibility: ${(a.releasedEpisodes || a.episodes) && (a.episodesWatched || 0) >= (a.releasedEpisodes || a.episodes) ? 'hidden' : 'visible'};" onmousedown="startProgress(${a.id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${a.id},1,event)" ontouchend="stopProgress(event)">+</button>
           </div>` : ''}
         </div>
       </article>
@@ -1691,13 +1692,15 @@ async function openModal(id, mediaType, event) {
     // Update ep cache for TV
     if (type === 'tv' && detail.number_of_episodes) {
       const key = String(id);
-      if (!epCache[key] || epCache[key] !== detail.number_of_episodes) {
+      const newReleasedEpisodes = calculateReleasedEpisodes(detail);
+      if (!epCache[key] || epCache[key] !== detail.number_of_episodes || (wlItem && wlItem.releasedEpisodes !== newReleasedEpisodes)) {
         epCache[key] = detail.number_of_episodes;
         saveEpCache();
         if (wlItem) {
           wlItem.episodes = detail.number_of_episodes;
+          wlItem.releasedEpisodes = newReleasedEpisodes;
           // If the show was marked as watched but now has more episodes, move it to watching
-          if (wlItem.watched && (wlItem.episodesWatched || 0) < detail.number_of_episodes) {
+          if (wlItem.watched && (wlItem.episodesWatched || 0) < newReleasedEpisodes) {
             wlItem.watched = false;
             showToast(`New episodes available for ${getTitle(detail)}! Moved to Watching.`);
           }
@@ -1869,7 +1872,7 @@ async function openModal(id, mediaType, event) {
               <div class="progress-controls">
                 <button class="progress-btn" id="modalEpMinus" style="visibility: ${(existingItem.episodesWatched || 0) <= 0 ? 'hidden' : 'visible'};" onmousedown="startProgress(${id},-1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},-1,event)" ontouchend="stopProgress(event)">−</button>
                 <span class="progress-text" id="epProgressTextModal">${epInfo.episode} / ${epInfo.seasonEpisodes || '?'}</span>
-                <button class="progress-btn" id="modalEpPlus" style="visibility: ${detail.number_of_episodes && (existingItem.episodesWatched || 0) >= detail.number_of_episodes ? 'hidden' : 'visible'};" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
+                <button class="progress-btn" id="modalEpPlus" style="visibility: ${(existingItem.releasedEpisodes || detail.number_of_episodes) && (existingItem.episodesWatched || 0) >= (existingItem.releasedEpisodes || detail.number_of_episodes) ? 'hidden' : 'visible'};" onmousedown="startProgress(${id},1,event)" onmouseup="stopProgress(event)" onmouseleave="stopProgress(event)" ontouchstart="startProgress(${id},1,event)" ontouchend="stopProgress(event)">+</button>
               </div>
             </div>
           </div>`;
@@ -1982,6 +1985,7 @@ async function markWatchedFromModal(id, mediaType) {
       year: getYear(a) ? parseInt(getYear(a)) : null,
       score: a.vote_average || null,
       episodes: type === 'tv' ? (a.number_of_episodes || null) : null,
+      releasedEpisodes: type === 'tv' ? calculateReleasedEpisodes(a) : null,
       runtime: type === 'movie' ? (a.runtime || null) : null,
       status: a.status || null,
       releaseDate: type === 'tv' ? (a.first_air_date || null) : (a.release_date || null),
@@ -2112,10 +2116,11 @@ async function updateProgress(id, change, event, skipSave = false) {
   const wasWatched = item.watched;
   let newProgress = (item.episodesWatched || 0) + change;
   if (newProgress < 0) newProgress = 0;
-  if (item.episodes && newProgress > item.episodes) newProgress = item.episodes;
+  const maxEp = item.releasedEpisodes || item.episodes;
+  if (maxEp && newProgress > maxEp) newProgress = maxEp;
   item.episodesWatched = newProgress;
-  if (item.episodes) {
-    if (item.episodesWatched === item.episodes) { if (!item.watched) { item.watched = true; item.watchedAt = todayDate(); } }
+  if (maxEp) {
+    if (item.episodesWatched === maxEp) { if (!item.watched) { item.watched = true; item.watchedAt = todayDate(); } }
     else { if (item.watched) { item.watched = false; item.watchedAt = null; } }
   }
   if (currentModalTitle && currentModalTitle.id === id && currentModalTitle.seasons) {
@@ -2133,8 +2138,9 @@ async function updateProgress(id, change, event, skipSave = false) {
     }
     const cardMinus = epText.previousElementSibling;
     const cardPlus = epText.nextElementSibling;
+    const maxEp2 = item.releasedEpisodes || item.episodes;
     if (cardMinus && cardMinus.classList.contains('ep-btn')) cardMinus.style.visibility = (item.episodesWatched || 0) <= 0 ? 'hidden' : 'visible';
-    if (cardPlus && cardPlus.classList.contains('ep-btn')) cardPlus.style.visibility = item.episodes && (item.episodesWatched || 0) >= item.episodes ? 'hidden' : 'visible';
+    if (cardPlus && cardPlus.classList.contains('ep-btn')) cardPlus.style.visibility = maxEp2 && (item.episodesWatched || 0) >= maxEp2 ? 'hidden' : 'visible';
   }
   if (wasWatched !== item.watched && !skipSave) renderGrid();
   const modal = document.getElementById('modalBackdrop');
@@ -2153,8 +2159,9 @@ async function updateProgress(id, change, event, skipSave = false) {
 
       const epMinus = document.getElementById('modalEpMinus');
       const epPlus = document.getElementById('modalEpPlus');
+      const maxEp3 = item.releasedEpisodes || currentModalTitle.number_of_episodes;
       if (epMinus) epMinus.style.visibility = (item.episodesWatched || 0) <= 0 ? 'hidden' : 'visible';
-      if (epPlus) epPlus.style.visibility = currentModalTitle.number_of_episodes && (item.episodesWatched || 0) >= currentModalTitle.number_of_episodes ? 'hidden' : 'visible';
+      if (epPlus) epPlus.style.visibility = maxEp3 && (item.episodesWatched || 0) >= maxEp3 ? 'hidden' : 'visible';
     }
   }
   updateStats();
@@ -2964,6 +2971,26 @@ function resetToHome() {
   }
   spawnParticle();
 })();
+
+function calculateReleasedEpisodes(detail) {
+  if (!detail || detail.media_type !== 'tv' && !detail.seasons) return detail.number_of_episodes || 0;
+  if (!detail.last_episode_to_air) return detail.number_of_episodes || 0;
+  
+  const lastEp = detail.last_episode_to_air;
+  let total = 0;
+  
+  const regularSeasons = (detail.seasons || []).filter(s => s.season_number > 0).sort((a,b) => a.season_number - b.season_number);
+  
+  for (const s of regularSeasons) {
+    if (s.season_number < lastEp.season_number) {
+      total += s.episode_count;
+    } else if (s.season_number === lastEp.season_number) {
+      total += lastEp.episode_number;
+      break;
+    }
+  }
+  return total > 0 ? total : (detail.number_of_episodes || 0);
+}
 
 function calculateSeasonAndEpisode(episodesWatched, seasons) {
   if (!seasons || !Array.isArray(seasons)) return { season: 1, episode: episodesWatched || 0, totalSeasons: 1, seasonEpisodes: 0 };
