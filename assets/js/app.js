@@ -1593,9 +1593,7 @@ function renderGrid() {
 
   const showEpCounter = (currentFilter === 'watching');
 
-  sortFilterBtn = document.getElementById('sortFilterBtn');
-  sortSelectPillGroup = document.getElementById('sortSelectPillGroup');
-  pillDivider = document.querySelector('#sortSelectPillGroup .pill-divider');
+
   const hasAdvFilter = advFilters.type !== 'all' || advFilters.year !== 'all' || advFilters.length !== 'all' || advFilters.genre !== 'all';
   
   let showSort = !(baseItems.length <= 1 && !hasAdvFilter && !flowModeActive);
