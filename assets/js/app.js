@@ -2128,12 +2128,13 @@ function escHtml(str) {
 }
 function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
-function showToast(msg, isUndo = false) {
+function showToast(msg, isUndo = false, isHtml = false) {
   const t = document.getElementById('toast');
-  t.innerHTML = `<span>${escHtml(msg)}</span>` + (isUndo ? `<span onclick="undoDelete()" style="color:var(--accent);text-decoration:underline;margin-left:16px;cursor:pointer;font-weight:bold;">Undo</span>` : '');
+  const messageContent = isHtml ? msg : escHtml(msg);
+  t.innerHTML = `<span>${messageContent}</span>` + (isUndo ? `<span onclick="undoDelete()" style="color:var(--accent);text-decoration:underline;margin-left:16px;cursor:pointer;font-weight:bold;">Undo</span>` : '');
   t.classList.add('show');
   clearTimeout(t.timeout);
-  t.timeout = setTimeout(() => t.classList.remove('show'), isUndo ? 4000 : 2500);
+  t.timeout = setTimeout(() => t.classList.remove('show'), isUndo ? 4000 : 3500);
 }
 
 function undoDelete() {
@@ -2487,7 +2488,7 @@ function renderRandomPicks(items) {
 // ===== GOOGLE CALENDAR SCHEDULE =====
 function openSchedule(titleId) {
   if (isDemo) {
-    showToast('Sign up to schedule watch parties!', 'error');
+    showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to use this feature', false, true);
     return;
   }
   if (window.scheduleStatus !== 'approved') {
@@ -2690,7 +2691,7 @@ function updateScheduleUI() {
 
 async function requestScheduleAccess() {
   if (isDemo || !currentUser) {
-    showToast('Sign up to request access!', 'error');
+    showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to use this feature', false, true);
     return;
   }
   const email = document.getElementById('scheduleRequestEmail').value.trim();
@@ -3058,7 +3059,7 @@ function updateWatchlistPreference(key, value) {
 }
 
 function exportWatchlistData() {
-  if (isDemo) { showToast("To use this feature, please create a free account."); return; }
+  if (isDemo) { showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to use this feature', false, true); return; }
   try {
     const today = todayDate();
     let exportState = { date: today, count: 0 };
@@ -3231,7 +3232,7 @@ function parseCSV(str) {
 }
 
 async function handleImport(event, source) {
-  if (isDemo) { showToast("To use this feature, please create a free account."); return; }
+  if (isDemo) { showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to use this feature', false, true); return; }
   const file = event.target.files[0];
   if (!file) return;
   const today = todayDate();
