@@ -1306,12 +1306,11 @@ body.light-theme .auth-info-card li strong {
   color: var(--text); margin-bottom: 12px;
 }
 .explore-carousel {
-  display: flex; gap: 12px; overflow-x: auto;
-  scroll-snap-type: x mandatory; padding-bottom: 12px;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-  -webkit-overflow-scrolling: touch;
+  display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden;
+  padding: 12px 0 24px 0; scroll-snap-type: x mandatory;
+  -ms-overflow-style: none; scrollbar-width: none;
 }
-.explore-carousel::-webkit-scrollbar { height: 6px; }
+.explore-carousel::-webkit-scrollbar { display: none; }
 .explore-carousel::-webkit-scrollbar-track { background: transparent; }
 .explore-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-full); }
 .explore-carousel::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
@@ -1321,6 +1320,7 @@ body.light-theme .auth-info-card li strong {
   border-radius: var(--radius-md); background: var(--card);
   border: 1px solid var(--border); transition: transform .25s;
   display: block; pointer-events: none; user-select: none;
+  transform-origin: bottom center;
 }
 .explore-card:hover .explore-card-img { transform: scale(1.04); }
 .explore-card-title {
@@ -1628,14 +1628,7 @@ body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); 
   flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer;
   position: relative; transform-style: preserve-3d;
 }
-.explore-card-wrap .explore-card { 
-  width: 120px; position: relative; flex-shrink: 0; margin-bottom: 2px; 
-  overflow: hidden; border-radius: var(--radius-md); border: 1px solid var(--border);
-  background: var(--card); isolation: isolate;
-}
-.explore-card-wrap .explore-card .explore-card-img {
-  border: none; border-radius: 0;
-}
+.explore-card-wrap .explore-card { width: 120px; position: relative; flex-shrink: 0; margin-bottom: 2px; }
 .explore-card-wrap .card-title, .explore-card-wrap .card-meta { transform: translateZ(20px); }
 .explore-card-rank {
   width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
