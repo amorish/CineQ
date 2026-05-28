@@ -1371,7 +1371,7 @@ body.light-theme .auth-info-card li strong {
 }
 
 /* ===== SCHEDULE MODAL ===== */
-.schedule-modal { max-height: 85vh !important; }
+.schedule-modal { max-height: 85vh !important; max-width: 480px; border-radius: var(--radius-lg) !important; margin: auto; }
 .schedule-content { padding: 24px; }
 .schedule-title { font-family: var(--font-heading); font-size: 17px; font-weight: 700; margin-bottom: 4px; }
 .schedule-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
