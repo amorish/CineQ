@@ -2,11 +2,18 @@ import { z } from 'zod';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
-const ratelimit = process.env.UPSTASH_REDIS_REST_URL ? new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, '10 m'),
-  analytics: false,
-}) : null;
+let ratelimit = null;
+try {
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_URL.startsWith('https://')) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(3, '10 m'),
+      analytics: false,
+    });
+  }
+} catch (e) {
+  console.warn('Upstash init failed:', e.message);
+}
 
 const ALLOWED_ORIGINS = new Set([
   process.env.APP_ORIGIN ?? '',
