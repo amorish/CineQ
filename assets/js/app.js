@@ -22,7 +22,6 @@ try {
 
 let currentUser = null;
 const isDemo = new URLSearchParams(window.location.search).get('demo') === 'true';
-let watchlist = [];
 let isSignupMode = false;
 let prevStatsCounts = null;
 let pendingStatsBadge = false;
@@ -501,11 +500,11 @@ function reclassifyWatchlistItems() {
 async function loadWatchlist() {
   if (isDemo) {
     watchlist = [
-      { id: 27205, media_type: 'movie', title: 'Inception', poster_path: '/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', addedAt: Date.now() - 86400000*5, watched: true, score: 8.8, vote_average: 8.8, experience: { rating: 5, comment: "Mind blowing concept!" } },
-      { id: 1399, media_type: 'tv', title: 'Game of Thrones', name: 'Game of Thrones', poster_path: '/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg', addedAt: Date.now() - 86400000*2, watched: false, score: 8.4, vote_average: 8.4, episodes: 73 },
-      { id: 157336, media_type: 'movie', title: 'Interstellar', poster_path: '/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', addedAt: Date.now() - 86400000*1, watched: false, score: 8.4, vote_average: 8.4 },
-      { id: 1396, media_type: 'tv', title: 'Breaking Bad', name: 'Breaking Bad', poster_path: '/3xnWaLQjelJDDF7LT1WBo6f4BRe.jpg', addedAt: Date.now() - 86400000*10, watched: true, score: 8.9, vote_average: 8.9, experience: { rating: 5, comment: "Masterpiece." } },
-      { id: 693134, media_type: 'movie', title: 'Dune: Part Two', poster_path: '/1pdfLvkbY9ohJlCjQH2TokvnW0.jpg', addedAt: Date.now(), watched: false, score: 8.3, vote_average: 8.3 }
+      { id: 27205, media_type: 'movie', title: 'Inception', poster: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', addedAt: Date.now() - 86400000*5, watched: true, score: 8.8, vote_average: 8.8, experience: { rating: 5, comment: "Mind blowing concept!" } },
+      { id: 1399, media_type: 'tv', title: 'Game of Thrones', name: 'Game of Thrones', poster: 'https://image.tmdb.org/t/p/w500/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg', addedAt: Date.now() - 86400000*2, watched: false, score: 8.4, vote_average: 8.4, episodes: 73 },
+      { id: 157336, media_type: 'movie', title: 'Interstellar', poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', addedAt: Date.now() - 86400000*1, watched: false, score: 8.4, vote_average: 8.4 },
+      { id: 1396, media_type: 'tv', title: 'Breaking Bad', name: 'Breaking Bad', poster: 'https://image.tmdb.org/t/p/w500/3xnWaLQjelJDDF7LT1WBo6f4BRe.jpg', addedAt: Date.now() - 86400000*10, watched: true, score: 8.9, vote_average: 8.9, experience: { rating: 5, comment: "Masterpiece." } },
+      { id: 693134, media_type: 'movie', title: 'Dune: Part Two', poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2TokvnW0.jpg', addedAt: Date.now(), watched: false, score: 8.3, vote_average: 8.3 }
     ];
     reclassifyWatchlistItems();
     isWatchlistLoading = false;
@@ -2611,8 +2610,6 @@ async function syncSettingsFromFirestore() {
       hideArchived: true,
       blurPosters: false
     };
-    applyTheme();
-    updateSettingsUI();
     return;
   }
   let data = null;
