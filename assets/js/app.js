@@ -502,14 +502,14 @@ function reclassifyWatchlistItems() {
 async function loadWatchlist() {
   if (isDemo) {
     watchlist = [
-      { id: 27205, media_type: 'movie', title: 'Inception', poster: 'https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg', addedAt: Date.now() - 86400000*5, watched: true, score: 8.8, vote_average: 8.8, experience: { rating: 5, comment: "Mind blowing concept!" } },
-      { id: 1399, media_type: 'tv', title: 'Game of Thrones', name: 'Game of Thrones', poster: 'https://image.tmdb.org/t/p/w500/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg', addedAt: Date.now() - 86400000*2, watched: false, score: 8.4, vote_average: 8.4, episodes: 73 },
-      { id: 157336, media_type: 'movie', title: 'Interstellar', poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', addedAt: Date.now() - 86400000*1, watched: false, score: 8.4, vote_average: 8.4 },
-      { id: 1396, media_type: 'tv', title: 'Breaking Bad', name: 'Breaking Bad', poster: 'https://image.tmdb.org/t/p/w500/3xnWaLQjelJDDF7LT1WBo6f4BRe.jpg', addedAt: Date.now() - 86400000*10, watched: true, score: 8.9, vote_average: 8.9, experience: { rating: 5, comment: "Masterpiece." } },
+      { id: 335984, media_type: 'movie', title: 'Blade Runner 2049', poster: 'assets/images/posters/Blade Runner 2049.webp', addedAt: Date.now() - 86400000*5, watched: true, score: 8.8, vote_average: 8.8, experience: { rating: 5, comment: "Visually stunning." } },
+      { id: 1399, media_type: 'tv', title: 'Game of Thrones', name: 'Game of Thrones', poster: 'assets/images/posters/Game of Thrones.webp', addedAt: Date.now() - 86400000*2, watched: false, score: 8.4, vote_average: 8.4, episodes: 73 },
+      { id: 157336, media_type: 'movie', title: 'Interstellar', poster: 'assets/images/posters/Interstellar.webp', addedAt: Date.now() - 86400000*1, watched: false, score: 8.4, vote_average: 8.4 },
+      { id: 1396, media_type: 'tv', title: 'Breaking Bad', name: 'Breaking Bad', poster: 'assets/images/posters/Breaking Bad.webp', addedAt: Date.now() - 86400000*10, watched: true, score: 8.9, vote_average: 8.9, experience: { rating: 5, comment: "Masterpiece." } },
       { id: 438631, media_type: 'movie', title: 'Dune', poster: 'assets/images/posters/Dune.webp', addedAt: Date.now(), watched: false, score: 7.8, vote_average: 7.8 },
-      { id: 100088, media_type: 'tv', title: 'The Last of Us', name: 'The Last of Us', poster: 'https://image.tmdb.org/t/p/w500/hzcgZEQUlN1wi5YGFjA2qL6R8E0.jpg', addedAt: Date.now() - 86400000*15, watched: false, score: 8.6, vote_average: 8.6, episodes: 9, episodesWatched: 4 },
-      { id: 526896, media_type: 'movie', title: 'Morbius', poster: 'https://image.tmdb.org/t/p/w500/6JjfSchsU6daXk2AKX8EEBjO3Fm.jpg', addedAt: Date.now() - 86400000*30, watched: false, archived: true, score: 5.1, vote_average: 5.1 },
-      { id: 171249, media_type: 'tv', title: 'The Idol', name: 'The Idol', poster: 'https://image.tmdb.org/t/p/w500/12zPMqSAYwHkigfUfudE1Hk4gWf.jpg', addedAt: Date.now() - 86400000*20, watched: false, archived: true, score: 5.2, vote_average: 5.2, episodes: 5, episodesWatched: 1 }
+      { id: 66732, media_type: 'tv', title: 'Stranger Things', name: 'Stranger Things', poster: 'assets/images/posters/Stranger Things.webp', addedAt: Date.now() - 86400000*15, watched: false, score: 8.6, vote_average: 8.6, episodes: 34, episodesWatched: 12 },
+      { id: 496243, media_type: 'movie', title: 'Parasite', poster: 'assets/images/posters/Parasite.webp', addedAt: Date.now() - 86400000*30, watched: false, archived: true, archiveTime: '45 mins', score: 8.5, vote_average: 8.5 },
+      { id: 76331, media_type: 'tv', title: 'Succession', name: 'Succession', poster: 'assets/images/posters/Succession.webp', addedAt: Date.now() - 86400000*20, watched: false, archived: true, archiveTime: 'S1 E2', score: 8.2, vote_average: 8.2, episodes: 39, episodesWatched: 2 }
     ];
     reclassifyWatchlistItems();
     isWatchlistLoading = false;
