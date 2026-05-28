@@ -549,7 +549,7 @@ function epDisplay(item) {
 }
 
 // ===== GOOGLE CALENDAR =====
-const CAL_CLIENT_ID = '509204660972-3774jpvhcginocobddqkn3pmv8ngnf51.apps.googleusercontent.com';
+const CAL_CLIENT_ID = '671773564359-n2re3ktiak7p4knjmcc7csa9sgc1htep.apps.googleusercontent.com';
 const CAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 let gapiInited = false, gisInited = false, tokenClient = null, currentScheduleTitle = null;
 
