@@ -1,14 +1,9 @@
 {
   "functions": {
-    "api/tmdb.js": {
-      "runtime": "edge"
-    },
     "api/feedback.js": {
-      "runtime": "nodejs20.x",
       "maxDuration": 10
     },
     "api/send-verification.js": {
-      "runtime": "nodejs20.x",
       "maxDuration": 10
     }
   },
