@@ -706,7 +706,8 @@ function applyFlowMode(items) {
   const now = Date.now();
   const withPriority = items.map(a => {
     let _score = (a._aniScore || (a.score ? a.score * 10 : 0));
-    const ageDays = (now - (a.addedAt || now)) / (1000 * 60 * 60 * 24);
+    const addedTime = typeof a.addedAt === 'number' ? a.addedAt : (a.addedAt ? new Date(a.addedAt).getTime() || now : now);
+    const ageDays = (now - addedTime) / (1000 * 60 * 60 * 24);
     _score += Math.min(ageDays * 0.1, 15);
     const _inProgress = (a.episodesWatched || 0) > 0 ? 1 : 0;
     if (_inProgress) _score += 30;
@@ -1627,7 +1628,13 @@ function renderGrid() {
           return asc ? getT(a) - getT(b) : getT(b) - getT(a);
         });
       } else {
-        items.sort((a,b) => asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0));
+        const getT = (val) => {
+          if (!val) return 0;
+          if (typeof val === 'number') return val;
+          const d = new Date(val).getTime();
+          return isNaN(d) ? 0 : d;
+        };
+        items.sort((a,b) => asc ? getT(a.addedAt) - getT(b.addedAt) : getT(b.addedAt) - getT(a.addedAt));
       }
     }
   }
