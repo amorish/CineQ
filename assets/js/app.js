@@ -26,7 +26,7 @@ let prevStatsCounts = null;
 let pendingStatsBadge = false;
 
 // ===== TMDB API =====
-const TMDB_BASE = '/api/tmdb';
+const TMDB_BASE = '/api/tmdb/3';
 
 // ===== API HELPERS =====
 const apiCache = new Map();
