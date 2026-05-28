@@ -82,7 +82,7 @@ let userSettings = {
   defaultView: 'list',
   defaultSort: 'added',
   defaultSortOrder: 'desc',
-  sfwFilter: true,
+  sfwFilter: false,
   rewatchSort: 'latest',
   customList: { name: '', position: '6' }
 };
@@ -142,6 +142,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
     document.getElementById('userBadge').style.display = 'flex';
     if (isDemo && document.getElementById('demoActionBtns')) {
       document.getElementById('demoActionBtns').style.display = 'flex';
+    }
+    if (isDemo && document.getElementById('reportBugTab')) {
+      document.getElementById('reportBugTab').style.display = 'none';
     }
     document.getElementById('scheduleRequestEmail').value = user.email || '';
     loadEpCacheForUser(user.uid);
@@ -545,6 +548,7 @@ async function loadWatchlist() {
 // ===== STATE =====
 let isWatchlistLoading = true;
 let watchlist = [];
+let demoAddsCount = 0;
 let currentFilter = 'list'; // list, watching, watched, explore, archive
 let currentSort = 'added'; // added, name, rating, year
 let currentSortOrder = 'desc'; // desc, asc
@@ -888,9 +892,12 @@ function addTitleFromModal(btn) {
 
 // ===== ADD TITLE =====
 function addTitle(id, itemData, btn, mediaType) {
-  if (isDemo && watchlist.length >= 15) {
-    showToast("To add more titles, please create a free account.");
-    return;
+  if (isDemo) {
+    if (demoAddsCount >= 3) {
+      showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to add more titles', false, true);
+      return;
+    }
+    demoAddsCount++;
   }
   const type = mediaType || itemData.media_type || 'movie';
   if (watchlist.some(w => w.id === id && w.media_type === type)) return;
