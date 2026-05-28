@@ -23,22 +23,50 @@ function getEmailHtml(link) {
 <style>
   body { margin: 0; padding: 0; background-color: #0a0a0a; font-family: 'Inter', sans-serif; color: #ffffff; }
   .wrapper { width: 100%; max-width: 480px; padding: 40px 20px; margin: 0 auto; box-sizing: border-box; }
-  .auth-card { background: #141414; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); }
+  
+  .auth-card {
+    --r: 20px;
+    --stub-h: 80px;
+    --bg: #141414;
+    width: 100%;
+    margin: 0 auto;
+    text-align: center;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 0 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top left / 50.5% calc(100% - var(--stub-h)) no-repeat,
+      radial-gradient(circle at 100% 100%, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) top right / 50.5% calc(100% - var(--stub-h)) no-repeat,
+      radial-gradient(circle at 0 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom left / 50.5% var(--stub-h) no-repeat,
+      radial-gradient(circle at 100% 0, transparent var(--r), var(--bg) calc(var(--r) + 0.5px)) bottom right / 50.5% var(--stub-h) no-repeat;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.6));
+    border: none;
+    outline: none;
+  }
+  
+  .auth-main { padding: 40px 32px 32px 32px; }
+  .ticket-divider { margin: 0 20px; border-bottom: 2px dashed rgba(255, 255, 255, 0.1); }
+  .auth-footer { padding: 20px 24px; height: 80px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+
   .logo { max-width: 120px; margin: 0 auto 24px auto; display: block; }
-  h2 { font-size: 22px; font-weight: 700; margin: 0 0 8px 0; color: #ffffff; }
-  p { color: #a8a6a5; font-size: 14px; margin: 0 0 24px 0; line-height: 1.5; }
-  .btn { display: inline-block; background-color: #eab308; color: #0a0a0a !important; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 24px; transition: transform 0.2s; }
-  .footer { font-size: 12px; color: #666; margin: 0; }
+  h2 { font-size: 22px; font-weight: 700; margin: 0 0 12px 0; color: #ffffff; text-align: center; }
+  p { color: #a8a6a5; font-size: 14px; margin: 0 0 24px 0; line-height: 1.5; text-align: center; }
+  
+  .btn { display: inline-block; background-color: #eab308; color: #0a0a0a !important; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 700; margin-bottom: 8px; transition: transform 0.2s; }
+  .footer-text { font-size: 12px; color: #666; margin: 0; text-align: center; line-height: 1.5; }
 </style>
 </head>
 <body>
 <div class="wrapper">
   <div class="auth-card">
-    <img class="logo" src="https://raw.githubusercontent.com/amorish/CineQ/main/assets/images/cineqLogoDarkmode.png" alt="CineQ">
-    <h2>Verify your email</h2>
-    <p>Welcome to CineQ! Click the golden button below to verify your account and activate your shared watchlist.</p>
-    <a href="${link}" class="btn">Verify Account</a>
-    <p class="footer">Please ignore if you didn't create an account.<br>For safety, this link will expire in 24 hours.</p>
+    <div class="auth-main">
+      <img class="logo" src="https://raw.githubusercontent.com/amorish/CineQ/main/assets/images/cineqLogoDarkmode.png" alt="CineQ">
+      <h2>Verify your email</h2>
+      <p>Welcome to CineQ! Click the golden button below to verify your account and activate your shared watchlist.</p>
+      <a href="${link}" class="btn">Verify Account</a>
+    </div>
+    <div class="ticket-divider"></div>
+    <div class="auth-footer">
+      <p class="footer-text">Please ignore if you didn't create an account.<br>For safety, this link will expire in 24 hours.</p>
+    </div>
   </div>
 </div>
 </body>
