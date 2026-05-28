@@ -3483,6 +3483,10 @@ const tiltObserver = new MutationObserver((mutations) => {
 tiltObserver.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('DOMContentLoaded', () => {
+  if (isDemo) {
+    const authOverlay = document.getElementById('authOverlay');
+    if (authOverlay) authOverlay.style.display = 'none';
+  }
   if (typeof VanillaTilt !== 'undefined') {
     VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'), {
       max: 15,
