@@ -140,8 +140,8 @@ firebase.auth().onAuthStateChanged(async (user) => {
     document.getElementById('authOverlay').style.display = 'none';
     document.getElementById('verifyOverlay').style.display = 'none';
     document.getElementById('userBadge').style.display = 'flex';
-    if (isDemo && document.getElementById('exitDemoBtn')) {
-      document.getElementById('exitDemoBtn').style.display = 'inline-flex';
+    if (isDemo && document.getElementById('demoActionBtns')) {
+      document.getElementById('demoActionBtns').style.display = 'flex';
     }
     loadEpCacheForUser(user.uid);
     const displayName = user.displayName || user.email;

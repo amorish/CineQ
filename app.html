@@ -185,7 +185,10 @@
         <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile" style="position:relative; overflow:hidden;">
           <i data-lucide="user" id="navProfileIcon"></i>
         </button>
-        <a href="/" id="exitDemoBtn" class="btn-main" style="display:none; font-size:12px; padding:8px 16px; margin-left:12px; white-space:nowrap; border-radius:8px;">Sign Up / Exit Demo</a>
+        <div id="demoActionBtns" style="display:none; margin-left:12px; gap:8px; align-items:center;">
+          <a href="/app.html#signup" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: #ffffff; color: #000000; font-weight: 600; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Sign Up</a>
+          <a href="/" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">Exit Demo</a>
+        </div>
       </div>
 
       <!-- Profile dropdown -->
