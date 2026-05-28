@@ -1315,7 +1315,7 @@ body.light-theme .auth-info-card li strong {
 .explore-carousel::-webkit-scrollbar-track { background: transparent; }
 .explore-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-full); }
 .explore-carousel::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-.explore-card { flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer; overflow: hidden; border-radius: var(--radius-md); }
+.explore-card { flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer; }
 .explore-card-img {
   width: 120px; height: 170px; object-fit: cover;
   border-radius: var(--radius-md); background: var(--card);
@@ -1628,7 +1628,14 @@ body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); 
   flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer;
   position: relative; transform-style: preserve-3d;
 }
-.explore-card-wrap .explore-card { width: 120px; position: relative; flex-shrink: 0; margin-bottom: 2px; }
+.explore-card-wrap .explore-card { 
+  width: 120px; position: relative; flex-shrink: 0; margin-bottom: 2px; 
+  overflow: hidden; border-radius: var(--radius-md); border: 1px solid var(--border);
+  background: var(--card); isolation: isolate;
+}
+.explore-card-wrap .explore-card .explore-card-img {
+  border: none; border-radius: 0;
+}
 .explore-card-wrap .card-title, .explore-card-wrap .card-meta { transform: translateZ(20px); }
 .explore-card-rank {
   width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
