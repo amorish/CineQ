@@ -143,6 +143,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
     if (isDemo && document.getElementById('demoActionBtns')) {
       document.getElementById('demoActionBtns').style.display = 'flex';
     }
+    document.getElementById('scheduleRequestEmail').value = user.email || '';
     loadEpCacheForUser(user.uid);
     const displayName = user.displayName || user.email;
     document.getElementById('userEmail').innerHTML =
@@ -2489,6 +2490,10 @@ function openSchedule(titleId) {
     showToast('Sign up to schedule watch parties!', 'error');
     return;
   }
+  if (window.scheduleStatus !== 'approved') {
+    showToast('You must request Calendar Access in Settings first!', 'error');
+    return;
+  }
   if (!currentModalTitle || currentModalTitle.id !== titleId) return;
   currentScheduleTitle = currentModalTitle;
   const isMovie = currentModalMediaType === 'movie';
@@ -2648,6 +2653,8 @@ async function syncSettingsFromFirestore() {
   }
 
   if (data) {
+    window.scheduleStatus = data.scheduleStatus || 'none';
+    updateScheduleUI();
     if (data.settings) {
       userSettings = { ...userSettings, ...data.settings };
       localStorage.setItem('cineq_settings', JSON.stringify(userSettings));
@@ -2655,6 +2662,74 @@ async function syncSettingsFromFirestore() {
     }
     profilePicCache = null;
     if (typeof updateStats === 'function') updateStats();
+  }
+}
+
+function updateScheduleUI() {
+  const badge = document.getElementById('scheduleStatusBadge');
+  const btn = document.getElementById('requestScheduleBtn');
+  if (!badge || !btn) return;
+  
+  if (window.scheduleStatus === 'approved') {
+    badge.textContent = 'Approved';
+    badge.style.background = 'rgba(46, 204, 113, 0.2)';
+    badge.style.color = '#2ecc71';
+    btn.style.display = 'none';
+  } else if (window.scheduleStatus === 'pending') {
+    badge.textContent = 'Pending Approval';
+    badge.style.background = 'rgba(241, 196, 15, 0.2)';
+    badge.style.color = '#f1c40f';
+    btn.style.display = 'none';
+  } else {
+    badge.textContent = 'Not Requested';
+    badge.style.background = 'rgba(255,255,255,0.1)';
+    badge.style.color = 'var(--muted)';
+    btn.style.display = 'inline-block';
+  }
+}
+
+async function requestScheduleAccess() {
+  if (isDemo || !currentUser) {
+    showToast('Sign up to request access!', 'error');
+    return;
+  }
+  const email = document.getElementById('scheduleRequestEmail').value.trim();
+  if (!email) {
+    showToast('Please enter an email address', 'error');
+    return;
+  }
+  
+  const btn = document.getElementById('requestScheduleBtn');
+  const prevText = btn.textContent;
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  
+  try {
+    const token = await currentUser.getIdToken();
+    const res = await fetch('/api/request-schedule', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': \`Bearer \${token}\`
+      },
+      body: JSON.stringify({ email, uid: currentUser.uid })
+    });
+    
+    if (res.ok) {
+      window.scheduleStatus = 'pending';
+      if (db) {
+        await db.collection("cineq_users").doc(currentUser.uid).set({ scheduleStatus: 'pending' }, { merge: true });
+      }
+      updateScheduleUI();
+      showToast('Request sent successfully!');
+    } else {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to send request');
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.textContent = prevText;
+    btn.disabled = false;
   }
 }
 

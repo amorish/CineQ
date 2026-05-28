@@ -714,6 +714,23 @@
                 <button class="danger-btn" onclick="confirmDeleteAccount()">Delete Account</button>
               </div>
             </div>
+
+            <div class="setting-group">
+              <label>Calendar Schedule Feature</label>
+              <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
+                <p class="setting-description" style="margin-top:0; margin-bottom: 12px;">Google Calendar Scheduling requires developer approval to prevent quota abuse. This is a one-time approval.</p>
+                
+                <div id="scheduleAccessForm" style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+                  <input type="email" id="scheduleRequestEmail" class="settings-input" placeholder="Your Email Address" style="flex: 1;" />
+                  <button class="settings-action-btn" id="requestScheduleBtn" onclick="requestScheduleAccess()" style="white-space: nowrap;">Request Access</button>
+                </div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-size: 13px; color: var(--muted);">Status:</span>
+                  <span id="scheduleStatusBadge" style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.1); color: var(--muted);">Not Requested</span>
+                </div>
+              </div>
+            </div>
           </div>
           
 
