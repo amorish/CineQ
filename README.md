@@ -176,13 +176,13 @@ CineQ/
 
 ## ![Roadmap icon](https://api.iconify.design/lucide/map.svg?color=white) Roadmap
 
-- [ ] Personal ratings (1-10 stars)
+- [x] Personal Experience system (5 hearts + notes)
 - [ ] Search within your own watchlist
-- [ ] Google Sign-In (one-click login)
+- [x] Google Sign-In (one-click login)
 - [x] Statistics dashboard & ticket export
 - [ ] Friend system & shared watchlists
 - [x] PWA support (install on phone)
-- [ ] Import from Letterboxd / IMDb
+- [x] Import from Letterboxd / IMDb
 - [x] Light/Dark mode toggle
 - [x] Episode-by-episode progress tracking
 - [x] Sort by score, year, name, date added
