@@ -32,8 +32,17 @@ const TMDB_BASE = '/api/tmdb';
 const apiCache = new Map();
 async function tmdbFetch(path, retries = 2) {
   if (apiCache.has(path)) return apiCache.get(path);
+
+  const user = firebase.auth().currentUser;
+  if (!user) throw new Error('Not signed in');
+
+  const token = await user.getIdToken();
+
   const res = await fetch(`${TMDB_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
   });
   if (res.status === 429 && retries > 0) {
     await new Promise(r => setTimeout(r, 1000));
@@ -1083,13 +1092,25 @@ function updateStats() {
       if (item.watched) tvCount++;
     }
 
-    if (item.media_type === 'tv' && (item.episodesWatched > 0)) {
+    const rewatches = item.rewatchCount || 0;
+
+    if (item.media_type === 'tv') {
       let defaultRuntime = 45;
       if (isAnime) defaultRuntime = 24;
       else if (isKDrama) defaultRuntime = 60;
-      totalMinutes += item.episodesWatched * (item.runtime || defaultRuntime);
+      
+      let previousEps = rewatches * (item.episodes || 12);
+      let currentEps = item.episodesWatched || 0;
+      if (item.watched && currentEps === 0) {
+        currentEps = item.episodes || 12;
+      }
+      
+      const totalEps = previousEps + currentEps;
+      if (totalEps > 0) {
+        totalMinutes += totalEps * (item.runtime || defaultRuntime);
+      }
     } else if (item.media_type === 'movie' && item.watched) {
-      totalMinutes += (item.runtime || 100);
+      totalMinutes += (1 + rewatches) * (item.runtime || 100);
     }
   });
   
@@ -3312,9 +3333,14 @@ async function sendFeedback() {
   btn.innerHTML = `<img src="assets/images/blocks_shuffle_loading.svg" style="width:14px;height:14px;margin-right:6px;">Sending...`;
 
   try {
+    let headers = { 'Content-Type': 'application/json' };
+    if (currentUser) {
+      headers['Authorization'] = `Bearer ${await currentUser.getIdToken()}`;
+    }
+
     const res = await fetch('/api/feedback', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: headers,
       body: JSON.stringify({
         email: currentUser ? currentUser.email : 'Anonymous',
         message: msg,

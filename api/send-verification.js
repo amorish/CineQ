@@ -1,318 +1,74 @@
-const admin = require('firebase-admin');
-const nodemailer = require('nodemailer');
+import { z } from 'zod';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
-if (!admin.apps.length) {
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : '';
-  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && privateKey) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(3, '10 m'),
+  analytics: false,
+});
+
+const BodySchema = z.object({
+  email: z.string().email().max(254),
+  username: z.string().optional(),
+});
+
+const ALLOWED_ORIGINS = new Set([
+  process.env.APP_ORIGIN ?? '',
+  'http://localhost:3000',
+  'http://127.0.0.1:5500',
+]);
+
+export default async function handler(req, res) {
+  const origin = req.headers.origin ?? '';
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Extract token from Authorization header instead of body
+  const idToken = (req.headers.authorization ?? '').replace('Bearer ', '');
+  if (!idToken) {
+    return res.status(401).json({ error: 'Unauthorized: missing token' });
+  }
+
+  const parsed = BodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid input' });
+  }
+
+  const { email } = parsed.data;
+
+  const { success } = await ratelimit.limit(`verify:${email}`);
+  if (!success) {
+    return res.status(429).json({ error: 'Too many verification emails — wait a few minutes.' });
+  }
+
+  const verifyRes = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.FIREBASE_WEB_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requestType: 'VERIFY_EMAIL',
+        idToken,
       }),
-    });
+    }
+  );
+
+  if (!verifyRes.ok) {
+    const err = await verifyRes.json().catch(() => ({}));
+    console.error('Firebase sendOobCode error:', err);
+    return res.status(502).json({ error: 'Could not send verification email' });
   }
+
+  return res.status(200).json({ ok: true });
 }
-
-module.exports = async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
-
-  // Extract ID Token from Authorization Header
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized. Authorization header is missing or invalid.' });
-  }
-  const token = authHeader.split('Bearer ')[1];
-
-  if (!admin.apps.length) {
-    return res.status(500).json({ message: 'Firebase Admin not configured on backend.' });
-  }
-
-  try {
-    // Verify the client's ID Token
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-    const email = decodedToken.email;
-    
-    if (!email) {
-      return res.status(400).json({ message: 'Email address not found in token.' });
-    }
-
-    const { username } = req.body;
-
-    // Detect if this is a Google or Password provider
-    const isGoogle = decodedToken.firebase.sign_in_provider === 'google.com';
-    const authProvider = isGoogle ? 'google' : 'password';
-    const emailVerified = isGoogle ? true : false;
-    const todayStr = new Date().toISOString().split('T')[0];
-
-    const db = admin.firestore();
-    const userDocRef = db.collection('cineq_users').doc(uid);
-    const docSnap = await userDocRef.get();
-
-    // Firestore Sync
-    if (!docSnap.exists) {
-      await userDocRef.set({
-        username: username || decodedToken.name || email.split('@')[0],
-        email: email,
-        authProvider: authProvider,
-        emailVerified: emailVerified,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        lastVerificationSentAt: isGoogle ? null : admin.firestore.FieldValue.serverTimestamp(),
-        verificationResendsToday: isGoogle ? 0 : 1,
-        lastVerificationResetDate: isGoogle ? '' : todayStr
-      });
-    } else {
-      const data = docSnap.data();
-      const updateData = {
-        authProvider: authProvider,
-        emailVerified: emailVerified
-      };
-      
-      // If Password user, record the sent verification details
-      if (!isGoogle) {
-        updateData.lastVerificationSentAt = admin.firestore.FieldValue.serverTimestamp();
-        if (data.lastVerificationResetDate === todayStr) {
-          updateData.verificationResendsToday = (data.verificationResendsToday || 0) + 1;
-        } else {
-          updateData.verificationResendsToday = 1;
-          updateData.lastVerificationResetDate = todayStr;
-        }
-      }
-      await userDocRef.update(updateData);
-    }
-
-    // Conditional Logic: Google users auto-verify, password users get email
-    if (isGoogle) {
-      return res.status(200).json({ message: 'User synced successfully. Google account is auto-verified.' });
-    }
-
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      return res.status(500).json({ message: 'SMTP email configuration is missing on server.' });
-    }
-
-    // Generate Custom Verification Link
-    const origin = req.headers.origin || 'https://cine-q.vercel.app';
-    const actionCodeSettings = { url: origin };
-    const link = await admin.auth().generateEmailVerificationLink(email, actionCodeSettings);
-
-    // Premium Golden-Ticket custom HTML Template
-    const htmlTemplate = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Account Verification Code</title>
-      <style>
-        body {
-          margin: 0;
-          padding: 0;
-          background-color: #0a0a0a;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          color: #ffffff;
-        }
-        .email-wrapper {
-          width: 100%;
-          max-width: 650px;
-          padding: 40px 20px;
-          margin: 0 auto;
-          box-sizing: border-box;
-        }
-        .ticket-container {
-          background: #141414;
-          border-radius: 12px;
-          border: 2px solid #eab308;
-          overflow: hidden;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
-        .ticket-table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-        .ticket-main {
-          padding: 35px;
-          vertical-align: top;
-        }
-        .admit-text {
-          font-size: 10px;
-          letter-spacing: 4px;
-          text-transform: uppercase;
-          color: #eab308;
-          margin-bottom: 24px;
-          display: block;
-          font-weight: 700;
-        }
-        .logo-box {
-          margin-bottom: 20px;
-          display: block;
-          max-width: 140px; 
-        }
-        .logo-box img {
-          width: 100%;
-          height: auto;
-          display: block;
-        }
-        .subtitle {
-          font-size: 15px;
-          color: #a8a6a5;
-          margin: 0 0 28px 0;
-          font-weight: 500;
-          line-height: 1.5;
-        }
-        .btn-container {
-          margin: 32px 0 24px 0;
-        }
-        .verify-btn {
-          display: inline-block;
-          background-color: #eab308; 
-          color: #0a0a0a !important;
-          text-decoration: none;
-          padding: 14px 36px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 800;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          box-shadow: 0 4px 15px rgba(234, 179, 8, 0.35);
-        }
-        .security-warning {
-          font-size: 12px;
-          color: #666;
-          margin: 0;
-          line-height: 1.5;
-        }
-        .ticket-stub {
-          background: #1a1a1a;
-          padding: 35px 25px;
-          border-left: 2px dashed #eab308;
-          vertical-align: middle;
-          text-align: center;
-          width: 180px;
-        }
-        .stub-label {
-          font-size: 9px;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
-          margin: 0 0 4px 0;
-          font-weight: 700;
-        }
-        .stub-value {
-          font-size: 14px;
-          font-weight: 700;
-          color: #fff;
-          margin: 0 0 24px 0;
-          letter-spacing: 0.5px;
-        }
-        .barcode {
-          width: 44px; 
-          margin: 28px auto 0 auto;
-          display: block;
-        }
-        .barcode-line {
-          background-color: #eab308;
-          height: 3px;
-          margin-bottom: 3px;
-          border-radius: 1px;
-        }
-        @media (max-width: 520px) {
-          .ticket-table, .ticket-table tbody, .ticket-table tr {
-            display: block !important;
-            width: 100% !important;
-          }
-          .ticket-main {
-            display: block !important;
-            width: 100% !important;
-            padding: 25px !important;
-            box-sizing: border-box !important;
-          }
-          .ticket-stub {
-            display: block !important;
-            width: 100% !important;
-            border-left: none !important;
-            border-top: 2px dashed #eab308 !important;
-            padding: 25px !important;
-            box-sizing: border-box !important;
-          }
-          .barcode {
-            display: none !important;
-          }
-        }
-      </style>
-      </head>
-      <body>
-      <div class="email-wrapper">
-        <div class="ticket-container">
-          <table class="ticket-table">
-            <tr>
-              <td class="ticket-main">
-                <span class="admit-text">• Secure Access Ticket •</span>
-                
-                <div class="logo-box">
-                  <img src="https://raw.githubusercontent.com/amorish/CineQ/main/assets/images/cineqLogoDarkmode.png" alt="CineQ">
-                </div>
-                
-                <p class="subtitle">Welcome to CineQ! To verify your account and activate your shared watchlist, please click the golden button below.</p>
-                
-                <div class="btn-container">
-                  <a href="${link}" class="verify-btn">Verify Account</a>
-                </div>
-                
-                <p class="security-warning">Please ignore if you didn't create an account.<br>For safety, this ticket link will expire in 24 hours.</p>
-              </td>
-              <td class="ticket-stub">
-                <p class="stub-label">Ticket Type</p>
-                <p class="stub-value" style="color: #eab308;">Verification</p>
-                
-                <p class="stub-label">Validity</p>
-                <p class="stub-value">24 Hours</p>
-                
-                <p class="stub-label">Status</p>
-                <p class="stub-value">Single-Use</p>
-                
-                <div class="barcode">
-                  <div class="barcode-line" style="width: 100%;"></div>
-                  <div class="barcode-line" style="width: 60%;"></div>
-                  <div class="barcode-line" style="width: 90%;"></div>
-                  <div class="barcode-line" style="width: 40%;"></div>
-                  <div class="barcode-line" style="width: 80%;"></div>
-                  <div class="barcode-line" style="width: 70%;"></div>
-                  <div class="barcode-line" style="width: 95%;"></div>
-                  <div class="barcode-line" style="width: 50%;"></div>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      </body>
-      </html>
-    `;
-
-    // Configure SMTP Nodemailer
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-    const mailOptions = {
-      from: `"CineQ Accounts" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Verify your email address for CineQ',
-      html: htmlTemplate,
-      text: `Verify your email for CineQ by clicking this link: ${link}`
-    };
-
-    await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: 'Verification email sent successfully!' });
-  } catch (error) {
-    console.error('Error in send-verification handler:', error);
-    return res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-};
