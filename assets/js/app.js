@@ -2485,6 +2485,10 @@ function renderRandomPicks(items) {
 
 // ===== GOOGLE CALENDAR SCHEDULE =====
 function openSchedule(titleId) {
+  if (isDemo) {
+    showToast('Sign up to schedule watch parties!', 'error');
+    return;
+  }
   if (!currentModalTitle || currentModalTitle.id !== titleId) return;
   currentScheduleTitle = currentModalTitle;
   const isMovie = currentModalMediaType === 'movie';
