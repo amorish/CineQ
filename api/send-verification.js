@@ -3,11 +3,11 @@ import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { decodeJwt } from 'jose';
 
-const ratelimit = new Ratelimit({
+const ratelimit = process.env.UPSTASH_REDIS_REST_URL ? new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(3, '10 m'),
   analytics: false,
-});
+}) : null;
 
 const ALLOWED_ORIGINS = new Set([
   process.env.APP_ORIGIN ?? '',
@@ -102,9 +102,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  const { success } = await ratelimit.limit(`verify:${email}`);
-  if (!success) {
-    return res.status(429).json({ error: 'Too many verification emails — wait a few minutes.' });
+  if (ratelimit) {
+    const { success } = await ratelimit.limit(`verify:${email}`);
+    if (!success) {
+      return res.status(429).json({ error: 'Too many verification emails — wait a few minutes.' });
+    }
   }
 
   const verifyRes = await fetch(
