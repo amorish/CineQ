@@ -85,8 +85,16 @@ service cloud.firestore {
 }
 ```
 
-### 5. Deploy or Open Locally
-Open `index.html` directly in a browser, **or** deploy free on Vercel/Netlify/GitHub Pages.
+### 5. Set Environment Variables
+In your Vercel project settings, add the following Environment Variables:
+- `TMDB_TOKEN` (From TMDB)
+- `FIREBASE_PROJECT_ID` (e.g., `cineq-92fea`)
+- `FIREBASE_WEB_API_KEY` (From Firebase Project Settings)
+- `UPSTASH_REDIS_REST_URL` & `UPSTASH_REDIS_REST_TOKEN` (From Upstash Redis)
+- `RESEND_API_KEY`, `RESEND_FROM`, & `FEEDBACK_TO` (From Resend)
+
+### 6. Deploy or Open Locally
+Open `index.html` directly in a browser, **or** deploy free on Vercel.
 
 ---
 
@@ -116,8 +124,9 @@ Vercel auto-deploys on every `git push` to `main`.
 | **Lucide Icons** | Beautiful SVG icon set |
 | **Google Fonts** | Outfit (headings) + Inter (body) |
 | **Google Calendar API** | Schedule watch events |
-| **Vercel Serverless** | Secure API proxy and backend email processing |
-| **Nodemailer** | Sending secure emails for verification and feedback |
+| **Vercel Edge & Serverless** | Secure API proxy and backend email processing |
+| **Resend** | Sending secure emails for verification and feedback |
+| **Upstash Redis** | Rate limiting to prevent spam and abuse |
 
 ---
 
