@@ -3,11 +3,7 @@ export const config = { runtime: 'edge' };
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 const TMDB_BASE  = 'https://api.themoviedb.org';
-const ALLOWED_ORIGINS = new Set([
-  process.env.APP_ORIGIN ?? '',
-  'http://localhost:3000',
-  'http://127.0.0.1:5500',
-]);
+
 
 const SAFE_PATH = /^\/3\/[a-z_/]+/i;
 
@@ -17,22 +13,15 @@ const JWKS = createRemoteJWKSet(
 );
 
 export default async function handler(req) {
-  // 1. CORS Pre-flight
-  const origin = req.headers.get('origin') ?? '';
-  const corsHeaders = ALLOWED_ORIGINS.has(origin)
-    ? { 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin' }
-    : {};
+  // 1. Universal CORS (Protected by Auth)
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+  };
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Authorization',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
   if (req.method !== 'GET') {
@@ -44,7 +33,7 @@ export default async function handler(req) {
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!token) {
-    return json({ error: 'Unauthorized' }, 401, corsHeaders);
+    return json({ error: 'Unauthorized: No token provided' }, 401, corsHeaders);
   }
 
   try {
@@ -52,16 +41,21 @@ export default async function handler(req) {
       issuer: `https://securetoken.google.com/${process.env.FIREBASE_PROJECT_ID}`,
       audience: process.env.FIREBASE_PROJECT_ID,
     });
-  } catch {
-    return json({ error: 'Invalid or expired token' }, 401, corsHeaders);
+  } catch (e) {
+    return json({ error: 'Invalid or expired token', details: e.message }, 401, corsHeaders);
   }
 
-  // 3. Path Validation
+  // 3. Path Validation & Extraction
   const url = new URL(req.url);
-  const path = url.searchParams.get('path') ?? '';
+  let path = url.searchParams.get('path') ?? '';
+
+  // Edge functions sometimes execute before query rewrites, so we manually extract if empty
+  if (!path && url.pathname.includes('/3/')) {
+    path = url.pathname.substring(url.pathname.indexOf('/3/'));
+  }
 
   if (!SAFE_PATH.test(path)) {
-    return json({ error: 'Invalid path' }, 400, corsHeaders);
+    return json({ error: 'Invalid path format', pathReceived: path }, 400, corsHeaders);
   }
 
   // 4. Proxy to TMDB
