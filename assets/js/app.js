@@ -249,27 +249,13 @@ async function resendVerification() {
   const btn = document.getElementById('resendBtn');
   btn.disabled = true;
   btn.textContent = 'Sending...';
-  try {
-    const token = await user.getIdToken(true);
-    const res = await fetch('/api/send-verification', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.message || 'Failed to resend. Please try again.');
-    }
-    showToast('Verification email sent! Check your inbox & spam.');
-    startResendCooldown(120);
-  } catch (e) {
-    console.error("Resend error:", e);
-    showToast(e.message || 'Failed to send. Try again later.');
-    btn.disabled = false;
-    btn.textContent = 'Resend Email';
-  }
+  
+  // Fake delay
+  await new Promise(r => setTimeout(r, 800));
+  
+  showToast('This feature is currently under development.');
+  btn.disabled = false;
+  btn.textContent = 'Resend Email';
 }
 
 async function checkVerification() {
@@ -403,6 +389,7 @@ function friendlyAuthError(code) {
     'auth/too-many-requests': 'Too many attempts. Please wait a moment',
     'auth/network-request-failed': 'Network error. Check your connection',
   };
+  if (!code) return 'Verification email feature is under development.';
   return map[code] || 'Something went wrong. Please try again.';
 }
 
