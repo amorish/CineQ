@@ -1,10 +1,11 @@
 {
   "name": "cineq",
   "version": "1.0.0",
+  "type": "module",
   "description": "<p align=\"center\">   <img src=\"assets/images/cineqLogoDarkmode.png\" alt=\"CineQ Logo\" width=\"220\" /> </p>",
   "main": "index.js",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "node scripts/build.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
