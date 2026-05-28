@@ -235,7 +235,7 @@ async function resendVerification() {
   btn.textContent = 'Sending...';
   try {
     const token = await user.getIdToken(true);
-    const res = await fetch('/api/resend-verification', {
+    const res = await fetch('/api/send-verification', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -434,9 +434,17 @@ async function forgotPassword() {
   const email = emailInput ? emailInput.value.trim() : '';
   if (!email) return showToast('Enter your email first, then click Forgot Password');
   try {
-    await firebase.auth().sendPasswordResetEmail(email);
+    const res = await fetch('/api/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Failed to send password reset email');
+    }
     showToast('Password reset email sent! Check your inbox.');
-  } catch (e) { showToast(friendlyAuthError(e.code || '')); }
+  } catch (e) { showToast(friendlyAuthError(e.message || e.code || '')); }
 }
 
 function logout() { profilePicCache = null; if (currentUser) localStorage.removeItem(`profile_pic_${currentUser.uid}`); firebase.auth().signOut(); }

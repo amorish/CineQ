@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { decodeJwt } from 'jose';
 
 const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
@@ -14,6 +13,10 @@ const ALLOWED_ORIGINS = new Set([
   'http://localhost:3000',
   'http://127.0.0.1:5500',
 ]);
+
+const BodySchema = z.object({
+  email: z.string().email().max(254),
+});
 
 function getEmailHtml(link) {
   return `<!DOCTYPE html>
@@ -35,10 +38,10 @@ function getEmailHtml(link) {
 <div class="wrapper">
   <div class="auth-card">
     <img class="logo" src="https://raw.githubusercontent.com/amorish/CineQ/main/assets/images/cineqLogoDarkmode.png" alt="CineQ">
-    <h2>Verify your email</h2>
-    <p>Welcome to CineQ! Click the golden button below to verify your account and activate your shared watchlist.</p>
-    <a href="${link}" class="btn">Verify Account</a>
-    <p class="footer">Please ignore if you didn't create an account.<br>For safety, this link will expire in 24 hours.</p>
+    <h2>Reset your password</h2>
+    <p>You recently requested to reset your password for your CineQ account. Click the golden button below to choose a new password.</p>
+    <a href="${link}" class="btn">Reset Password</a>
+    <p class="footer">If you didn't request a password reset, you can safely ignore this email.<br>For safety, this link will expire in 1 hour.</p>
   </div>
 </div>
 </body>
@@ -60,22 +63,16 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const idToken = (req.headers.authorization ?? '').replace('Bearer ', '');
-  if (!idToken) {
-    return res.status(401).json({ error: 'Unauthorized: missing token' });
+  const parsed = BodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid input' });
   }
 
-  let email;
-  try {
-    const decoded = decodeJwt(idToken);
-    email = decoded.email;
-  } catch (e) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  const { email } = parsed.data;
 
-  const { success } = await ratelimit.limit(`verify:${email}`);
+  const { success } = await ratelimit.limit(`reset:${email}`);
   if (!success) {
-    return res.status(429).json({ error: 'Too many verification emails — wait a few minutes.' });
+    return res.status(429).json({ error: 'Too many reset emails — wait a few minutes.' });
   }
 
   const verifyRes = await fetch(
@@ -84,8 +81,8 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        requestType: 'VERIFY_EMAIL',
-        idToken,
+        requestType: 'PASSWORD_RESET',
+        email,
         returnOobLink: true
       }),
     }
@@ -94,7 +91,7 @@ export default async function handler(req, res) {
   if (!verifyRes.ok) {
     const err = await verifyRes.json().catch(() => ({}));
     console.error('Firebase sendOobCode error:', err);
-    return res.status(502).json({ error: 'Could not generate verification link' });
+    return res.status(502).json({ error: 'Could not generate reset link' });
   }
 
   const data = await verifyRes.json();
@@ -109,14 +106,14 @@ export default async function handler(req, res) {
     body: JSON.stringify({
       from: process.env.RESEND_FROM,
       to: email,
-      subject: 'Verify your email address for CineQ',
+      subject: 'Reset your password for CineQ',
       html: getEmailHtml(oobLink),
     }),
   });
 
   if (!emailRes.ok) {
     console.error('Resend error:', await emailRes.text());
-    return res.status(502).json({ error: 'Failed to send verification email' });
+    return res.status(502).json({ error: 'Failed to send reset email' });
   }
 
   return res.status(200).json({ ok: true });
