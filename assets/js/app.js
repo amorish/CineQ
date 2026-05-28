@@ -34,10 +34,12 @@ const apiCache = new Map();
 async function tmdbFetch(path, retries = 2) {
   if (apiCache.has(path)) return apiCache.get(path);
 
-  const user = firebase.auth().currentUser;
-  if (!user) throw new Error('Not signed in');
-
-  const token = await user.getIdToken();
+  let token = 'cineq-demo';
+  if (!isDemo) {
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Not signed in');
+    token = await user.getIdToken();
+  }
 
   const res = await fetch(`${TMDB_BASE}${path}`, {
     headers: {
