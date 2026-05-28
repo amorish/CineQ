@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -48,8 +48,8 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css?v=26">
-  <link rel="stylesheet" href="assets/css/ticket.css?v=26">
+  <link rel="stylesheet" href="assets/css/style.css?v=24">
+  <link rel="stylesheet" href="assets/css/ticket.css?v=24">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 </head>
 <body>
@@ -183,12 +183,9 @@
           <span id="notifBadge" style="display:none;position:absolute;top:2px;right:4px;width:8px;height:8px;background:#ef4444;border-radius:50%;"></span>
         </button>
         <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile" style="position:relative; overflow:hidden;">
+
           <i data-lucide="user" id="navProfileIcon"></i>
         </button>
-        <div id="demoActionBtns" style="display:none; margin-left:12px; gap:8px; align-items:center;">
-          <a href="/app.html#signup" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: #ffffff; color: #000000; font-weight: 600; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Sign Up</a>
-          <a href="/" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">Exit Demo</a>
-        </div>
       </div>
 
       <!-- Profile dropdown -->
@@ -411,7 +408,7 @@
   <!-- ===== SCHEDULE MODAL ===== -->
   <div class="modal-backdrop" id="scheduleBackdrop" onclick="closeSchedule(event)" style="display:none;">
     <div class="modal schedule-modal" id="scheduleModal">
-      <button class="modal-close" onclick="closeScheduleDirect()">✕</button>
+      <button class="modal-close" onclick="closeScheduleDirect()">Γ£ò</button>
       <div id="scheduleContent"></div>
     </div>
   </div>
@@ -513,7 +510,7 @@
               <label for="authPwd">Password</label>
               <div class="input-wrapper">
                 <i data-lucide="lock" class="input-icon"></i>
-                <input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password" required />
+                <input type="password" id="authPwd" placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó" autocomplete="current-password" required />
                 <button class="pwd-toggle" type="button" onclick="togglePassword('authPwd', 'pwdEyeIcon')" tabindex="-1"><i data-lucide="eye-off" id="pwdEyeIcon"></i></button>
               </div>
               <div class="forgot-link-wrapper" id="authForgotWrap" style="overflow:hidden; max-height:30px; opacity:1; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);"><button class="forgot-link" type="button" onclick="forgotPassword()">Forgot password?</button></div>
@@ -618,8 +615,7 @@
         </div>
       </div>
     </div>
-    <div class="auth-scroll-wrap">
-      <div class="auth-card" style="margin: 0 auto; transition: height 0.4s ease;">
+    <div class="auth-card">
       <div class="auth-main">
         <div class="auth-logo-wrap">
           <img src="assets/images/cineqLogoDarkmode.png" alt="CineQ" class="logo-img auth-logo logo-dark" draggable="false" oncontextmenu="return false">
@@ -643,7 +639,6 @@
       <div class="auth-footer">
         <button class="auth-toggle-inline" onclick="verifyLogout()">Use a different account</button>
       </div>
-    </div>
     </div>
   </div>
 
@@ -714,23 +709,6 @@
                   <p>Permanently delete your account and all watchlist data. This cannot be undone.</p>
                 </div>
                 <button class="danger-btn" onclick="confirmDeleteAccount()">Delete Account</button>
-              </div>
-            </div>
-
-            <div class="setting-group">
-              <label>Calendar Schedule Feature</label>
-              <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; border: 1px solid var(--border);">
-                <p class="setting-description" style="margin-top:0; margin-bottom: 12px;">Google Calendar Scheduling requires developer approval to prevent quota abuse. This is a one-time approval.</p>
-                
-                <div id="scheduleAccessForm" style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                  <input type="email" id="scheduleRequestEmail" class="settings-input" placeholder="Your Email Address" style="flex: 1;" />
-                  <button class="settings-action-btn" id="requestScheduleBtn" onclick="requestScheduleAccess()" style="white-space: nowrap;">Request Access</button>
-                </div>
-                
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                  <span style="font-size: 13px; color: var(--muted);">Status:</span>
-                  <span id="scheduleStatusBadge" style="font-size: 12px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.1); color: var(--muted);">Not Requested</span>
-                </div>
               </div>
             </div>
           </div>
@@ -1020,7 +998,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="assets/js/env.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-  <script src="assets/js/app.js?v=27"></script>
+  <script src="assets/js/app.js?v=24"></script>
   <!-- Google API scripts loaded AFTER app.js so gapiLoaded/gisLoaded are defined -->
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>

@@ -74,7 +74,8 @@ function getEmailHtml(link) {
 }
 
 export default async function handler(req, res) {
-  const origin = req.headers.origin ?? '';
+  try {
+    const origin = req.headers.origin ?? '';
   if (ALLOWED_ORIGINS.has(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
@@ -147,5 +148,9 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'Failed to send verification email' });
   }
 
-  return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error('Unhandled server error:', error);
+    return res.status(500).json({ error: 'Internal Server Error', details: error.message });
+  }
 }
