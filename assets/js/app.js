@@ -2469,7 +2469,7 @@ function renderRandomPicks(items) {
     const score = a.vote_average ? a.vote_average.toFixed(1) : 'N/A';
     const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
     return `
-    <div class="explore-card" style="width:100%;flex-shrink:1;" onclick="openModal(${a.id}, '${mediaType}', event)">
+    <div class="explore-card random-pick-card" style="width:100%;flex-shrink:1;" onclick="openModal(${a.id}, '${mediaType}', event)">
       <div style="aspect-ratio:2/3;border-radius:var(--radius-md);overflow:hidden;position:relative;margin-bottom:8px;">
         <img class="explore-card-img img-loading" src="${escHtml(poster)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" alt="" draggable="false" oncontextmenu="return false" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>
       </div>
@@ -3537,9 +3537,9 @@ const tiltObserver = new MutationObserver((mutations) => {
   mutations.forEach(m => {
     m.addedNodes.forEach(node => {
       if (node.nodeType === 1) {
-        if (node.matches && node.matches('.card, .explore-card-wrap, .explore-card, .ticket-wrapper')) newCards.push(node);
+        if (node.matches && node.matches('.card, .explore-card-wrap, .random-pick-card, .ticket-wrapper')) newCards.push(node);
         if (node.querySelectorAll) {
-          const children = node.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper');
+          const children = node.querySelectorAll('.card, .explore-card-wrap, .random-pick-card, .ticket-wrapper');
           children.forEach(c => newCards.push(c));
         }
       }
@@ -3564,12 +3564,12 @@ window.addEventListener('DOMContentLoaded', () => {
     if (authOverlay) authOverlay.style.display = 'none';
   }
   if (typeof VanillaTilt !== 'undefined') {
-    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .explore-card, .ticket-wrapper'), {
+    VanillaTilt.init(document.querySelectorAll('.card, .explore-card-wrap, .random-pick-card, .ticket-wrapper'), {
       max: 15,
       speed: 400,
       glare: true,
       "max-glare": 0.2,
-      scale: 1.05
+      scale: 1.01
     });
   }
   initCustomDropdowns();

@@ -1315,7 +1315,7 @@ body.light-theme .auth-info-card li strong {
 .explore-carousel::-webkit-scrollbar-track { background: transparent; }
 .explore-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-full); }
 .explore-carousel::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-.explore-card { flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer; }
+.explore-card { flex-shrink: 0; width: 120px; scroll-snap-align: start; cursor: pointer; overflow: hidden; border-radius: var(--radius-md); }
 .explore-card-img {
   width: 120px; height: 170px; object-fit: cover;
   border-radius: var(--radius-md); background: var(--card);
