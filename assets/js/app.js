@@ -48,7 +48,10 @@ async function tmdbFetch(path, retries = 2) {
     await new Promise(r => setTimeout(r, 1000));
     return tmdbFetch(path, retries - 1);
   }
-  if (!res.ok) throw new Error(`API Error: ${res.status}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`API returned ${res.status}: ${errText}`);
+    }
   const data = await res.json();
   apiCache.set(path, data);
   return data;
@@ -2284,7 +2287,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
       }).join('');
       return;
     } catch(e) {
-      if (attempt === retries) container.innerHTML = `<div class="explore-loading">Failed to load. Please try again later.</div>`;
+      if (attempt === retries) container.innerHTML = `<p style="color:red; font-size:12px;">${e.message}</p>`;
     }
   }
 }
