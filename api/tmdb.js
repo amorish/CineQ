@@ -55,6 +55,10 @@ export default async function handler(req) {
   if (!path && url.pathname.includes('/3/')) {
     path = url.pathname.substring(url.pathname.indexOf('/3/'));
   }
+  
+  if (path && !path.startsWith('/')) {
+    path = '/' + path;
+  }
 
   if (!SAFE_PATH.test(path)) {
     return json({ error: 'Invalid path format', pathReceived: path }, 400, corsHeaders);
