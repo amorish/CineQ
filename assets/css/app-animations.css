@@ -1,0 +1,34 @@
+﻿@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+@keyframes sortPopIn {
+  from { opacity:0; transform:translate(-50%,-58%); }
+  to   { opacity:1; transform:translate(-50%,-50%); }
+}
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.3); opacity: 0.8; }
+  100% { transform: translateY(-35px) scale(1); opacity: 0; }
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bg-scroll-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(calc(-50% - 6px)); }
+}
+@keyframes bg-scroll-down {
+  0% { transform: translateY(calc(-50% - 6px)); }
+  100% { transform: translateY(0); }
+}
+@keyframes textPulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes paneFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes rotate-center { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes badgePop {
+  0% { opacity: 0; transform: translateY(6px) scale(0.5); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes badgeFadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
