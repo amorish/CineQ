@@ -531,6 +531,12 @@ let exploreLoaded = false;
 let currentModalTitle = null;
 let currentModalMediaType = 'movie';
 
+// ===== PAGINATION STATE =====
+let currentPage = 1;
+const ITEMS_PER_PAGE = 24;
+let explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+let exploreLoading = {};
+
 // ===== EPISODE COUNT CACHE =====
 let epCache = {};
 let epCacheKey = 'cineq_ep_cache';
@@ -621,6 +627,7 @@ function setAdvFilter(category, value, btn) {
   const parent = btn.parentElement;
   parent.querySelectorAll('.sort-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  currentPage = 1;
   renderGrid();
 }
 
@@ -650,6 +657,7 @@ function setSortFromPanel(key) {
   flowModeActive = false;
   if (currentSort === key) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
   else { currentSort = key; currentSortOrder = 'desc'; }
+  currentPage = 1;
   renderSortPills();
   renderGrid();
 }
@@ -657,6 +665,7 @@ function setSortFromPanel(key) {
 function toggleSortOrder(e) {
   e.stopPropagation();
   currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+  currentPage = 1;
   renderSortPills();
   renderGrid();
 }
@@ -1443,6 +1452,7 @@ document.addEventListener('click', (e) => {
 // ===== FILTER & SELECT MODE =====
 function setFilter(f, btn) {
   currentFilter = f;
+  currentPage = 1;
   if (f === 'explore') { btn.classList.remove('new'); localStorage.setItem('cineqExploreClicked', 'true'); }
   document.querySelectorAll('#normalFilters .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1679,7 +1689,12 @@ function renderGrid() {
   }
   empty.style.display = 'none';
 
-  grid.innerHTML = items.map((a, i) => {
+  const totalItems = items.length;
+  const paginatedItems = flowModeActive ? items : items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  grid.innerHTML = paginatedItems.map((a, idx) => {
+    // Keep serial number continuous across pages
+    const i = flowModeActive ? idx : ((currentPage - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
     const typePill = isTV
       ? `<span class="type-pill tv-pill">TV</span>`
@@ -1718,6 +1733,62 @@ function renderGrid() {
     </div>`;
   }).join('');
   lucide.createIcons();
+  
+  if (!flowModeActive) {
+    renderPagination(totalItems);
+  } else {
+    const paginationWrap = document.getElementById('paginationControls');
+    if (paginationWrap) paginationWrap.innerHTML = '';
+  }
+}
+
+function renderPagination(totalItems) {
+  let paginationWrap = document.getElementById('paginationControls');
+  if (!paginationWrap) {
+    const gridContainer = document.getElementById('grid');
+    if (gridContainer && gridContainer.parentNode) {
+      paginationWrap = document.createElement('div');
+      paginationWrap.id = 'paginationControls';
+      paginationWrap.className = 'pagination-wrap';
+      gridContainer.parentNode.insertBefore(paginationWrap, gridContainer.nextSibling);
+    } else {
+      return;
+    }
+  }
+
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  
+  if (totalPages <= 1) {
+    paginationWrap.innerHTML = '';
+    return;
+  }
+
+  let html = `<div class="pagination-inner">`;
+  
+  if (currentPage > 1) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
+  } else {
+    html += `<button class="page-btn" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
+  }
+  
+  html += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
+  
+  if (currentPage < totalPages) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+  } else {
+    html += `<button class="page-btn" disabled>Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+  }
+  
+  html += `</div>`;
+  
+  paginationWrap.innerHTML = html;
+  lucide.createIcons();
+}
+
+function goToPage(page) {
+  currentPage = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderGrid();
 }
 
 // ===== MODAL =====
@@ -2256,8 +2327,33 @@ function getSkeletonHTML(count, isGridItem = false) {
   return html;
 }
 
+let exploreObserver = null;
+
 async function loadExplore() {
   exploreLoaded = true;
+  explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+  exploreLoading = {};
+  
+  if (exploreObserver) { exploreObserver.disconnect(); }
+  exploreObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const sentinel = entry.target;
+        const containerId = sentinel.dataset.container;
+        const path = sentinel.dataset.path;
+        const mediaType = sentinel.dataset.mediatype;
+        
+        if (!exploreLoading[containerId]) {
+          exploreLoading[containerId] = true;
+          explorePages[containerId]++;
+          fetchExploreList(path, containerId, mediaType, 3, true).finally(() => {
+            exploreLoading[containerId] = false;
+          });
+        }
+      }
+    });
+  }, { root: null, rootMargin: '0px 300px 0px 0px', threshold: 0 });
+
   ['carousel-trending','carousel-movies','carousel-tv','carousel-upcoming'].forEach(cid => {
     const c = document.getElementById(cid);
     if (c) c.innerHTML = getSkeletonHTML(5);
@@ -2275,37 +2371,65 @@ async function loadExplore() {
   await fetchExploreList('/movie/now_playing', 'carousel-upcoming', 'movie');
 }
 
-async function fetchExploreList(path, containerId, defaultMediaType, retries = 3) {
+async function fetchExploreList(path, containerId, defaultMediaType, retries = 3, append = false) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  if (!container.querySelector('.skeleton-card')) container.innerHTML = getSkeletonHTML(5);
+  if (!append && !container.querySelector('.skeleton-card')) container.innerHTML = getSkeletonHTML(5);
+  
+  if (append) {
+    const oldSentinel = container.querySelector('.explore-sentinel');
+    if (oldSentinel) oldSentinel.remove();
+  }
+
+  const page = explorePages[containerId] || 1;
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
-      const data = await tmdbFetch(path + (path.includes('?') ? adult : '?' + adult.slice(1)));
+      const separator = path.includes('?') ? '&' : '?';
+      const fullPath = `${path}${separator}page=${page}${adult}`;
+      
+      const data = await tmdbFetch(fullPath);
       const items = (data.results || []).filter(a => {
         if (defaultMediaType) return a.poster_path;
         return a.media_type !== 'person' && a.poster_path;
-      }).slice(0, 10);
-      container.innerHTML = items.map((a, idx) => {
+      });
+      
+      let html = items.map((a, idx) => {
         const mediaType = defaultMediaType || a.media_type || 'movie';
         const title = getTitle(a);
         const poster = getPosterUrl(a.poster_path, 'w185');
         const score = a.vote_average ? a.vote_average.toFixed(1) : 'N/A';
         const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
+        const rank = ((page - 1) * 20) + idx + 1;
         return `
           <div class="explore-card-wrap" onclick="openModal(${a.id}, '${mediaType}', event)">
             <div class="explore-card">
               <img class="explore-card-img img-loading" src="${escHtml(poster)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
             </div>
-            <div class="explore-card-rank">${idx + 1}</div>
+            <div class="explore-card-rank">${rank}</div>
             <div class="explore-card-title">${escHtml(title)}</div>
             <div class="explore-card-meta">${typeLabel} · ★ ${score}</div>
           </div>`;
       }).join('');
+      
+      if (page < (data.total_pages || 1000)) {
+        html += `<div class="explore-sentinel" data-container="${containerId}" data-path="${path}" data-mediatype="${defaultMediaType || ''}" style="min-width: 1px; height: 100%;"></div>`;
+      }
+      
+      if (append) {
+        container.insertAdjacentHTML('beforeend', html);
+      } else {
+        container.innerHTML = html;
+      }
+      
+      const newSentinel = container.querySelector('.explore-sentinel');
+      if (newSentinel && exploreObserver) {
+        exploreObserver.observe(newSentinel);
+      }
       return;
     } catch(e) {
-      if (attempt === retries) container.innerHTML = `<p style="color:red; font-size:12px;">${e.message}</p>`;
+      if (attempt === retries && !append) container.innerHTML = `<p style="color:red; font-size:12px;">${e.message}</p>`;
     }
   }
 }
