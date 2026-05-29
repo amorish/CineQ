@@ -1638,6 +1638,11 @@ function renderGrid() {
           ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
           : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+        if (diff === 0) {
+          const aDate = a.releaseDate || '';
+          const bDate = b.releaseDate || '';
+          diff = aDate.localeCompare(bDate); // always ascending (oldest first)
+        }
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
       });
@@ -1651,6 +1656,11 @@ function renderGrid() {
         if (aMissing && !bMissing) return 1;
         if (bMissing && !aMissing) return -1;
         let diff = asc ? aVal - bVal : bVal - aVal;
+        if (diff === 0) {
+          const aDate = a.releaseDate || '';
+          const bDate = b.releaseDate || '';
+          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+        }
         if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
