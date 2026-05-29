@@ -1619,9 +1619,27 @@ function renderGrid() {
     items = applyFlowMode(items);
   } else {
     const asc = currentSortOrder === 'asc';
-    if (currentSort === 'rating')   items.sort((a,b) => asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0));
-    else if (currentSort === 'name') items.sort((a,b) => asc ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title));
-    else if (currentSort === 'year') items.sort((a,b) => asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0));
+    if (currentSort === 'rating') {
+      items.sort((a,b) => {
+        let diff = asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0);
+        if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+        return diff;
+      });
+    }
+    else if (currentSort === 'name') {
+      items.sort((a,b) => {
+        return asc 
+          ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
+          : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
+      });
+    }
+    else if (currentSort === 'year') {
+      items.sort((a,b) => {
+        let diff = asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0);
+        if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+        return diff;
+      });
+    }
     else {
       if (currentFilter === 'watched') {
         const pref = userSettings.rewatchSort || 'latest';
@@ -1644,7 +1662,9 @@ function renderGrid() {
             if (pref === 'latest') return parseD(obj.latestWatchedAt || obj.watchedAt || obj.addedAt);
             return parseD(obj.firstWatchedAt || obj.watchedAt || obj.addedAt);
           };
-          return asc ? getT(a) - getT(b) : getT(b) - getT(a);
+          let diff = asc ? getT(a) - getT(b) : getT(b) - getT(a);
+          if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+          return diff;
         });
       } else {
         const getT = (val) => {
