@@ -531,6 +531,12 @@ let exploreLoaded = false;
 let currentModalTitle = null;
 let currentModalMediaType = 'movie';
 
+// ===== PAGINATION STATE =====
+let currentPages = { list: 1, watching: 1, watched: 1, explore: 1, archive: 1, custom: 1 };
+const ITEMS_PER_PAGE = 24;
+let explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+let exploreLoading = {};
+
 // ===== EPISODE COUNT CACHE =====
 let epCache = {};
 let epCacheKey = 'cineq_ep_cache';
@@ -618,6 +624,7 @@ function toggleAdvancedFilter() {
 
 function setAdvFilter(category, value, btn) {
   advFilters[category] = value;
+  currentPages[currentFilter] = 1;
   const parent = btn.parentElement;
   parent.querySelectorAll('.sort-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -648,6 +655,7 @@ function renderSortPills() {
 
 function setSortFromPanel(key) {
   flowModeActive = false;
+  currentPages[currentFilter] = 1;
   if (currentSort === key) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
   else { currentSort = key; currentSortOrder = 'desc'; }
   renderSortPills();
@@ -657,6 +665,7 @@ function setSortFromPanel(key) {
 function toggleSortOrder(e) {
   e.stopPropagation();
   currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+  currentPages[currentFilter] = 1;
   renderSortPills();
   renderGrid();
 }
@@ -1610,9 +1619,53 @@ function renderGrid() {
     items = applyFlowMode(items);
   } else {
     const asc = currentSortOrder === 'asc';
-    if (currentSort === 'rating')   items.sort((a,b) => asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0));
-    else if (currentSort === 'name') items.sort((a,b) => asc ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title));
-    else if (currentSort === 'year') items.sort((a,b) => asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0));
+    if (currentSort === 'rating') {
+      items.sort((a,b) => {
+        const aVal = parseFloat(a.score) || 0;
+        const bVal = parseFloat(b.score) || 0;
+        const aMissing = aVal === 0;
+        const bMissing = bVal === 0;
+        if (aMissing && !bMissing) return 1;
+        if (bMissing && !aMissing) return -1;
+        let diff = asc ? aVal - bVal : bVal - aVal;
+        if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+        return diff || 0;
+      });
+    }
+    else if (currentSort === 'name') {
+      items.sort((a,b) => {
+        let diff = asc 
+          ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
+          : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
+        if (diff === 0) diff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+        if (diff === 0) {
+          const aDate = a.releaseDate || '';
+          const bDate = b.releaseDate || '';
+          diff = aDate.localeCompare(bDate); // always ascending (oldest first)
+        }
+        if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+        return diff || 0;
+      });
+    }
+    else if (currentSort === 'year') {
+      items.sort((a,b) => {
+        const aVal = parseInt(a.year, 10) || 0;
+        const bVal = parseInt(b.year, 10) || 0;
+        const aMissing = aVal === 0;
+        const bMissing = bVal === 0;
+        if (aMissing && !bMissing) return 1;
+        if (bMissing && !aMissing) return -1;
+        let diff = asc ? aVal - bVal : bVal - aVal;
+        if (diff === 0) {
+          const aDate = a.releaseDate || '';
+          const bDate = b.releaseDate || '';
+          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+        }
+        if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+        if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+        return diff || 0;
+      });
+    }
     else {
       if (currentFilter === 'watched') {
         const pref = userSettings.rewatchSort || 'latest';
@@ -1635,7 +1688,9 @@ function renderGrid() {
             if (pref === 'latest') return parseD(obj.latestWatchedAt || obj.watchedAt || obj.addedAt);
             return parseD(obj.firstWatchedAt || obj.watchedAt || obj.addedAt);
           };
-          return asc ? getT(a) - getT(b) : getT(b) - getT(a);
+          let diff = asc ? getT(a) - getT(b) : getT(b) - getT(a);
+          if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+          return diff || 0;
         });
       } else {
         const getT = (val) => {
@@ -1644,7 +1699,10 @@ function renderGrid() {
           const d = new Date(val).getTime();
           return isNaN(d) ? 0 : d;
         };
-        items.sort((a,b) => asc ? getT(a.addedAt) - getT(b.addedAt) : getT(b.addedAt) - getT(a.addedAt));
+        items.sort((a,b) => {
+          let diff = asc ? getT(a.addedAt) - getT(b.addedAt) : getT(b.addedAt) - getT(a.addedAt);
+          return diff || 0;
+        });
       }
     }
   }
@@ -1679,7 +1737,13 @@ function renderGrid() {
   }
   empty.style.display = 'none';
 
-  grid.innerHTML = items.map((a, i) => {
+  const totalItems = items.length;
+  const currentPageNum = currentPages[currentFilter] || 1;
+  const paginatedItems = flowModeActive ? items : items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
+
+  grid.innerHTML = paginatedItems.map((a, idx) => {
+    // Keep serial number continuous across pages
+    const i = flowModeActive ? idx : ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
     const typePill = isTV
       ? `<span class="type-pill tv-pill">TV</span>`
@@ -1718,6 +1782,61 @@ function renderGrid() {
     </div>`;
   }).join('');
   lucide.createIcons();
+  
+  if (!flowModeActive) {
+    renderPagination(totalItems);
+  } else {
+    const paginationWrap = document.getElementById('paginationControls');
+    if (paginationWrap) paginationWrap.innerHTML = '';
+  }
+}
+
+function renderPagination(totalItems) {
+  const paginationWrap = document.getElementById('paginationControls');
+  if (!paginationWrap) {
+    const gridContainer = document.getElementById('grid');
+    if (gridContainer && gridContainer.parentNode) {
+      const div = document.createElement('div');
+      div.id = 'paginationControls';
+      div.className = 'pagination-wrap';
+      gridContainer.parentNode.insertBefore(div, gridContainer.nextSibling);
+    }
+    return;
+  }
+  
+  if (totalItems <= ITEMS_PER_PAGE) {
+    paginationWrap.innerHTML = '';
+    return;
+  }
+  
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const currentPageNum = currentPages[currentFilter] || 1;
+  let html = `<div class="pagination-inner">`;
+  
+  if (currentPageNum > 1) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPageNum - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
+  } else {
+    html += `<button class="page-btn" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
+  }
+  
+  html += `<span class="page-info">Page ${currentPageNum} of ${totalPages}</span>`;
+  
+  if (currentPageNum < totalPages) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPageNum + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+  } else {
+    html += `<button class="page-btn" disabled>Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+  }
+  
+  html += `</div>`;
+  
+  paginationWrap.innerHTML = html;
+  lucide.createIcons();
+}
+
+function goToPage(page) {
+  currentPages[currentFilter] = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  renderGrid();
 }
 
 // ===== MODAL =====
@@ -2256,8 +2375,42 @@ function getSkeletonHTML(count, isGridItem = false) {
   return html;
 }
 
+let exploreObserver = null;
+
+function scrollCarousel(containerId, direction) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    // Scroll by about 4 card widths (120px + 16px gap = 136px * 4) = 544px
+    const scrollAmount = direction * 544;
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
+
 async function loadExplore() {
   exploreLoaded = true;
+  explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+  exploreLoading = {};
+  
+  if (exploreObserver) { exploreObserver.disconnect(); }
+  exploreObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const sentinel = entry.target;
+        const containerId = sentinel.dataset.container;
+        const path = sentinel.dataset.path;
+        const mediaType = sentinel.dataset.mediatype;
+        
+        if (!exploreLoading[containerId]) {
+          exploreLoading[containerId] = true;
+          explorePages[containerId]++;
+          fetchExploreList(path, containerId, mediaType, 3, true).finally(() => {
+            exploreLoading[containerId] = false;
+          });
+        }
+      }
+    });
+  }, { root: null, rootMargin: '0px 300px 0px 0px', threshold: 0 });
+
   ['carousel-trending','carousel-movies','carousel-tv','carousel-upcoming'].forEach(cid => {
     const c = document.getElementById(cid);
     if (c) c.innerHTML = getSkeletonHTML(5);
@@ -2275,37 +2428,65 @@ async function loadExplore() {
   await fetchExploreList('/movie/now_playing', 'carousel-upcoming', 'movie');
 }
 
-async function fetchExploreList(path, containerId, defaultMediaType, retries = 3) {
+async function fetchExploreList(path, containerId, defaultMediaType, retries = 3, append = false) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  if (!container.querySelector('.skeleton-card')) container.innerHTML = getSkeletonHTML(5);
+  if (!append && !container.querySelector('.skeleton-card')) container.innerHTML = getSkeletonHTML(5);
+  
+  if (append) {
+    const oldSentinel = container.querySelector('.explore-sentinel');
+    if (oldSentinel) oldSentinel.remove();
+  }
+
+  const page = explorePages[containerId] || 1;
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const adult = userSettings.sfwFilter ? '&include_adult=false' : '';
-      const data = await tmdbFetch(path + (path.includes('?') ? adult : '?' + adult.slice(1)));
+      const separator = path.includes('?') ? '&' : '?';
+      const fullPath = `${path}${separator}page=${page}${adult}`;
+      
+      const data = await tmdbFetch(fullPath);
       const items = (data.results || []).filter(a => {
         if (defaultMediaType) return a.poster_path;
         return a.media_type !== 'person' && a.poster_path;
-      }).slice(0, 10);
-      container.innerHTML = items.map((a, idx) => {
+      });
+      
+      let html = items.map((a, idx) => {
         const mediaType = defaultMediaType || a.media_type || 'movie';
         const title = getTitle(a);
         const poster = getPosterUrl(a.poster_path, 'w185');
         const score = a.vote_average ? a.vote_average.toFixed(1) : 'N/A';
         const typeLabel = mediaType === 'tv' ? 'TV' : 'Movie';
+        const rank = ((page - 1) * 20) + idx + 1;
         return `
           <div class="explore-card-wrap" onclick="openModal(${a.id}, '${mediaType}', event)">
             <div class="explore-card">
               <img class="explore-card-img img-loading" src="${escHtml(poster)}" loading="lazy" onload="this.classList.remove('img-loading')" onerror="this.classList.remove('img-loading');this.src=''" alt="" draggable="false" oncontextmenu="return false"/>
             </div>
-            <div class="explore-card-rank">${idx + 1}</div>
+            <div class="explore-card-rank">${rank}</div>
             <div class="explore-card-title">${escHtml(title)}</div>
             <div class="explore-card-meta">${typeLabel} · ★ ${score}</div>
           </div>`;
       }).join('');
+      
+      if (page < (data.total_pages || 1000) && page < 5) {
+        html += `<div class="explore-sentinel" data-container="${containerId}" data-path="${path}" data-mediatype="${defaultMediaType || ''}" style="min-width: 1px; height: 100%;"></div>`;
+      }
+      
+      if (append) {
+        container.insertAdjacentHTML('beforeend', html);
+      } else {
+        container.innerHTML = html;
+      }
+      
+      const newSentinel = container.querySelector('.explore-sentinel');
+      if (newSentinel && exploreObserver) {
+        exploreObserver.observe(newSentinel);
+      }
       return;
     } catch(e) {
-      if (attempt === retries) container.innerHTML = `<p style="color:red; font-size:12px;">${e.message}</p>`;
+      if (attempt === retries && !append) container.innerHTML = `<p style="color:red; font-size:12px;">${e.message}</p>`;
     }
   }
 }

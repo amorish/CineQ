@@ -324,21 +324,29 @@
       </div>
 
       <!-- Carousels -->
-      <div class="explore-carousel-section">
+      <div class="explore-carousel-section" style="position:relative;">
         <div class="explore-list-header"><i data-lucide="flame" style="width:16px;height:16px;color:var(--accent);"></i><span>Trending This Week</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-trending', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
         <div class="explore-carousel" id="carousel-trending"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-trending', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
-      <div class="explore-carousel-section">
+      <div class="explore-carousel-section" style="position:relative;">
         <div class="explore-list-header"><i data-lucide="star" style="width:16px;height:16px;color:#f59e0b;"></i><span>Top Rated Movies</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-movies', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
         <div class="explore-carousel" id="carousel-movies"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-movies', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
-      <div class="explore-carousel-section">
+      <div class="explore-carousel-section" style="position:relative;">
         <div class="explore-list-header"><i data-lucide="award" style="width:16px;height:16px;color:#3b82f6;"></i><span>Top Rated TV Series</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-tv', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
         <div class="explore-carousel" id="carousel-tv"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-tv', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
-      <div class="explore-carousel-section" style="margin-bottom:64px;">
+      <div class="explore-carousel-section" style="margin-bottom:64px; position:relative;">
         <div class="explore-list-header"><i data-lucide="ticket" style="width:16px;height:16px;color:#10b981;"></i><span>In Theaters Now</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-upcoming', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
         <div class="explore-carousel" id="carousel-upcoming"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-upcoming', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
     </div>
   </main>

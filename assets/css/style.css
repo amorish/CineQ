@@ -1,4 +1,4 @@
-﻿@import './app-animations.css';
+@import './app-animations.css';
 /* ===== RESET & DESIGN TOKENS ===== */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -1884,4 +1884,42 @@ body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); 
 .new-list-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px; background: transparent; border: 2px dashed rgba(255,255,255,0.15); border-radius: var(--radius-md); color: rgba(255,255,255,0.5); font-family: var(--font-heading); font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 16px; }
 .new-list-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); background: rgba(255,255,255,0.02); }
 .new-list-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ===== CAROUSEL NAVIGATION ===== */
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  opacity: 0;
+  backdrop-filter: blur(4px);
+}
+.explore-carousel-section:hover .carousel-nav-btn { opacity: 1; }
+.carousel-nav-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+.carousel-nav-btn.left { left: -18px; }
+.carousel-nav-btn.right { right: -18px; }
+@media(max-width: 768px) {
+  .carousel-nav-btn { display: none; } /* Hide on mobile where touch scrolling is natural */
+}
+
+/* ===== PAGINATION ===== */
+.pagination-wrap { display: flex; justify-content: center; padding: 24px 0 40px 0; width: 100%; }
+.pagination-inner { display: inline-flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 30px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
+body.light-theme .pagination-inner { background: rgba(255,255,255,0.7); }
+.page-btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none; color: var(--text); font-size: 13px; font-weight: 700; font-family: var(--font-heading); cursor: pointer; transition: 0.2s; padding: 6px 10px; border-radius: 20px; }
+.page-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); color: var(--accent); }
+body.light-theme .page-btn:hover:not(:disabled) { background: rgba(0,0,0,0.05); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-info { font-size: 13px; color: var(--muted); font-weight: 600; min-width: 80px; text-align: center; }
 
