@@ -1604,7 +1604,7 @@ function renderGrid() {
 
   if (sortFilterBtn) sortFilterBtn.style.display = showSort ? '' : 'none';
   if (pillDivider) pillDivider.style.display = (showSort && showSelect) ? '' : 'none';
-  if (sortSelectPillGroup) sortSelectPillGroup.style.display = (showSort || showSelect) ? '' : 'none';
+  if (sortSelectPillGroup) sortSelectPillGroup.style.display = showSort ? '' : 'none';
 
   if (flowModeActive) {
     items = applyFlowMode(items);
