@@ -2329,6 +2329,15 @@ function getSkeletonHTML(count, isGridItem = false) {
 
 let exploreObserver = null;
 
+function scrollCarousel(containerId, direction) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    // Scroll by about 4 card widths (120px + 16px gap = 136px * 4) = 544px
+    const scrollAmount = direction * 544;
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
+
 async function loadExplore() {
   exploreLoaded = true;
   explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
