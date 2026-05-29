@@ -1621,6 +1621,10 @@ function renderGrid() {
     const asc = currentSortOrder === 'asc';
     if (currentSort === 'rating') {
       items.sort((a,b) => {
+        const aMissing = !a.score || a.score === 0;
+        const bMissing = !b.score || b.score === 0;
+        if (aMissing && !bMissing) return 1;
+        if (bMissing && !aMissing) return -1;
         let diff = asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0);
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
         return diff;
@@ -1638,6 +1642,10 @@ function renderGrid() {
     }
     else if (currentSort === 'year') {
       items.sort((a,b) => {
+        const aMissing = !a.year || a.year === 0;
+        const bMissing = !b.year || b.year === 0;
+        if (aMissing && !bMissing) return 1;
+        if (bMissing && !aMissing) return -1;
         let diff = asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0);
         if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
