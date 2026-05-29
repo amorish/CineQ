@@ -2422,7 +2422,7 @@ async function fetchExploreList(path, containerId, defaultMediaType, retries = 3
           </div>`;
       }).join('');
       
-      if (page < (data.total_pages || 1000)) {
+      if (page < (data.total_pages || 1000) && page < 5) {
         html += `<div class="explore-sentinel" data-container="${containerId}" data-path="${path}" data-mediatype="${defaultMediaType || ''}" style="min-width: 1px; height: 100%;"></div>`;
       }
       
