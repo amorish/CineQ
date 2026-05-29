@@ -1628,14 +1628,18 @@ function renderGrid() {
     }
     else if (currentSort === 'name') {
       items.sort((a,b) => {
-        return asc 
+        let diff = asc 
           ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
           : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
+        if (diff === 0) diff = (a.year||0) - (b.year||0);
+        if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+        return diff;
       });
     }
     else if (currentSort === 'year') {
       items.sort((a,b) => {
         let diff = asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0);
+        if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
         return diff;
       });
