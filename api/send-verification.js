@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
-import { decodeJwt } from 'jose';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 let ratelimit = null;
 try {
@@ -103,8 +103,12 @@ export default async function handler(req, res) {
 
   let email;
   try {
-    const decoded = decodeJwt(idToken);
-    email = decoded.email;
+    const JWKS = createRemoteJWKSet(new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'));
+    const { payload } = await jwtVerify(idToken, JWKS, {
+      issuer: `https://securetoken.google.com/${process.env.FIREBASE_PROJECT_ID}`,
+      audience: process.env.FIREBASE_PROJECT_ID,
+    });
+    email = payload.email;
   } catch (e) {
     return res.status(401).json({ error: 'Invalid token' });
   }
