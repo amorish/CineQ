@@ -1,4 +1,4 @@
-﻿    .strip-track.scroll-down  { animation: stripDown 28s linear infinite; }
+    .strip-track.scroll-down  { animation: stripDown 28s linear infinite; }
     .strip-track.scroll-up    { animation: stripUp   28s linear infinite; }
     @keyframes stripDown { from { transform: translateY(0); }    to { transform: translateY(-50%); } }
     @keyframes stripUp   { from { transform: translateY(-50%); } to { transform: translateY(0); } }
@@ -26,8 +26,6 @@
     /* Right: Small */
     .flowmode-card:hover .ghost-r { width: 84px; height: 126px; transform: translateX(110px) rotate(10deg) translateY(25px); border-color: #6d28d9; box-shadow: 12px 12px 32px rgba(109,40,217,0.3); }
 
-    /* Flow gradient overlay */
-    .flow-fade {
     /* Neon Ticket */
     .ticket {
       position: relative; z-index: 2;

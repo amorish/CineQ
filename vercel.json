@@ -10,7 +10,7 @@
   "rewrites": [
     {
       "source": "/api/tmdb/:path*",
-      "destination": "/api/tmdb?path=/:path*"
+      "destination": "/api/tmdb"
     },
     {
       "source": "/images/tmdb/:path*",

@@ -4,11 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CineQ | Terms of Service</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --card: #161616;
+      --accent: #eab308;
+      --accent-glow: rgba(234, 179, 8, 0.28);
+      --accent-soft: rgba(234, 179, 8, 0.08);
+      --text: #f0eeed;
+      --text-2: #a8a6a5;
+      --muted: #4a4a4a;
+      --font-h: 'Outfit', sans-serif;
+      --font-b: 'Inter', sans-serif;
+    }
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #121212;
-      color: #f0eeed;
+      font-family: var(--font-b);
+      background-color: var(--bg);
+      color: var(--text);
       line-height: 1.75;
       padding: 60px 20px;
       margin: 0;
@@ -23,85 +40,82 @@
     /* Page Container */
     .container {
       width: 100%;
-      max-width: 650px;
+      max-width: 680px;
       box-sizing: border-box;
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Back Button */
     .back-btn {
       display: inline-flex;
       align-items: center;
-      color: #eab308;
+      color: var(--accent);
       text-decoration: none;
-      font-size: 12px;
+      font-family: var(--font-h);
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       border: 1px solid rgba(234, 179, 8, 0.25);
-      padding: 10px 16px;
+      padding: 10px 20px;
       border-radius: 8px;
       background: rgba(234, 179, 8, 0.02);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       margin-bottom: 24px;
     }
     .back-btn:hover {
-      background: rgba(234, 179, 8, 0.08);
-      border-color: #eab308;
-      transform: translateY(-1px);
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #fbbf24;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--accent-glow);
     }
     .back-btn:active {
-      transform: translateY(1px);
+      transform: translateY(0);
     }
 
     /* Ticket Body */
     .ticket {
-      background: #181818;
+      background: var(--card);
       border: none;
       border-radius: 16px;
       padding: 56px 48px;
       box-sizing: border-box;
       position: relative;
       box-shadow: 0 35px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 0, 0, 0.4);
-      overflow: hidden;
     }
 
-    /* Repeating Circular Punch-Hole Cutouts (Left Edge) */
-    .ticket::before {
+    /* Repeating Circular Punch-Hole Cutouts */
+    .ticket::before, .ticket::after {
       content: '';
       position: absolute;
       top: 0;
       bottom: 0;
-      left: -9px;
       width: 16px;
-      background-image: radial-gradient(circle, #121212 6px, transparent 7px);
+      background-image: radial-gradient(circle, var(--bg) 6px, transparent 7px);
       background-size: 16px 26px;
       z-index: 10;
     }
-
-    /* Repeating Circular Punch-Hole Cutouts (Right Edge) */
-    .ticket::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      right: -9px;
-      width: 16px;
-      background-image: radial-gradient(circle, #121212 6px, transparent 7px);
-      background-size: 16px 26px;
-      z-index: 10;
-    }
+    .ticket::before { left: -9px; }
+    .ticket::after { right: -9px; }
 
     .admit-text {
-      font-size: 9px;
-      letter-spacing: 5px;
+      font-family: var(--font-h);
+      font-size: 10px;
+      letter-spacing: 0.4em;
       text-transform: uppercase;
-      color: #eab308;
+      color: var(--accent);
       margin-bottom: 28px;
       display: block;
-      font-weight: 700;
+      font-weight: 800;
       text-align: center;
-      opacity: 0.85;
+      opacity: 0.9;
     }
 
     .logo-box {
@@ -113,54 +127,69 @@
       height: 36px;
       width: auto;
       display: block;
+      opacity: 0.9;
     }
 
     h1 {
+      font-family: var(--font-h);
       color: #ffffff;
-      font-size: 1.9rem;
-      font-weight: 800;
+      font-size: 2.2rem;
+      font-weight: 900;
       letter-spacing: -0.02em;
+      text-transform: uppercase;
       text-align: center;
       margin-top: 0;
       margin-bottom: 8px;
     }
 
     .date {
-      font-size: 11px;
-      color: #666;
+      font-family: var(--font-h);
+      font-size: 12px;
+      color: var(--text-2);
       text-align: center;
       margin-bottom: 32px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.1em;
     }
 
     .ticket-divider {
       border-top: 2px dashed rgba(234, 179, 8, 0.25);
-      margin: 36px 0;
+      margin: 36px -48px;
       position: relative;
     }
+    
+    .ticket-divider::before, .ticket-divider::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      width: 24px; height: 24px;
+      background: var(--bg);
+      border-radius: 50%;
+    }
+    .ticket-divider::before { left: -13px; }
+    .ticket-divider::after { right: -13px; }
 
     h2 {
-      color: #eab308;
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-family: var(--font-h);
+      color: var(--accent);
+      font-size: 1.25rem;
+      font-weight: 800;
       margin-top: 36px;
       margin-bottom: 12px;
-      letter-spacing: -0.01em;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.02em;
     }
 
     p {
-      color: #a8a6a5;
+      color: var(--text-2);
       font-size: 0.95rem;
       margin-bottom: 16px;
       text-align: justify;
     }
 
     ul {
-      color: #a8a6a5;
+      color: var(--text-2);
       padding-left: 20px;
       margin-bottom: 16px;
     }
@@ -171,26 +200,26 @@
     }
 
     a.inline-link {
-      color: #eab308;
+      color: var(--text);
       text-decoration: none;
       font-weight: 600;
-      border-bottom: 1px dotted rgba(234, 179, 8, 0.4);
-      transition: color 0.15s ease, border-color 0.15s ease;
+      border-bottom: 1px dotted rgba(255, 255, 255, 0.4);
+      transition: color 0.2s ease, border-color 0.2s ease;
     }
     a.inline-link:hover {
-      color: #f59e0b;
-      border-color: #f59e0b;
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     footer {
       margin-top: 48px;
       padding-top: 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid var(--border);
       text-align: center;
-      color: #555;
+      color: var(--muted);
       font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 1px;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
@@ -200,8 +229,9 @@
         padding: 40px 28px;
       }
       h1 {
-        font-size: 1.6rem;
+        font-size: 1.8rem;
       }
+      .ticket-divider { margin: 36px -28px; }
     }
   </style>
 </head>
