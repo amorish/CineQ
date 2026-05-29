@@ -1641,11 +1641,14 @@ function renderGrid() {
         let diff = asc 
           ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
           : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
-        if (diff === 0) diff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+        if (diff === 0) {
+          const yDiff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+          diff = asc ? yDiff : -yDiff;
+        }
         if (diff === 0) {
           const aDate = a.releaseDate || '';
           const bDate = b.releaseDate || '';
-          diff = aDate.localeCompare(bDate); // always ascending (oldest first)
+          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
         }
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
@@ -1661,9 +1664,9 @@ function renderGrid() {
         if (bMissing && !aMissing) return -1;
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
-          const aDate = a.releaseDate || '';
-          const bDate = b.releaseDate || '';
-          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+          const aTime = a.releaseDate ? new Date(a.releaseDate).getTime() || 0 : 0;
+          const bTime = b.releaseDate ? new Date(b.releaseDate).getTime() || 0 : 0;
+          diff = asc ? aTime - bTime : bTime - aTime;
         }
         if (diff === 0) {
           const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
@@ -1696,7 +1699,11 @@ function renderGrid() {
             return parseD(obj.firstWatchedAt || obj.watchedAt || obj.addedAt);
           };
           let diff = asc ? getT(a) - getT(b) : getT(b) - getT(a);
-          if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+          if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+          if (diff === 0) {
+            const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+            diff = asc ? tDiff : -tDiff;
+          }
           return diff || 0;
         });
       } else {
