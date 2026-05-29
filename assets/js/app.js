@@ -1629,6 +1629,10 @@ function renderGrid() {
         if (bMissing && !aMissing) return -1;
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+        if (diff === 0) {
+          const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+          diff = asc ? tDiff : -tDiff;
+        }
         return diff || 0;
       });
     }
@@ -1661,7 +1665,10 @@ function renderGrid() {
           const bDate = b.releaseDate || '';
           diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
         }
-        if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+        if (diff === 0) {
+          const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+          diff = asc ? tDiff : -tDiff;
+        }
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
       });
@@ -1739,11 +1746,11 @@ function renderGrid() {
 
   const totalItems = items.length;
   const currentPageNum = currentPages[currentFilter] || 1;
-  const paginatedItems = flowModeActive ? items : items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
+  const paginatedItems = items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
 
   grid.innerHTML = paginatedItems.map((a, idx) => {
     // Keep serial number continuous across pages
-    const i = flowModeActive ? idx : ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
+    const i = ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
     const typePill = isTV
       ? `<span class="type-pill tv-pill">TV</span>`
@@ -1783,12 +1790,7 @@ function renderGrid() {
   }).join('');
   lucide.createIcons();
   
-  if (!flowModeActive) {
-    renderPagination(totalItems);
-  } else {
-    const paginationWrap = document.getElementById('paginationControls');
-    if (paginationWrap) paginationWrap.innerHTML = '';
-  }
+  renderPagination(totalItems);
 }
 
 function renderPagination(totalItems) {
