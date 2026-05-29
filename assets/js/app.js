@@ -1621,13 +1621,15 @@ function renderGrid() {
     const asc = currentSortOrder === 'asc';
     if (currentSort === 'rating') {
       items.sort((a,b) => {
-        const aMissing = !a.score || a.score === 0;
-        const bMissing = !b.score || b.score === 0;
+        const aVal = parseFloat(a.score) || 0;
+        const bVal = parseFloat(b.score) || 0;
+        const aMissing = aVal === 0;
+        const bMissing = bVal === 0;
         if (aMissing && !bMissing) return 1;
         if (bMissing && !aMissing) return -1;
-        let diff = asc ? (a.score||0)-(b.score||0) : (b.score||0)-(a.score||0);
+        let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
-        return diff;
+        return diff || 0;
       });
     }
     else if (currentSort === 'name') {
@@ -1635,21 +1637,23 @@ function renderGrid() {
         let diff = asc 
           ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
           : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
-        if (diff === 0) diff = (a.year||0) - (b.year||0);
+        if (diff === 0) diff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
-        return diff;
+        return diff || 0;
       });
     }
     else if (currentSort === 'year') {
       items.sort((a,b) => {
-        const aMissing = !a.year || a.year === 0;
-        const bMissing = !b.year || b.year === 0;
+        const aVal = parseInt(a.year, 10) || 0;
+        const bVal = parseInt(b.year, 10) || 0;
+        const aMissing = aVal === 0;
+        const bMissing = bVal === 0;
         if (aMissing && !bMissing) return 1;
         if (bMissing && !aMissing) return -1;
-        let diff = asc ? (a.year||0)-(b.year||0) : (b.year||0)-(a.year||0);
+        let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
-        return diff;
+        return diff || 0;
       });
     }
     else {
@@ -1676,7 +1680,7 @@ function renderGrid() {
           };
           let diff = asc ? getT(a) - getT(b) : getT(b) - getT(a);
           if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
-          return diff;
+          return diff || 0;
         });
       } else {
         const getT = (val) => {
@@ -1685,7 +1689,10 @@ function renderGrid() {
           const d = new Date(val).getTime();
           return isNaN(d) ? 0 : d;
         };
-        items.sort((a,b) => asc ? getT(a.addedAt) - getT(b.addedAt) : getT(b.addedAt) - getT(a.addedAt));
+        items.sort((a,b) => {
+          let diff = asc ? getT(a.addedAt) - getT(b.addedAt) : getT(b.addedAt) - getT(a.addedAt);
+          return diff || 0;
+        });
       }
     }
   }
