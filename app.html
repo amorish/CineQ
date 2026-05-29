@@ -45,9 +45,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <link rel="stylesheet" href="assets/css/style.css?v=26">
   <link rel="stylesheet" href="assets/css/ticket.css?v=26">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
@@ -185,10 +185,7 @@
         <button class="icon-btn" id="avatarBtn" onclick="toggleProfileMenu()" aria-label="Profile" style="position:relative; overflow:hidden;">
           <i data-lucide="user" id="navProfileIcon"></i>
         </button>
-        <div id="demoActionBtns" style="display:none; margin-left:12px; gap:8px; align-items:center;">
-          <a href="/app.html#signup" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: #ffffff; color: #000000; font-weight: 600; text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Sign Up</a>
-          <a href="/" style="font-size:12px; padding:8px 16px; white-space:nowrap; border-radius:8px; background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">Exit Demo</a>
-        </div>
+
       </div>
 
       <!-- Profile dropdown -->
@@ -421,74 +418,74 @@
     <div class="bg-grid-container">
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
-          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
-          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
-          <img src="assets/images/posters/Succession.webp" alt="Succession">
-          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
-          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
-          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
-          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad" loading="lazy">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things" loading="lazy">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones" loading="lazy">
+          <img src="assets/images/posters/Succession.webp" alt="Succession" loading="lazy">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad" loading="lazy">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things" loading="lazy">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones" loading="lazy">
+          <img src="assets/images/posters/Succession.webp" alt="Succession" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
-          <img src="assets/images/posters/Akira.webp" alt="Akira">
-          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
-          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
-          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
-          <img src="assets/images/posters/Akira.webp" alt="Akira">
-          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
-          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" loading="lazy">
+          <img src="assets/images/posters/Akira.webp" alt="Akira" loading="lazy">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name" loading="lazy">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan" loading="lazy">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" loading="lazy">
+          <img src="assets/images/posters/Akira.webp" alt="Akira" loading="lazy">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name" loading="lazy">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan" loading="lazy">
         </div>
       </div>
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
-          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
-          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
-          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
-          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
-          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
-          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
-          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo" loading="lazy">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II" loading="lazy">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love" loading="lazy">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11" loading="lazy">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo" loading="lazy">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II" loading="lazy">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love" loading="lazy">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
-          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
-          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
-          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
-          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
-          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
-          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
-          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse" loading="lazy">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane" loading="lazy">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant" loading="lazy">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E" loading="lazy">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse" loading="lazy">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane" loading="lazy">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant" loading="lazy">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E" loading="lazy">
         </div>
       </div>
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
-          <img src="assets/images/posters/Dune.webp" alt="Dune">
-          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
-          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
-          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
-          <img src="assets/images/posters/Dune.webp" alt="Dune">
-          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
-          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" loading="lazy">
+          <img src="assets/images/posters/Dune.webp" alt="Dune" loading="lazy">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar" loading="lazy">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings" loading="lazy">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" loading="lazy">
+          <img src="assets/images/posters/Dune.webp" alt="Dune" loading="lazy">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar" loading="lazy">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
-          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
-          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
-          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
-          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
-          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
-          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
-          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite" loading="lazy">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" loading="lazy">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road" loading="lazy">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather" loading="lazy">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite" loading="lazy">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" loading="lazy">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road" loading="lazy">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather" loading="lazy">
         </div>
       </div>
     </div>
@@ -547,74 +544,74 @@
     <div class="bg-grid-container">
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
-          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
-          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
-          <img src="assets/images/posters/Succession.webp" alt="Succession">
-          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad">
-          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things">
-          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones">
-          <img src="assets/images/posters/Succession.webp" alt="Succession">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad" loading="lazy">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things" loading="lazy">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones" loading="lazy">
+          <img src="assets/images/posters/Succession.webp" alt="Succession" loading="lazy">
+          <img src="assets/images/posters/Breaking Bad.webp" alt="Breaking Bad" loading="lazy">
+          <img src="assets/images/posters/Stranger Things.webp" alt="Stranger Things" loading="lazy">
+          <img src="assets/images/posters/Game of Thrones.webp" alt="Game of Thrones" loading="lazy">
+          <img src="assets/images/posters/Succession.webp" alt="Succession" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
-          <img src="assets/images/posters/Akira.webp" alt="Akira">
-          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
-          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
-          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away">
-          <img src="assets/images/posters/Akira.webp" alt="Akira">
-          <img src="assets/images/posters/Your Name.webp" alt="Your Name">
-          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" loading="lazy">
+          <img src="assets/images/posters/Akira.webp" alt="Akira" loading="lazy">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name" loading="lazy">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan" loading="lazy">
+          <img src="assets/images/posters/Spirited Away.webp" alt="Spirited Away" loading="lazy">
+          <img src="assets/images/posters/Akira.webp" alt="Akira" loading="lazy">
+          <img src="assets/images/posters/Your Name.webp" alt="Your Name" loading="lazy">
+          <img src="assets/images/posters/Attack on Titan.webp" alt="Attack on Titan" loading="lazy">
         </div>
       </div>
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
-          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
-          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
-          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
-          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo">
-          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II">
-          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love">
-          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo" loading="lazy">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II" loading="lazy">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love" loading="lazy">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11" loading="lazy">
+          <img src="assets/images/posters/Free Solo.webp" alt="Free Solo" loading="lazy">
+          <img src="assets/images/posters/Planet Earth II.webp" alt="Planet Earth II" loading="lazy">
+          <img src="assets/images/posters/Fire of Love.webp" alt="Fire of Love" loading="lazy">
+          <img src="assets/images/posters/Apollo 11.webp" alt="Apollo 11" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
-          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
-          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
-          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
-          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse">
-          <img src="assets/images/posters/Arcane.webp" alt="Arcane">
-          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant">
-          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse" loading="lazy">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane" loading="lazy">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant" loading="lazy">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E" loading="lazy">
+          <img src="assets/images/posters/Spider-Man Across the Spider-Verse.webp" alt="Spider-Man Across the Spider-Verse" loading="lazy">
+          <img src="assets/images/posters/Arcane.webp" alt="Arcane" loading="lazy">
+          <img src="assets/images/posters/The Iron Giant.webp" alt="The Iron Giant" loading="lazy">
+          <img src="assets/images/posters/WALL-E.webp" alt="WALL-E" loading="lazy">
         </div>
       </div>
       <div class="bg-column down">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
-          <img src="assets/images/posters/Dune.webp" alt="Dune">
-          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
-          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
-          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049">
-          <img src="assets/images/posters/Dune.webp" alt="Dune">
-          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar">
-          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" loading="lazy">
+          <img src="assets/images/posters/Dune.webp" alt="Dune" loading="lazy">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar" loading="lazy">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings" loading="lazy">
+          <img src="assets/images/posters/Blade Runner 2049.webp" alt="Blade Runner 2049" loading="lazy">
+          <img src="assets/images/posters/Dune.webp" alt="Dune" loading="lazy">
+          <img src="assets/images/posters/Interstellar.webp" alt="Interstellar" loading="lazy">
+          <img src="assets/images/posters/The Lord of the Rings The Fellowship of the Ring.webp" alt="The Lord of the Rings" loading="lazy">
         </div>
       </div>
       <div class="bg-column up">
         <div class="bg-scroll-track">
-          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
-          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
-          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
-          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
-          <img src="assets/images/posters/Parasite.webp" alt="Parasite">
-          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight">
-          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road">
-          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite" loading="lazy">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" loading="lazy">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road" loading="lazy">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather" loading="lazy">
+          <img src="assets/images/posters/Parasite.webp" alt="Parasite" loading="lazy">
+          <img src="assets/images/posters/The Dark Knight.webp" alt="The Dark Knight" loading="lazy">
+          <img src="assets/images/posters/Mad Max Fury Road.webp" alt="Mad Max Fury Road" loading="lazy">
+          <img src="assets/images/posters/The Godfather.webp" alt="The Godfather" loading="lazy">
         </div>
       </div>
     </div>
