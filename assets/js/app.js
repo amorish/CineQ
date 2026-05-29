@@ -532,7 +532,7 @@ let currentModalTitle = null;
 let currentModalMediaType = 'movie';
 
 // ===== PAGINATION STATE =====
-let currentPage = 1;
+let currentPages = { list: 1, watching: 1, watched: 1, explore: 1, archive: 1, custom: 1 };
 const ITEMS_PER_PAGE = 24;
 let explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
 let exploreLoading = {};
@@ -624,10 +624,10 @@ function toggleAdvancedFilter() {
 
 function setAdvFilter(category, value, btn) {
   advFilters[category] = value;
+  currentPages[currentFilter] = 1;
   const parent = btn.parentElement;
   parent.querySelectorAll('.sort-pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  currentPage = 1;
   renderGrid();
 }
 
@@ -655,9 +655,9 @@ function renderSortPills() {
 
 function setSortFromPanel(key) {
   flowModeActive = false;
+  currentPages[currentFilter] = 1;
   if (currentSort === key) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
   else { currentSort = key; currentSortOrder = 'desc'; }
-  currentPage = 1;
   renderSortPills();
   renderGrid();
 }
@@ -665,7 +665,7 @@ function setSortFromPanel(key) {
 function toggleSortOrder(e) {
   e.stopPropagation();
   currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-  currentPage = 1;
+  currentPages[currentFilter] = 1;
   renderSortPills();
   renderGrid();
 }
@@ -1452,7 +1452,6 @@ document.addEventListener('click', (e) => {
 // ===== FILTER & SELECT MODE =====
 function setFilter(f, btn) {
   currentFilter = f;
-  currentPage = 1;
   if (f === 'explore') { btn.classList.remove('new'); localStorage.setItem('cineqExploreClicked', 'true'); }
   document.querySelectorAll('#normalFilters .tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -1690,11 +1689,12 @@ function renderGrid() {
   empty.style.display = 'none';
 
   const totalItems = items.length;
-  const paginatedItems = flowModeActive ? items : items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const currentPageNum = currentPages[currentFilter] || 1;
+  const paginatedItems = flowModeActive ? items : items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
 
   grid.innerHTML = paginatedItems.map((a, idx) => {
     // Keep serial number continuous across pages
-    const i = flowModeActive ? idx : ((currentPage - 1) * ITEMS_PER_PAGE + idx);
+    const i = flowModeActive ? idx : ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
     const typePill = isTV
       ? `<span class="type-pill tv-pill">TV</span>`
@@ -1743,38 +1743,37 @@ function renderGrid() {
 }
 
 function renderPagination(totalItems) {
-  let paginationWrap = document.getElementById('paginationControls');
+  const paginationWrap = document.getElementById('paginationControls');
   if (!paginationWrap) {
     const gridContainer = document.getElementById('grid');
     if (gridContainer && gridContainer.parentNode) {
-      paginationWrap = document.createElement('div');
-      paginationWrap.id = 'paginationControls';
-      paginationWrap.className = 'pagination-wrap';
-      gridContainer.parentNode.insertBefore(paginationWrap, gridContainer.nextSibling);
-    } else {
-      return;
+      const div = document.createElement('div');
+      div.id = 'paginationControls';
+      div.className = 'pagination-wrap';
+      gridContainer.parentNode.insertBefore(div, gridContainer.nextSibling);
     }
+    return;
   }
-
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
   
-  if (totalPages <= 1) {
+  if (totalItems <= ITEMS_PER_PAGE) {
     paginationWrap.innerHTML = '';
     return;
   }
-
+  
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const currentPageNum = currentPages[currentFilter] || 1;
   let html = `<div class="pagination-inner">`;
   
-  if (currentPage > 1) {
-    html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
+  if (currentPageNum > 1) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPageNum - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   } else {
     html += `<button class="page-btn" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   }
   
-  html += `<span class="page-info">Page ${currentPage} of ${totalPages}</span>`;
+  html += `<span class="page-info">Page ${currentPageNum} of ${totalPages}</span>`;
   
-  if (currentPage < totalPages) {
-    html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+  if (currentPageNum < totalPages) {
+    html += `<button class="page-btn" onclick="goToPage(${currentPageNum + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
   } else {
     html += `<button class="page-btn" disabled>Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
   }
@@ -1786,7 +1785,7 @@ function renderPagination(totalItems) {
 }
 
 function goToPage(page) {
-  currentPage = page;
+  currentPages[currentFilter] = page;
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderGrid();
 }
