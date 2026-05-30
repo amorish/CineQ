@@ -198,7 +198,8 @@ async function sendCustomVerificationEmail(user) {
       },
       body: JSON.stringify({ 
         email: user.email,
-        username: user.displayName || user.email.split('@')[0]
+        username: user.displayName || user.email.split('@')[0],
+        continueUrl: window.location.origin + '/'
       })
     });
     if (!res.ok) {
@@ -208,7 +209,10 @@ async function sendCustomVerificationEmail(user) {
     }
   } catch(e) {
     console.warn("Custom email API failed, falling back to Firebase default:", e);
-    await user.sendEmailVerification();
+    await user.sendEmailVerification({
+      url: window.location.origin + '/',
+      handleCodeInApp: false
+    });
   }
 }
 
