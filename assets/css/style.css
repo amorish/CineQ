@@ -1922,4 +1922,7 @@ body.light-theme .pagination-inner { background: rgba(255,255,255,0.7); }
 body.light-theme .page-btn:hover:not(:disabled) { background: rgba(0,0,0,0.05); }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .page-info { font-size: 13px; color: var(--muted); font-weight: 600; min-width: 80px; text-align: center; }
+.page-jump-select { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 2px 4px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; transition: 0.2s; }
+.page-jump-select:hover, .page-jump-select:focus { border-color: var(--accent); }
+.page-jump-select option { background: var(--bg); color: var(--text); }
 

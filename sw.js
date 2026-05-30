@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cineq-v11';
+const CACHE_NAME = 'cineq-v12';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

@@ -1869,17 +1869,25 @@ function renderPagination(totalItems) {
   let html = `<div class="pagination-inner">`;
   
   if (currentPageNum > 1) {
+    html += `<button class="page-btn" onclick="goToPage(1)" title="First Page"><i data-lucide="chevrons-left" style="width:16px;height:16px;"></i></button>`;
     html += `<button class="page-btn" onclick="goToPage(${currentPageNum - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   } else {
+    html += `<button class="page-btn" disabled><i data-lucide="chevrons-left" style="width:16px;height:16px;"></i></button>`;
     html += `<button class="page-btn" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   }
   
-  html += `<span class="page-info">Page ${currentPageNum} of ${totalPages}</span>`;
+  html += `<span class="page-info">Page <select class="page-jump-select" onchange="goToPage(parseInt(this.value))">`;
+  for(let p = 1; p <= totalPages; p++) {
+    html += `<option value="${p}" ${p === currentPageNum ? 'selected' : ''}>${p}</option>`;
+  }
+  html += `</select> of ${totalPages}</span>`;
   
   if (currentPageNum < totalPages) {
     html += `<button class="page-btn" onclick="goToPage(${currentPageNum + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+    html += `<button class="page-btn" onclick="goToPage(${totalPages})" title="Last Page"><i data-lucide="chevrons-right" style="width:16px;height:16px;"></i></button>`;
   } else {
     html += `<button class="page-btn" disabled>Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+    html += `<button class="page-btn" disabled><i data-lucide="chevrons-right" style="width:16px;height:16px;"></i></button>`;
   }
   
   html += `</div>`;
