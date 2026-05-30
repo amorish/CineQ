@@ -914,6 +914,7 @@ function addTitle(id, itemData, btn, mediaType) {
     original_title: orig,
     original_language: itemData.original_language || null,
     studio: (itemData.production_companies || [])[0]?.name || null,
+    voteCount: itemData.vote_count || 0,
     watched: false,
     episodesWatched: 0,
     addedAt: Date.now()
@@ -1621,14 +1622,24 @@ function renderGrid() {
     const asc = currentSortOrder === 'asc';
     if (currentSort === 'rating') {
       items.sort((a,b) => {
-        const aVal = parseFloat(a.score) || 0;
-        const bVal = parseFloat(b.score) || 0;
-        const aMissing = aVal === 0;
-        const bMissing = bVal === 0;
-        if (aMissing && !bMissing) return 1;
-        if (bMissing && !aMissing) return -1;
-        let diff = asc ? aVal - bVal : bVal - aVal;
+        const aUser = (a.experience && a.experience.rating) ? a.experience.rating : 0;
+        const bUser = (b.experience && b.experience.rating) ? b.experience.rating : 0;
+        let diff = asc ? aUser - bUser : bUser - aUser;
+        if (diff === 0) {
+          const aVal = parseFloat(a.score) || 0;
+          const bVal = parseFloat(b.score) || 0;
+          diff = asc ? aVal - bVal : bVal - aVal;
+        }
+        if (diff === 0) {
+          const aVotes = a.voteCount || 0;
+          const bVotes = b.voteCount || 0;
+          diff = asc ? aVotes - bVotes : bVotes - aVotes;
+        }
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+        if (diff === 0) {
+          const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+          diff = asc ? tDiff : -tDiff;
+        }
         return diff || 0;
       });
     }
@@ -1637,11 +1648,14 @@ function renderGrid() {
         let diff = asc 
           ? (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' })
           : (b.title||'').localeCompare(a.title||'', undefined, { numeric: true, sensitivity: 'base' });
-        if (diff === 0) diff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+        if (diff === 0) {
+          const yDiff = (parseInt(a.year, 10)||0) - (parseInt(b.year, 10)||0);
+          diff = asc ? yDiff : -yDiff;
+        }
         if (diff === 0) {
           const aDate = a.releaseDate || '';
           const bDate = b.releaseDate || '';
-          diff = aDate.localeCompare(bDate); // always ascending (oldest first)
+          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
         }
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
@@ -1649,19 +1663,14 @@ function renderGrid() {
     }
     else if (currentSort === 'year') {
       items.sort((a,b) => {
-        const aVal = parseInt(a.year, 10) || 0;
-        const bVal = parseInt(b.year, 10) || 0;
-        const aMissing = aVal === 0;
-        const bMissing = bVal === 0;
-        if (aMissing && !bMissing) return 1;
-        if (bMissing && !aMissing) return -1;
+        const getYearVal = (item) => parseInt(item.year || (item.releaseDate || '').substring(0,4), 10) || 0;
+        const aVal = getYearVal(a);
+        const bVal = getYearVal(b);
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
-          const aDate = a.releaseDate || '';
-          const bDate = b.releaseDate || '';
-          diff = asc ? aDate.localeCompare(bDate) : bDate.localeCompare(aDate);
+          const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+          diff = asc ? tDiff : -tDiff;
         }
-        if (diff === 0) diff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         return diff || 0;
       });
@@ -1689,7 +1698,11 @@ function renderGrid() {
             return parseD(obj.firstWatchedAt || obj.watchedAt || obj.addedAt);
           };
           let diff = asc ? getT(a) - getT(b) : getT(b) - getT(a);
-          if (diff === 0) diff = (b.addedAt||0) - (a.addedAt||0);
+          if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
+          if (diff === 0) {
+            const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
+            diff = asc ? tDiff : -tDiff;
+          }
           return diff || 0;
         });
       } else {
@@ -1739,11 +1752,11 @@ function renderGrid() {
 
   const totalItems = items.length;
   const currentPageNum = currentPages[currentFilter] || 1;
-  const paginatedItems = flowModeActive ? items : items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
+  const paginatedItems = items.slice((currentPageNum - 1) * ITEMS_PER_PAGE, currentPageNum * ITEMS_PER_PAGE);
 
   grid.innerHTML = paginatedItems.map((a, idx) => {
     // Keep serial number continuous across pages
-    const i = flowModeActive ? idx : ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
+    const i = ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
     const typePill = isTV
       ? `<span class="type-pill tv-pill">TV</span>`
@@ -1783,12 +1796,7 @@ function renderGrid() {
   }).join('');
   lucide.createIcons();
   
-  if (!flowModeActive) {
-    renderPagination(totalItems);
-  } else {
-    const paginationWrap = document.getElementById('paginationControls');
-    if (paginationWrap) paginationWrap.innerHTML = '';
-  }
+  renderPagination(totalItems);
 }
 
 function renderPagination(totalItems) {
@@ -1884,6 +1892,20 @@ async function openModal(id, mediaType, event) {
         const epText = document.getElementById(`ep-text-${id}`);
         if (epText) epText.textContent = `Ep ${wlItem ? (wlItem.episodesWatched || 0) : 0}/${detail.number_of_episodes}`;
       }
+    }
+    
+    // Opportunistically backfill voteCount and score for existing items
+    if (wlItem && detail.vote_count !== undefined) {
+      let needsSave = false;
+      if (wlItem.voteCount !== detail.vote_count) {
+        wlItem.voteCount = detail.vote_count || 0;
+        needsSave = true;
+      }
+      if (detail.vote_average !== undefined && wlItem.score !== detail.vote_average) {
+        wlItem.score = detail.vote_average || null;
+        needsSave = true;
+      }
+      if (needsSave) save();
     }
 
     const title = getTitle(detail);
@@ -2165,6 +2187,7 @@ async function markWatchedFromModal(id, mediaType) {
       status: a.status || null,
       releaseDate: type === 'tv' ? (a.first_air_date || null) : (a.release_date || null),
       studio: (a.production_companies || [])[0]?.name || null,
+      voteCount: a.vote_count || 0,
       watched: false, episodesWatched: 0, addedAt: Date.now()
     };
     watchlist.push(newItem);
