@@ -128,7 +128,8 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         requestType: 'VERIFY_EMAIL',
         idToken,
-        returnOobLink: true
+        returnOobLink: true,
+        continueUrl: req.body.continueUrl || (process.env.APP_ORIGIN || 'https://cineq.vercel.app/')
       }),
     }
   );
