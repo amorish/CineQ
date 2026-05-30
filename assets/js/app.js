@@ -521,8 +521,8 @@ async function backgroundBackfillMissingData() {
   if (itemsToBackfill.length === 0) return;
   
   let changed = false;
-  // Process up to 20 items per session to avoid hitting API limits on massive watchlists
-  const batch = itemsToBackfill.slice(0, 20);
+  // Process up to 100 items per session to fix older watchlists faster
+  const batch = itemsToBackfill.slice(0, 100);
   
   for (const item of batch) {
     try {
@@ -695,9 +695,9 @@ function renderSortPills() {
 
 function setSortFromPanel(key) {
   flowModeActive = false;
-  currentPages[currentFilter] = 1;
   if (currentSort === key) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
   else { currentSort = key; currentSortOrder = 'desc'; }
+  currentPages[currentFilter] = 1; // Reset to page 1
   renderSortPills();
   renderGrid();
 }
@@ -705,7 +705,7 @@ function setSortFromPanel(key) {
 function toggleSortOrder(e) {
   e.stopPropagation();
   currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-  currentPages[currentFilter] = 1;
+  currentPages[currentFilter] = 1; // Reset to page 1
   renderSortPills();
   renderGrid();
 }
@@ -1615,7 +1615,7 @@ function renderGrid() {
   }
   if (advFilters.year !== 'all') {
     items = items.filter(w => {
-      const y = parseInt(w.year || (w.release_date || '').substring(0,4) || (w.first_air_date || '').substring(0,4));
+      const y = parseInt(w.year || (w.releaseDate || '').substring(0,4) || 0);
       if (!y) return false;
       if (advFilters.year === '2020s') return y >= 2020 && y < 2030;
       if (advFilters.year === '2010s') return y >= 2010 && y < 2020;
@@ -1668,7 +1668,10 @@ function renderGrid() {
         if (diff === 0) {
           const aVal = parseFloat(a.score) || 0;
           const bVal = parseFloat(b.score) || 0;
-          diff = asc ? aVal - bVal : bVal - aVal;
+          if (aVal === 0 && bVal === 0) diff = 0;
+          else if (aVal === 0) diff = 1;
+          else if (bVal === 0) diff = -1;
+          else diff = asc ? aVal - bVal : bVal - aVal;
         }
         if (diff === 0) {
           const aVotes = a.voteCount || 0;
@@ -1706,7 +1709,11 @@ function renderGrid() {
         const getYearVal = (item) => parseInt(item.year || (item.releaseDate || '').substring(0,4), 10) || 0;
         const aVal = getYearVal(a);
         const bVal = getYearVal(b);
-        let diff = asc ? aVal - bVal : bVal - aVal;
+        let diff = 0;
+        if (aVal === 0 && bVal === 0) diff = 0;
+        else if (aVal === 0) diff = 1;
+        else if (bVal === 0) diff = -1;
+        else diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
           const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
           diff = asc ? tDiff : -tDiff;
@@ -1862,23 +1869,32 @@ function renderPagination(totalItems) {
   let html = `<div class="pagination-inner">`;
   
   if (currentPageNum > 1) {
+    html += `<button class="page-btn" onclick="goToPage(1)" title="First Page"><i data-lucide="chevrons-left" style="width:16px;height:16px;"></i></button>`;
     html += `<button class="page-btn" onclick="goToPage(${currentPageNum - 1})"><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   } else {
+    html += `<button class="page-btn" disabled><i data-lucide="chevrons-left" style="width:16px;height:16px;"></i></button>`;
     html += `<button class="page-btn" disabled><i data-lucide="chevron-left" style="width:16px;height:16px;"></i> Prev</button>`;
   }
   
-  html += `<span class="page-info">Page ${currentPageNum} of ${totalPages}</span>`;
+  html += `<span class="page-info">Page <select class="page-jump-select" onchange="goToPage(parseInt(this.value))">`;
+  for(let p = 1; p <= totalPages; p++) {
+    html += `<option value="${p}" ${p === currentPageNum ? 'selected' : ''}>${p}</option>`;
+  }
+  html += `</select> of ${totalPages}</span>`;
   
   if (currentPageNum < totalPages) {
     html += `<button class="page-btn" onclick="goToPage(${currentPageNum + 1})">Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+    html += `<button class="page-btn" onclick="goToPage(${totalPages})" title="Last Page"><i data-lucide="chevrons-right" style="width:16px;height:16px;"></i></button>`;
   } else {
     html += `<button class="page-btn" disabled>Next <i data-lucide="chevron-right" style="width:16px;height:16px;"></i></button>`;
+    html += `<button class="page-btn" disabled><i data-lucide="chevrons-right" style="width:16px;height:16px;"></i></button>`;
   }
   
   html += `</div>`;
   
   paginationWrap.innerHTML = html;
   lucide.createIcons();
+  if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
 }
 
 function goToPage(page) {
