@@ -1914,7 +1914,7 @@ body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); 
 }
 
 /* ===== PAGINATION ===== */
-.pagination-wrap { display: flex; justify-content: center; padding: 24px 0 40px 0; width: 100%; }
+.pagination-wrap { display: flex; justify-content: center; padding: 24px 0 40px 0; width: 100%; position: relative; z-index: 50; }
 .pagination-inner { display: inline-flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 30px; border: 1px solid var(--border); backdrop-filter: blur(8px); }
 body.light-theme .pagination-inner { background: rgba(255,255,255,0.7); }
 .page-btn { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: none; color: var(--text); font-size: 13px; font-weight: 700; font-family: var(--font-heading); cursor: pointer; transition: 0.2s; padding: 6px 10px; border-radius: 20px; }
