@@ -1894,6 +1894,7 @@ function renderPagination(totalItems) {
   
   paginationWrap.innerHTML = html;
   lucide.createIcons();
+  if (typeof initCustomDropdowns === 'function') initCustomDropdowns();
 }
 
 function goToPage(page) {
