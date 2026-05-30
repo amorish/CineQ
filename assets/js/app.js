@@ -1801,6 +1801,7 @@ function renderGrid() {
       else if (currentFilter === 'archive') { emptyTitle.textContent = "No dropped titles"; emptySub.textContent = "Titles you drop will appear here"; }
       else { emptyTitle.textContent = "Your watchlist is empty"; emptySub.textContent = "Search movies & TV series to get started"; }
     }
+    renderPagination(0);
     return;
   }
   empty.style.display = 'none';
@@ -1855,16 +1856,17 @@ function renderGrid() {
 }
 
 function renderPagination(totalItems) {
-  const paginationWrap = document.getElementById('paginationControls');
+  let paginationWrap = document.getElementById('paginationControls');
   if (!paginationWrap) {
     const gridContainer = document.getElementById('grid');
     if (gridContainer && gridContainer.parentNode) {
-      const div = document.createElement('div');
-      div.id = 'paginationControls';
-      div.className = 'pagination-wrap';
-      gridContainer.parentNode.insertBefore(div, gridContainer.nextSibling);
+      paginationWrap = document.createElement('div');
+      paginationWrap.id = 'paginationControls';
+      paginationWrap.className = 'pagination-wrap';
+      gridContainer.parentNode.insertBefore(paginationWrap, gridContainer.nextSibling);
+    } else {
+      return;
     }
-    return;
   }
   
   if (totalItems <= ITEMS_PER_PAGE) {
