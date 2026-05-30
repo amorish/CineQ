@@ -509,7 +509,47 @@ async function loadWatchlist() {
     isWatchlistLoading = false;
     renderGrid();
     renderNotifications();
+    
+    // Kick off a background sync for old items missing rating/year data
+    setTimeout(backgroundBackfillMissingData, 3000);
   } catch (e) { console.error("Error loading watchlist", e); isWatchlistLoading = false; renderGrid(); }
+}
+
+async function backgroundBackfillMissingData() {
+  if (isDemo || !currentUser) return;
+  const itemsToBackfill = watchlist.filter(w => w.score === undefined || w.score === null || (!w.year && !w.releaseDate));
+  if (itemsToBackfill.length === 0) return;
+  
+  let changed = false;
+  // Process up to 20 items per session to avoid hitting API limits on massive watchlists
+  const batch = itemsToBackfill.slice(0, 20);
+  
+  for (const item of batch) {
+    try {
+      const endpoint = item.media_type === 'tv' ? `/tv/${item.id}` : `/movie/${item.id}`;
+      const detail = await tmdbFetch(endpoint);
+      if (detail) {
+        if (detail.vote_average !== undefined) item.score = detail.vote_average;
+        if (detail.vote_count !== undefined) item.voteCount = detail.vote_count;
+        
+        const year = item.media_type === 'tv' ? (detail.first_air_date ? detail.first_air_date.split('-')[0] : null) : (detail.release_date ? detail.release_date.split('-')[0] : null);
+        if (year) item.year = parseInt(year);
+        
+        item.releaseDate = item.media_type === 'tv' ? (detail.first_air_date || null) : (detail.release_date || null);
+        changed = true;
+      }
+    } catch (e) {
+      console.warn("Failed to backfill for item:", item.id);
+    }
+    await new Promise(r => setTimeout(r, 600)); // 600ms delay between requests
+  }
+  
+  if (changed) {
+    save();
+    if (currentSort === 'rating' || currentSort === 'year') {
+      renderGrid();
+    }
+  }
 }
 
 // ===== STATE =====
