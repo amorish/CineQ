@@ -1622,9 +1622,14 @@ function renderGrid() {
     const asc = currentSortOrder === 'asc';
     if (currentSort === 'rating') {
       items.sort((a,b) => {
-        const aVal = parseFloat(a.score) || 0;
-        const bVal = parseFloat(b.score) || 0;
-        let diff = asc ? aVal - bVal : bVal - aVal;
+        const aUser = (a.experience && a.experience.rating) ? a.experience.rating : 0;
+        const bUser = (b.experience && b.experience.rating) ? b.experience.rating : 0;
+        let diff = asc ? aUser - bUser : bUser - aUser;
+        if (diff === 0) {
+          const aVal = parseFloat(a.score) || 0;
+          const bVal = parseFloat(b.score) || 0;
+          diff = asc ? aVal - bVal : bVal - aVal;
+        }
         if (diff === 0) {
           const aVotes = a.voteCount || 0;
           const bVotes = b.voteCount || 0;
@@ -1662,11 +1667,6 @@ function renderGrid() {
         const aVal = getYearVal(a);
         const bVal = getYearVal(b);
         let diff = asc ? aVal - bVal : bVal - aVal;
-        if (diff === 0) {
-          const aTime = a.releaseDate ? new Date(a.releaseDate).getTime() || 0 : 0;
-          const bTime = b.releaseDate ? new Date(b.releaseDate).getTime() || 0 : 0;
-          diff = asc ? aTime - bTime : bTime - aTime;
-        }
         if (diff === 0) {
           const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
           diff = asc ? tDiff : -tDiff;
@@ -1894,10 +1894,18 @@ async function openModal(id, mediaType, event) {
       }
     }
     
-    // Opportunistically backfill voteCount for existing items
-    if (wlItem && detail.vote_count !== undefined && wlItem.voteCount !== detail.vote_count) {
-      wlItem.voteCount = detail.vote_count || 0;
-      save();
+    // Opportunistically backfill voteCount and score for existing items
+    if (wlItem && detail.vote_count !== undefined) {
+      let needsSave = false;
+      if (wlItem.voteCount !== detail.vote_count) {
+        wlItem.voteCount = detail.vote_count || 0;
+        needsSave = true;
+      }
+      if (detail.vote_average !== undefined && wlItem.score !== detail.vote_average) {
+        wlItem.score = detail.vote_average || null;
+        needsSave = true;
+      }
+      if (needsSave) save();
     }
 
     const title = getTitle(detail);
