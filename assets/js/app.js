@@ -521,8 +521,8 @@ async function backgroundBackfillMissingData() {
   if (itemsToBackfill.length === 0) return;
   
   let changed = false;
-  // Process up to 20 items per session to avoid hitting API limits on massive watchlists
-  const batch = itemsToBackfill.slice(0, 20);
+  // Process up to 100 items per session to fix older watchlists faster
+  const batch = itemsToBackfill.slice(0, 100);
   
   for (const item of batch) {
     try {
@@ -1668,7 +1668,10 @@ function renderGrid() {
         if (diff === 0) {
           const aVal = parseFloat(a.score) || 0;
           const bVal = parseFloat(b.score) || 0;
-          diff = asc ? aVal - bVal : bVal - aVal;
+          if (aVal === 0 && bVal === 0) diff = 0;
+          else if (aVal === 0) diff = 1;
+          else if (bVal === 0) diff = -1;
+          else diff = asc ? aVal - bVal : bVal - aVal;
         }
         if (diff === 0) {
           const aVotes = a.voteCount || 0;
@@ -1706,7 +1709,10 @@ function renderGrid() {
         const getYearVal = (item) => parseInt(item.year || (item.releaseDate || '').substring(0,4), 10) || 0;
         const aVal = getYearVal(a);
         const bVal = getYearVal(b);
-        let diff = asc ? aVal - bVal : bVal - aVal;
+        if (aVal === 0 && bVal === 0) diff = 0;
+        else if (aVal === 0) diff = 1;
+        else if (bVal === 0) diff = -1;
+        else diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
           const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
           diff = asc ? tDiff : -tDiff;
