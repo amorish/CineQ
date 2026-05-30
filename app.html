@@ -682,9 +682,7 @@
             <button class="settings-tab-btn" onclick="switchSettingsTab('data', this)">
               <i data-lucide="database"></i><span>Data</span>
             </button>
-            <button class="settings-tab-btn" onclick="switchSettingsTab('integrations', this)">
-              <i data-lucide="link"></i><span>Integrations</span>
-            </button>
+
             <button class="settings-tab-btn" onclick="switchSettingsTab('guide', this)">
               <i data-lucide="info"></i><span>Feature Guide</span>
             </button>
@@ -944,11 +942,6 @@
                 <i data-lucide="download" style="width:16px;height:16px;margin-right:8px;display:inline-block;vertical-align:middle;"></i><span style="vertical-align:middle;">Export Watchlist JSON</span>
               </button>
             </div>
-          </div>
-
-          <!-- Integrations Tab -->
-          <div class="settings-pane" id="pane-integrations">
-            <h3>Integrations & Connected Apps</h3>
             <div class="setting-group">
               <label>Import Watchlist</label>
               <p class="setting-description">
@@ -962,15 +955,6 @@
                 <input type="file" id="importCineq" accept=".json" style="display:none" onchange="handleImport(event, 'cineq')" />
                 <input type="file" id="importLetterboxd" accept=".csv" style="display:none" onchange="handleImport(event, 'letterboxd')" />
                 <input type="file" id="importImdb" accept=".csv" style="display:none" onchange="handleImport(event, 'imdb')" />
-              </div>
-            </div>
-            
-            <div class="setting-group">
-              <label>Connect Accounts (Coming Soon)</label>
-              <p class="setting-description">Automatically sync your watches from other platforms.</p>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-                <button class="settings-action-btn secondary" disabled style="opacity:0.5;cursor:not-allowed;">Connect Letterboxd</button>
-                <button class="settings-action-btn secondary" disabled style="opacity:0.5;cursor:not-allowed;">Connect IMDb</button>
               </div>
             </div>
           </div>

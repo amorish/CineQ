@@ -1601,7 +1601,7 @@ body.light-theme .custom-select-option:hover { background: rgba(0, 0, 0, 0.06); 
   .settings-title { font-size: 18px; text-align: center; padding-left: 0; }
   .settings-nav { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; }
   .settings-nav::-webkit-scrollbar { display: none; }
-  .settings-tab-btn { padding: 8px 12px; font-size: 13px; justify-content: center; white-space: nowrap; width: auto; flex: 1; }
+  .settings-tab-btn { padding: 8px 12px; font-size: 13px; justify-content: center; white-space: nowrap; width: auto; flex: 0 0 auto; }
   .settings-tab-btn span { display: none; }
   @media (min-width: 400px) { .settings-tab-btn span { display: inline; } }
   .settings-content-pane { padding: 20px; }
