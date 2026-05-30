@@ -331,19 +331,25 @@
         <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-trending', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
       <div class="explore-carousel-section" style="position:relative;">
-        <div class="explore-list-header"><i data-lucide="star" style="width:16px;height:16px;color:#f59e0b;"></i><span>Top Rated Movies</span></div>
-        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-movies', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
-        <div class="explore-carousel" id="carousel-movies"></div>
-        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-movies', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
+        <div class="explore-list-header"><i data-lucide="popcorn" style="width:16px;height:16px;color:#f59e0b;"></i><span>Popular Movies</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-popular-movies', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
+        <div class="explore-carousel" id="carousel-popular-movies"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-popular-movies', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
       <div class="explore-carousel-section" style="position:relative;">
-        <div class="explore-list-header"><i data-lucide="award" style="width:16px;height:16px;color:#3b82f6;"></i><span>Top Rated TV Series</span></div>
-        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-tv', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
-        <div class="explore-carousel" id="carousel-tv"></div>
-        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-tv', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
+        <div class="explore-list-header"><i data-lucide="tv" style="width:16px;height:16px;color:#3b82f6;"></i><span>Popular TV Series</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-popular-tv', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
+        <div class="explore-carousel" id="carousel-popular-tv"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-popular-tv', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
+      </div>
+      <div class="explore-carousel-section" style="position:relative;">
+        <div class="explore-list-header"><i data-lucide="ticket" style="width:16px;height:16px;color:#10b981;"></i><span>Now Playing</span></div>
+        <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-now-playing', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
+        <div class="explore-carousel" id="carousel-now-playing"></div>
+        <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-now-playing', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
       </div>
       <div class="explore-carousel-section" style="margin-bottom:64px; position:relative;">
-        <div class="explore-list-header"><i data-lucide="ticket" style="width:16px;height:16px;color:#10b981;"></i><span>Now Playing</span></div>
+        <div class="explore-list-header"><i data-lucide="calendar-days" style="width:16px;height:16px;color:#a855f7;"></i><span>Upcoming Movies</span></div>
         <button class="carousel-nav-btn left" onclick="scrollCarousel('carousel-upcoming', -1)"><i data-lucide="chevron-left" style="width:20px;height:20px;"></i></button>
         <div class="explore-carousel" id="carousel-upcoming"></div>
         <button class="carousel-nav-btn right" onclick="scrollCarousel('carousel-upcoming', 1)"><i data-lucide="chevron-right" style="width:20px;height:20px;"></i></button>
@@ -1025,7 +1031,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
   <script src="assets/js/env.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
-  <script src="assets/js/app.js?v=34"></script>
+  <script src="assets/js/app.js?v=35"></script>
   <!-- Google API scripts loaded AFTER app.js so gapiLoaded/gisLoaded are defined -->
   <script src="https://apis.google.com/js/api.js" async onload="gapiLoaded()"></script>
   <script src="https://accounts.google.com/gsi/client" async onload="gisLoaded()"></script>

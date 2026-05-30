@@ -574,7 +574,7 @@ let currentModalMediaType = 'movie';
 // ===== PAGINATION STATE =====
 let currentPages = { list: 1, watching: 1, watched: 1, explore: 1, archive: 1, custom: 1 };
 const ITEMS_PER_PAGE = 24;
-let explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+let explorePages = { 'carousel-trending': 1, 'carousel-popular-movies': 1, 'carousel-popular-tv': 1, 'carousel-now-playing': 1, 'carousel-upcoming': 1 };
 let exploreLoading = {};
 
 // ===== EPISODE COUNT CACHE =====
@@ -2467,7 +2467,7 @@ function scrollCarousel(containerId, direction) {
 
 async function loadExplore() {
   exploreLoaded = true;
-  explorePages = { 'carousel-trending': 1, 'carousel-movies': 1, 'carousel-tv': 1, 'carousel-upcoming': 1 };
+  explorePages = { 'carousel-trending': 1, 'carousel-popular-movies': 1, 'carousel-popular-tv': 1, 'carousel-now-playing': 1, 'carousel-upcoming': 1 };
   exploreLoading = {};
   
   if (exploreObserver) { exploreObserver.disconnect(); }
@@ -2490,7 +2490,7 @@ async function loadExplore() {
     });
   }, { root: null, rootMargin: '0px 300px 0px 0px', threshold: 0 });
 
-  ['carousel-trending','carousel-movies','carousel-tv','carousel-upcoming'].forEach(cid => {
+  ['carousel-trending','carousel-popular-movies','carousel-popular-tv','carousel-now-playing','carousel-upcoming'].forEach(cid => {
     const c = document.getElementById(cid);
     if (c) c.innerHTML = getSkeletonHTML(5);
   });
@@ -2502,9 +2502,10 @@ async function loadExplore() {
   }
   await fetchRandomTitle();
   await fetchExploreList('/trending/all/week', 'carousel-trending', null);
-  await fetchExploreList('/movie/top_rated', 'carousel-movies', 'movie');
-  await fetchExploreList('/tv/top_rated', 'carousel-tv', 'tv');
-  await fetchExploreList('/movie/now_playing', 'carousel-upcoming', 'movie');
+  await fetchExploreList('/movie/popular', 'carousel-popular-movies', 'movie');
+  await fetchExploreList('/tv/popular', 'carousel-popular-tv', 'tv');
+  await fetchExploreList('/movie/now_playing', 'carousel-now-playing', 'movie');
+  await fetchExploreList('/movie/upcoming', 'carousel-upcoming', 'movie');
 }
 
 async function fetchExploreList(path, containerId, defaultMediaType, retries = 3, append = false) {
