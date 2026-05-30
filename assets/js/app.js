@@ -695,9 +695,9 @@ function renderSortPills() {
 
 function setSortFromPanel(key) {
   flowModeActive = false;
-  currentPages[currentFilter] = 1;
   if (currentSort === key) currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
   else { currentSort = key; currentSortOrder = 'desc'; }
+  currentPages[currentFilter] = 1; // Reset to page 1
   renderSortPills();
   renderGrid();
 }
@@ -705,7 +705,7 @@ function setSortFromPanel(key) {
 function toggleSortOrder(e) {
   e.stopPropagation();
   currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-  currentPages[currentFilter] = 1;
+  currentPages[currentFilter] = 1; // Reset to page 1
   renderSortPills();
   renderGrid();
 }
@@ -1615,7 +1615,7 @@ function renderGrid() {
   }
   if (advFilters.year !== 'all') {
     items = items.filter(w => {
-      const y = parseInt(w.year || (w.release_date || '').substring(0,4) || (w.first_air_date || '').substring(0,4));
+      const y = parseInt(w.year || (w.releaseDate || '').substring(0,4) || 0);
       if (!y) return false;
       if (advFilters.year === '2020s') return y >= 2020 && y < 2030;
       if (advFilters.year === '2010s') return y >= 2010 && y < 2020;
@@ -1709,6 +1709,7 @@ function renderGrid() {
         const getYearVal = (item) => parseInt(item.year || (item.releaseDate || '').substring(0,4), 10) || 0;
         const aVal = getYearVal(a);
         const bVal = getYearVal(b);
+        let diff = 0;
         if (aVal === 0 && bVal === 0) diff = 0;
         else if (aVal === 0) diff = 1;
         else if (bVal === 0) diff = -1;
