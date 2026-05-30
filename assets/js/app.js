@@ -202,12 +202,13 @@ async function sendCustomVerificationEmail(user) {
       })
     });
     if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.message || 'API Error');
+      let data = {};
+      try { data = await res.json(); } catch(err) {}
+      throw new Error(data.error || data.message || 'API Error');
     }
   } catch(e) {
-    console.error("Custom email failed:", e);
-    throw e;
+    console.warn("Custom email API failed, falling back to Firebase default:", e);
+    await user.sendEmailVerification();
   }
 }
 
@@ -250,12 +251,18 @@ async function resendVerification() {
   btn.disabled = true;
   btn.textContent = 'Sending...';
   
-  // Fake delay
-  await new Promise(r => setTimeout(r, 800));
-  
-  showToast('This feature is currently under development.');
-  btn.disabled = false;
-  btn.textContent = 'Resend Email';
+  try {
+    await sendCustomVerificationEmail(user);
+    showToast('Verification email resent! Check your inbox.');
+    startResendCooldown(60);
+  } catch (e) {
+    showToast('Failed to resend email. Please try again later.');
+  } finally {
+    if (!resendTimerInterval) {
+      btn.disabled = false;
+      btn.textContent = 'Resend Email';
+    }
+  }
 }
 
 async function checkVerification() {
@@ -368,8 +375,8 @@ async function handleAuth() {
           document.getElementById('authEmail').value = email;
           showToast("No account found - sign up instead!");
         } else { showToast("Incorrect password. Try again."); }
-      } catch (_) { showToast(friendlyAuthError(code)); }
-    } else { showToast(friendlyAuthError(code)); }
+      } catch (_) { showToast(friendlyAuthError(code, e.message)); }
+    } else { showToast(friendlyAuthError(code, e.message)); }
   } finally {
     if (btn) {
       btn.disabled = false;
@@ -378,7 +385,7 @@ async function handleAuth() {
   }
 }
 
-function friendlyAuthError(code) {
+function friendlyAuthError(code, message) {
   const map = {
     'auth/user-not-found': 'No account with that email',
     'auth/wrong-password': 'Incorrect password',
@@ -389,8 +396,9 @@ function friendlyAuthError(code) {
     'auth/too-many-requests': 'Too many attempts. Please wait a moment',
     'auth/network-request-failed': 'Network error. Check your connection',
   };
-  if (!code) return 'Verification email feature is under development.';
-  return map[code] || 'Something went wrong. Please try again.';
+  if (code && map[code]) return map[code];
+  if (message) return message;
+  return 'Something went wrong. Please try again.';
 }
 
 async function signInWithGoogle() {
