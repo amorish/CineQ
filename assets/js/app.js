@@ -914,6 +914,7 @@ function addTitle(id, itemData, btn, mediaType) {
     original_title: orig,
     original_language: itemData.original_language || null,
     studio: (itemData.production_companies || [])[0]?.name || null,
+    voteCount: itemData.vote_count || 0,
     watched: false,
     episodesWatched: 0,
     addedAt: Date.now()
@@ -1624,6 +1625,11 @@ function renderGrid() {
         const aVal = parseFloat(a.score) || 0;
         const bVal = parseFloat(b.score) || 0;
         let diff = asc ? aVal - bVal : bVal - aVal;
+        if (diff === 0) {
+          const aVotes = a.voteCount || 0;
+          const bVotes = b.voteCount || 0;
+          diff = asc ? aVotes - bVotes : bVotes - aVotes;
+        }
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         if (diff === 0) {
           const tDiff = (a.title||'').localeCompare(b.title||'', undefined, { numeric: true, sensitivity: 'base' });
@@ -1652,8 +1658,9 @@ function renderGrid() {
     }
     else if (currentSort === 'year') {
       items.sort((a,b) => {
-        const aVal = parseInt(a.year, 10) || 0;
-        const bVal = parseInt(b.year, 10) || 0;
+        const getYearVal = (item) => parseInt(item.year || (item.releaseDate || '').substring(0,4), 10) || 0;
+        const aVal = getYearVal(a);
+        const bVal = getYearVal(b);
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
           const aTime = a.releaseDate ? new Date(a.releaseDate).getTime() || 0 : 0;
@@ -1885,6 +1892,12 @@ async function openModal(id, mediaType, event) {
         const epText = document.getElementById(`ep-text-${id}`);
         if (epText) epText.textContent = `Ep ${wlItem ? (wlItem.episodesWatched || 0) : 0}/${detail.number_of_episodes}`;
       }
+    }
+    
+    // Opportunistically backfill voteCount for existing items
+    if (wlItem && detail.vote_count !== undefined && wlItem.voteCount !== detail.vote_count) {
+      wlItem.voteCount = detail.vote_count || 0;
+      save();
     }
 
     const title = getTitle(detail);
@@ -2166,6 +2179,7 @@ async function markWatchedFromModal(id, mediaType) {
       status: a.status || null,
       releaseDate: type === 'tv' ? (a.first_air_date || null) : (a.release_date || null),
       studio: (a.production_companies || [])[0]?.name || null,
+      voteCount: a.vote_count || 0,
       watched: false, episodesWatched: 0, addedAt: Date.now()
     };
     watchlist.push(newItem);
