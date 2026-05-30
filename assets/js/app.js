@@ -84,6 +84,7 @@ let userSettings = {
   defaultSortOrder: 'desc',
   sfwFilter: false,
   rewatchSort: 'latest',
+  flowModeStrategy: 'normal',
   customList: { name: '', position: '6' }
 };
 
@@ -767,13 +768,26 @@ function applyFlowMode(items) {
   watchedItems.forEach(a => { if (a._genres) a._genres.forEach(g => watchedGenres[g] = (watchedGenres[g]||0)+1); });
   
   const now = Date.now();
+  const strategy = userSettings.flowModeStrategy || 'normal';
+
   const withPriority = items.map(a => {
     let _score = (a._aniScore || (a.score ? a.score * 10 : 0));
     const addedTime = typeof a.addedAt === 'number' ? a.addedAt : (a.addedAt ? new Date(a.addedAt).getTime() || now : now);
     const ageDays = (now - addedTime) / (1000 * 60 * 60 * 24);
-    _score += Math.min(ageDays * 0.1, 15);
+    
+    if (strategy === 'newest') {
+      _score -= ageDays * 0.5;
+    } else {
+      _score += Math.min(ageDays * 0.1, 15);
+    }
+    
     const _inProgress = (a.episodesWatched || 0) > 0 ? 1 : 0;
     if (_inProgress) _score += 30;
+    
+    if (strategy === 'shortest') {
+      const runtime = a.media_type === 'movie' ? (a.runtime || 120) : ((a.episodes || 12) * 45);
+      _score -= (runtime * 0.1);
+    }
     
     if (a._genres) {
       a._genres.forEach(g => {
@@ -784,19 +798,37 @@ function applyFlowMode(items) {
     return { ...a, _score, _inProgress };
   });
   
+  if (strategy === 'shortest' || strategy === 'newest') {
+    const sorted = withPriority.sort((a,b) => b._inProgress - a._inProgress || b._score - a._score);
+    const seen = new Set();
+    return sorted.filter(a => seen.has(a.id) ? false : seen.add(a.id));
+  }
+
   const movies = withPriority.filter(a => a.media_type === 'movie').sort((a,b) => b._score - a._score);
   const short  = withPriority.filter(a => a.media_type === 'tv' && (a.episodes||999) <= 20).sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
   const medium = withPriority.filter(a => a.media_type === 'tv' && (a.episodes||999) > 20 && (a.episodes||999) <= 100).sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
   const long   = withPriority.filter(a => a.media_type === 'tv' && (a.episodes||999) > 100).sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
   const result = []; let mi = 0;
-  const maxLen = Math.max(short.length, medium.length, long.length);
-  for (let i = 0; i < maxLen; i++) {
-    if (short[i])  result.push(short[i]);
-    if (medium[i]) result.push(medium[i]);
-    if (i % 2 === 1 && movies[mi]) { result.push(movies[mi++]); }
-    if (long[i])   result.push(long[i]);
+  
+  if (strategy === 'balanced') {
+    const tvs = [...short, ...medium, ...long].sort((a,b) => b._inProgress-a._inProgress || b._score-a._score);
+    const maxLen = Math.max(movies.length, tvs.length);
+    for(let i=0; i<maxLen; i++) {
+      if (tvs[i]) result.push(tvs[i]);
+      if (movies[i]) result.push(movies[i]);
+    }
+  } else {
+    // normal
+    const maxLen = Math.max(short.length, medium.length, long.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (short[i])  result.push(short[i]);
+      if (medium[i]) result.push(medium[i]);
+      if (i % 2 === 1 && movies[mi]) { result.push(movies[mi++]); }
+      if (long[i])   result.push(long[i]);
+    }
+    while (mi < movies.length) result.push(movies[mi++]);
   }
-  while (mi < movies.length) result.push(movies[mi++]);
+  
   const seen = new Set();
   return result.filter(a => seen.has(a.id) ? false : seen.add(a.id));
 }
@@ -2022,6 +2054,26 @@ async function openModal(id, mediaType, event) {
     const isOngoing = detail.status === 'Returning Series';
     const showNotify = isUpcoming || isOngoing;
 
+    let displayStatus = detail.status;
+    if (type === 'tv' && detail.status) {
+      if (detail.status === 'Ended' || detail.status === 'Canceled') {
+        displayStatus = 'Completed';
+      } else if (detail.status === 'Returning Series') {
+        if (detail.next_episode_to_air && detail.next_episode_to_air.air_date) {
+          const airDate = new Date(detail.next_episode_to_air.air_date);
+          const daysDiff = (airDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
+          if (daysDiff >= -7 && daysDiff <= 30) {
+            const dayName = airDate.toLocaleDateString(undefined, { weekday: 'long' });
+            displayStatus = `Airing ${dayName}s`;
+          } else {
+            displayStatus = 'Returning Series';
+          }
+        } else {
+          displayStatus = 'Returning Series';
+        }
+      }
+    }
+
     content.innerHTML = `
       <div class="modal-hero">
         <div class="modal-poster">
@@ -2036,7 +2088,7 @@ async function openModal(id, mediaType, event) {
           ${origTitle && origTitle !== title ? `<div class="modal-eng-title">${escHtml(origTitle)}</div>` : '<div class="modal-eng-title"></div>'}
           <div class="modal-tags">
             <span class="tag ${typeTagClass}">${typeLabel}</span>
-            ${detail.status ? `<span class="tag">${detail.status}</span>` : ''}
+            ${displayStatus ? `<span class="tag">${displayStatus}</span>` : ''}
             ${(detail.genres || []).slice(0, 3).map(g => `<span class="tag">${g.name}</span>`).join('')}
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
@@ -2438,7 +2490,12 @@ async function updateProgress(id, change, event, skipSave = false) {
 
 // ===== ACCOUNT ACTIONS =====
 function confirmDeleteAccount() {
-  if (confirm("Are you sure you want to delete your account?\n\nAll your watchlist data will be permanently cleared. This cannot be undone.")) deleteAccount();
+  const verify = prompt("Are you sure you want to delete your account?\n\nAll your watchlist data will be permanently cleared. This cannot be undone.\n\nType DELETE to confirm:");
+  if (verify === 'DELETE') {
+    deleteAccount();
+  } else if (verify !== null) {
+    alert("Verification failed. Account deletion cancelled.");
+  }
 }
 async function deleteAccount() {
   const user = firebase.auth().currentUser;
@@ -3049,6 +3106,8 @@ function switchSettingsTab(tabName, btn) {
 function updateSettingsModalUI() {
   const themeToggle = document.getElementById('settingsThemeToggle');
   if (themeToggle) themeToggle.checked = (userSettings.theme === 'light');
+  const flowModeStrategySel = document.getElementById('settingsFlowModeStrategy');
+  if (flowModeStrategySel) flowModeStrategySel.value = userSettings.flowModeStrategy || 'normal';
   const defaultViewSel = document.getElementById('settingsDefaultView');
   if (defaultViewSel) defaultViewSel.value = userSettings.defaultView;
   const defaultSortSel = document.getElementById('settingsDefaultSort');
