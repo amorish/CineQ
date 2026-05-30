@@ -1623,10 +1623,6 @@ function renderGrid() {
       items.sort((a,b) => {
         const aVal = parseFloat(a.score) || 0;
         const bVal = parseFloat(b.score) || 0;
-        const aMissing = aVal === 0;
-        const bMissing = bVal === 0;
-        if (aMissing && !bMissing) return 1;
-        if (bMissing && !aMissing) return -1;
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) diff = asc ? (a.addedAt||0) - (b.addedAt||0) : (b.addedAt||0) - (a.addedAt||0);
         if (diff === 0) {
@@ -1658,10 +1654,6 @@ function renderGrid() {
       items.sort((a,b) => {
         const aVal = parseInt(a.year, 10) || 0;
         const bVal = parseInt(b.year, 10) || 0;
-        const aMissing = aVal === 0;
-        const bMissing = bVal === 0;
-        if (aMissing && !bMissing) return 1;
-        if (bMissing && !aMissing) return -1;
         let diff = asc ? aVal - bVal : bVal - aVal;
         if (diff === 0) {
           const aTime = a.releaseDate ? new Date(a.releaseDate).getTime() || 0 : 0;
