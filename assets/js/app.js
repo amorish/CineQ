@@ -2973,6 +2973,18 @@ async function syncSettingsFromFirestore() {
 
   if (data) {
     window.scheduleStatus = data.scheduleStatus || 'none';
+    const autoApprovedEmails = [
+      'titaspaul245@gmail.com',
+      'manishoraon2447@gmail.com',
+      'rinju263@gmail.com',
+      'sudiptadhara080902@gmail.com'
+    ];
+    if (currentUser && currentUser.email && autoApprovedEmails.includes(currentUser.email.toLowerCase())) {
+      window.scheduleStatus = 'approved';
+      if (db && data.scheduleStatus !== 'approved') {
+        db.collection("cineq_users").doc(currentUser.uid).set({ scheduleStatus: 'approved' }, { merge: true });
+      }
+    }
     updateScheduleUI();
     if (data.settings) {
       userSettings = { ...userSettings, ...data.settings };
