@@ -2810,7 +2810,7 @@ function openSchedule(titleId) {
     return;
   }
   if (window.scheduleStatus !== 'approved') {
-    showToast('You must request Calendar Access in Settings first!', 'error');
+    showToast('Please go to Settings to request Calendar Access.', 'error');
     return;
   }
   if (!currentModalTitle || currentModalTitle.id !== titleId) return;
