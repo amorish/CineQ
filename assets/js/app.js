@@ -85,7 +85,8 @@ let userSettings = {
   sfwFilter: false,
   rewatchSort: 'latest',
   flowModeStrategy: 'normal',
-  customList: { name: '', position: '6' }
+  customList: { name: '', position: '6' },
+  region: 'IN'
 };
 
 // ===== DISPOSABLE EMAIL BLOCKLIST =====
@@ -2055,6 +2056,9 @@ async function openModal(id, mediaType, event) {
     const showNotify = isUpcoming || isOngoing;
 
     let displayStatus = detail.status;
+    if (type === 'movie' && displayStatus === 'Released') {
+      displayStatus = null;
+    }
     if (type === 'tv' && detail.status) {
       if (detail.status === 'Ended' || detail.status === 'Canceled') {
         displayStatus = 'Completed';
@@ -2088,7 +2092,7 @@ async function openModal(id, mediaType, event) {
           ${origTitle && origTitle !== title ? `<div class="modal-eng-title">${escHtml(origTitle)}</div>` : '<div class="modal-eng-title"></div>'}
           <div class="modal-tags">
             <span class="tag ${typeTagClass}">${typeLabel}</span>
-            ${displayStatus ? `<span class="tag">${displayStatus}</span>` : ''}
+            ${displayStatus ? `<span class="tag status-tag">${displayStatus}</span>` : ''}
             ${(detail.genres || []).slice(0, 3).map(g => `<span class="tag">${g.name}</span>`).join('')}
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
@@ -2099,7 +2103,11 @@ async function openModal(id, mediaType, event) {
                   let upcomingText = 'Upcoming';
                   const d = type === 'tv' ? detail.first_air_date : detail.release_date;
                   if (d) {
-                      upcomingText = 'Releasing ' + new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                      let dateObj = new Date(d);
+                      if (userSettings.region === 'IN' || userSettings.region === 'AU' || userSettings.region === 'JP' || userSettings.region === 'UK') {
+                          dateObj.setDate(dateObj.getDate() + 1);
+                      }
+                      upcomingText = 'Releasing ' + dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                   } else if (year && year !== '-') {
                       upcomingText = 'Releasing ' + year;
                   }
@@ -3119,6 +3127,9 @@ function updateSettingsModalUI() {
   const rewatchSortSel = document.getElementById('settingsRewatchSort');
   if (rewatchSortSel) rewatchSortSel.value = userSettings.rewatchSort || 'latest';
   
+  const regionSel = document.getElementById('settingsRegion');
+  if (regionSel) regionSel.value = userSettings.region || 'IN';
+
   const customName = document.getElementById('settingsCustomListName');
   if (customName) customName.value = userSettings.customList?.name || '';
   const customPos = document.getElementById('settingsCustomListPos');
@@ -3390,17 +3401,40 @@ function exportWatchlistData() {
   } catch (e) { showToast('Failed to export data'); }
 }
 // ===== ARCHIVE / DROP LOGIC =====
-async function promptArchive(id, mediaType) {
+let currentArchiveTarget = null;
+function promptArchive(id, mediaType) {
   const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
   if (!item) return;
-  const timeStr = prompt("Where did you leave off? (e.g. '1h 20m' or 'S02E04')");
-  if (timeStr === null) return;
+  currentArchiveTarget = { id, mediaType };
+  const backdrop = document.getElementById('archivePromptBackdrop');
+  const input = document.getElementById('archivePromptInput');
+  const titleEl = document.getElementById('archivePromptTitle');
+  if (titleEl) titleEl.textContent = 'Drop ' + (item.title || item.name || 'Item');
+  backdrop.style.display = 'flex';
+  input.value = '';
+  setTimeout(() => input.focus(), 100);
+}
+
+function closeArchivePrompt() {
+  document.getElementById('archivePromptBackdrop').style.display = 'none';
+  currentArchiveTarget = null;
+}
+
+async function confirmArchivePrompt() {
+  if (!currentArchiveTarget) return;
+  const input = document.getElementById('archivePromptInput');
+  const timeStr = input.value;
+  closeArchivePrompt();
+
+  const item = watchlist.find(w => w.id === currentArchiveTarget.id && w.media_type === currentArchiveTarget.mediaType);
+  if (!item) return;
+
   item.archived = true;
   item.archiveTime = timeStr.trim() || 'Unknown';
-  item.watched = false; // ensure it's not in watched
+  item.watched = false;
   await save();
   renderGrid();
-  openModal(id, mediaType);
+  openModal(item.id, item.media_type);
   showToast('Moved to dropped/archive');
 }
 

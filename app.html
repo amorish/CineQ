@@ -419,6 +419,21 @@
     </div>
   </div>
 
+  <!-- ===== ARCHIVE PROMPT MODAL ===== -->
+  <div class="modal-backdrop" id="archivePromptBackdrop" style="display:none; z-index:100000; background:rgba(0,0,0,0.8);">
+    <div class="modal" style="width: 100%; max-width: 380px; text-align: center; padding: 24px;">
+      <h3 id="archivePromptTitle" style="margin-bottom: 12px; font-size:18px;">Drop Title</h3>
+      <p style="color: var(--muted); margin-bottom: 20px; font-size: 14px;">Where did you leave off? (e.g. '1h 20m' or 'S02E04')</p>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="text" id="archivePromptInput" class="input-wrapper-settings" style="width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: var(--radius-md); color: var(--text); outline: none;" placeholder="Optional..." onkeydown="if(event.key==='Enter') confirmArchivePrompt()" />
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button class="settings-action-btn secondary" onclick="closeArchivePrompt()" style="flex:1;">Cancel</button>
+          <button class="settings-action-btn" onclick="confirmArchivePrompt()" style="flex:1;">Drop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== SCHEDULE MODAL ===== -->
   <div class="modal-backdrop" id="scheduleBackdrop" onclick="closeSchedule(event)" style="display:none;">
     <div class="modal schedule-modal" id="scheduleModal">
@@ -893,6 +908,17 @@
                   <i data-lucide="save" style="width:14px;height:14px;"></i> Save
                 </button>
               </div>
+            </div>
+            <div class="setting-group">
+              <label for="settingsRegion">Region (Release Dates)</label>
+              <p class="setting-description">Adjust release dates for your timezone.</p>
+              <select id="settingsRegion" class="settings-select" onchange="updateWatchlistPreference('region', this.value)">
+                <option value="US">United States</option>
+                <option value="IN">India (+1 Day)</option>
+                <option value="UK">United Kingdom (+1 Day)</option>
+                <option value="AU">Australia (+1 Day)</option>
+                <option value="JP">Japan (+1 Day)</option>
+              </select>
             </div>
             <div class="setting-group">
               <label for="settingsDefaultSort">Default Sort</label>
