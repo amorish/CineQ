@@ -3038,13 +3038,20 @@ async function requestScheduleAccess() {
     return;
   }
   
-  if (email.toLowerCase() === 'titaspaul245@gmail.com') {
+  const autoApprovedEmails = [
+    'titaspaul245@gmail.com',
+    'manishoraon2447@gmail.com',
+    'rinju263@gmail.com',
+    'sudiptadhara080902@gmail.com'
+  ];
+  
+  if (autoApprovedEmails.includes(email.toLowerCase())) {
     window.scheduleStatus = 'approved';
     if (db) {
       await db.collection("cineq_users").doc(currentUser.uid).set({ scheduleStatus: 'approved' }, { merge: true });
     }
     updateScheduleUI();
-    showToast('Access automatically approved for developer.');
+    showToast('Access automatically approved for developer/test user.');
     return;
   }
   
