@@ -164,6 +164,7 @@ firebase.auth().onAuthStateChanged(async (user) => {
       await Promise.all([syncSettingsFromFirestore(), loadWatchlist()]);
     } catch (e) { console.error("Error during parallel initialization:", e); }
     applyWatchlistPreferencesOnLoad();
+    checkNotifications();
     hideSplash();
   } else {
     currentUser = null;
@@ -2374,10 +2375,16 @@ function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 function showToast(msg, isUndo = false, isHtml = false) {
   const t = document.getElementById('toast');
   const messageContent = isHtml ? msg : escHtml(msg);
-  t.innerHTML = `<span>${messageContent}</span>` + (isUndo ? `<span onclick="undoDelete()" style="color:var(--accent);text-decoration:underline;margin-left:16px;cursor:pointer;font-weight:bold;">Undo</span>` : '');
+  const showUndo = isUndo === true;
+  t.innerHTML = `<span>${messageContent}</span>` + (showUndo ? `<span onclick="undoDelete()" style="color:var(--accent);text-decoration:underline;margin-left:16px;cursor:pointer;font-weight:bold;">Undo</span>` : '');
+  if (isUndo === 'error') {
+    t.style.borderLeft = '4px solid #ef4444';
+  } else {
+    t.style.borderLeft = 'none';
+  }
   t.classList.add('show');
   clearTimeout(t.timeout);
-  t.timeout = setTimeout(() => t.classList.remove('show'), isUndo ? 4000 : 3500);
+  t.timeout = setTimeout(() => t.classList.remove('show'), showUndo ? 4000 : 3500);
 }
 
 function undoDelete() {
@@ -3732,6 +3739,10 @@ async function toggleNotify(id, mediaType, title) {
     notifications.splice(existing, 1);
     showToast(`Removed notification for "${title}"`);
   } else {
+    if (notifications.length >= 10) {
+      showToast("Notification limit reached (10 max). Please remove some.");
+      return;
+    }
     notifications.unshift({ id, mediaType, title, timestamp: Date.now() });
     showToast(`We will notify you about "${title}"`);
   }
@@ -3740,6 +3751,55 @@ async function toggleNotify(id, mediaType, title) {
   // re-render the modal to toggle the button style
   const modal = document.getElementById('modalBackdrop');
   if (modal.classList.contains('open')) openModal(id, mediaType);
+}
+
+async function checkNotifications() {
+  if (!notifications || notifications.length === 0) return;
+  let hasChanges = false;
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  
+  for (let n of notifications) {
+    if (n.isTriggered) continue;
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/${n.mediaType}/${n.id}?api_key=${TMDB_KEY}`);
+      if (!res.ok) continue;
+      const data = await res.json();
+      
+      if (n.mediaType === 'movie') {
+        if (data.release_date && data.release_date <= todayStr) {
+          n.isTriggered = true;
+          n.triggerText = 'Now Released! 🎉';
+          hasChanges = true;
+        }
+      } else if (n.mediaType === 'tv') {
+        if (data.last_episode_to_air && data.last_episode_to_air.air_date) {
+          const epDate = new Date(data.last_episode_to_air.air_date);
+          const notifyDate = new Date(n.timestamp || Date.now());
+          if (epDate > notifyDate && data.last_episode_to_air.air_date <= todayStr) {
+            n.isTriggered = true;
+            n.triggerText = `New Ep: S${data.last_episode_to_air.season_number}E${data.last_episode_to_air.episode_number} 🎉`;
+            hasChanges = true;
+          }
+        }
+      }
+    } catch (e) { console.error("Error checking notification", e); }
+  }
+  if (hasChanges) {
+    await save();
+    renderNotifications();
+  }
+}
+
+async function handleNotificationClick(id, mediaType, e) {
+  if (e) e.stopPropagation();
+  const idx = notifications.findIndex(n => n.id === id && n.mediaType === mediaType);
+  if (idx >= 0) {
+    notifications.splice(idx, 1);
+    await save();
+    renderNotifications();
+  }
+  openModal(id, mediaType);
 }
 
 function renderNotifications() {
@@ -3753,17 +3813,25 @@ function renderNotifications() {
     return;
   }
   
-  badge.style.display = 'block';
-  list.innerHTML = notifications.map(n => `
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="openModal(${n.id}, '${n.mediaType}', event)">
-      <div style="width:8px;height:8px;background:var(--accent);border-radius:50%;flex-shrink:0;"></div>
+  const hasTriggered = notifications.some(n => n.isTriggered);
+  badge.style.display = hasTriggered ? 'block' : 'none';
+  
+  list.innerHTML = notifications.map(n => {
+    const isTriggered = n.isTriggered;
+    const accentColor = isTriggered ? '#10b981' : 'var(--accent)';
+    const titleColor = isTriggered ? '#10b981' : 'var(--text)';
+    const textStr = isTriggered ? (n.triggerText || 'Update Available!') : "We'll notify you when it releases!";
+    const textWeight = isTriggered ? '700' : '400';
+    return `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="handleNotificationClick(${n.id}, '${n.mediaType}', event)">
+      <div style="width:8px;height:8px;background:${accentColor};border-radius:50%;flex-shrink:0;"></div>
       <div style="flex-grow:1;min-width:0;">
-        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);">${escHtml(n.title)}</div>
-        <div style="font-size:11px;color:var(--muted);">We'll notify you when it releases!</div>
+        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:${titleColor};">${escHtml(n.title)}</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:${textWeight};">${textStr}</div>
       </div>
       <button class="icon-btn" style="flex-shrink:0;width:24px;height:24px;" onclick="toggleNotify(${n.id}, '${n.mediaType}', '${escHtml(n.title).replace(/'/g,"\\'")}'); event.stopPropagation();"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
     </div>
-  `).join('');
+  `}).join('');
   lucide.createIcons();
 }
 
