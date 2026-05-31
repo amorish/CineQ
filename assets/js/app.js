@@ -2104,9 +2104,6 @@ async function openModal(id, mediaType, event) {
                   const d = type === 'tv' ? detail.first_air_date : detail.release_date;
                   if (d) {
                       let dateObj = new Date(d);
-                      if (userSettings.region === 'IN' || userSettings.region === 'AU' || userSettings.region === 'JP' || userSettings.region === 'UK') {
-                          dateObj.setDate(dateObj.getDate() + 1);
-                      }
                       upcomingText = 'Releasing ' + dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
                   } else if (year && year !== '-') {
                       upcomingText = 'Releasing ' + year;
