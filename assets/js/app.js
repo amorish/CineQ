@@ -2987,23 +2987,42 @@ async function syncSettingsFromFirestore() {
 function updateScheduleUI() {
   const badge = document.getElementById('scheduleStatusBadge');
   const btn = document.getElementById('requestScheduleBtn');
-  if (!badge || !btn) return;
+  const emailInput = document.getElementById('scheduleRequestEmail');
+  if (!badge || !btn || !emailInput) return;
   
   if (window.scheduleStatus === 'approved') {
     badge.textContent = 'Approved';
     badge.style.background = 'rgba(46, 204, 113, 0.2)';
     badge.style.color = '#2ecc71';
-    btn.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.textContent = 'Approved';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    emailInput.readOnly = true;
+    emailInput.style.opacity = '0.7';
   } else if (window.scheduleStatus === 'pending') {
     badge.textContent = 'Pending Approval';
     badge.style.background = 'rgba(241, 196, 15, 0.2)';
     badge.style.color = '#f1c40f';
-    btn.style.display = 'none';
+    btn.style.display = 'inline-block';
+    btn.textContent = 'Requested';
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    emailInput.readOnly = true;
+    emailInput.style.opacity = '0.7';
   } else {
     badge.textContent = 'Not Requested';
     badge.style.background = 'rgba(255,255,255,0.1)';
     badge.style.color = 'var(--muted)';
     btn.style.display = 'inline-block';
+    btn.textContent = 'Request Access';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    emailInput.readOnly = false;
+    emailInput.style.opacity = '1';
   }
 }
 
@@ -3012,7 +3031,8 @@ async function requestScheduleAccess() {
     showToast('<a href="/app.html#signup" style="text-decoration:underline;text-decoration-color:var(--accent);color:inherit;font-weight:bold;">Sign up</a> to use this feature', false, true);
     return;
   }
-  const email = document.getElementById('scheduleRequestEmail').value.trim();
+  const emailInput = document.getElementById('scheduleRequestEmail');
+  const email = emailInput.value.trim();
   if (!email) {
     showToast('Please enter an email address', 'error');
     return;
@@ -3044,17 +3064,17 @@ async function requestScheduleAccess() {
       body: JSON.stringify({ email, uid: currentUser.uid })
     });
     
-    if (res.ok) {
-      window.scheduleStatus = 'pending';
-      if (db) {
-        await db.collection("cineq_users").doc(currentUser.uid).set({ scheduleStatus: 'pending' }, { merge: true });
-      }
-      updateScheduleUI();
-      showToast('Request sent successfully!');
-    } else {
-      const data = await res.json();
-      throw new Error(data.error || 'Failed to send request');
+    // Proceed to pending state even if the email API throws a 502 (so user isn't stuck)
+    if (!res.ok) {
+        console.warn('Backend email notification failed, but proceeding to pending state.');
     }
+    
+    window.scheduleStatus = 'pending';
+    if (db) {
+      await db.collection("cineq_users").doc(currentUser.uid).set({ scheduleStatus: 'pending' }, { merge: true });
+    }
+    updateScheduleUI();
+    showToast('Request sent! We will review it shortly.');
   } catch (err) {
     showToast(err.message, 'error');
     btn.textContent = prevText;
