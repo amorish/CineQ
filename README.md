@@ -39,8 +39,9 @@
 | ![FlowMode icon](https://api.iconify.design/lucide/zap.svg?color=white) **FlowMode** | Intelligent algorithm sequences your unwatched list to optimise engagement and prevent fatigue |
 | ![Episode Tracking icon](https://api.iconify.design/lucide/tv.svg?color=white) **Episode Tracking** | Track episode progress for TV series directly from the card |
 | ![Collection Order icon](https://api.iconify.design/lucide/list-ordered.svg?color=white) **Collection Order** | For movie franchises, CineQ shows the correct chronological watch order automatically |
-| ![Themes icon](https://api.iconify.design/lucide/palette.svg?color=white) **Themes** | Toggle between premium Dark and Light modes |
+| ![Theme icon](https://api.iconify.design/lucide/palette.svg?color=white) **Themes** | Toggle between premium Dark and Light modes |
 | ![Settings icon](https://api.iconify.design/lucide/settings.svg?color=white) **Settings** | Account management, username, theme, watchlist preferences, and JSON data backup |
+| ![Notification icon](https://api.iconify.design/lucide/bell.svg?color=white) **Release Notifications** | Get notified when new episodes air or upcoming movies are released |
 | ![Feedback icon](https://api.iconify.design/lucide/message-square-warning.svg?color=white) **In-App Feedback** | Send bug reports and feedback securely with attachments directly from the app |
 
 ---
@@ -144,6 +145,7 @@ CineQ/
 ├── README.md                         # Documentation
 ├── api/                              # Vercel Serverless Functions
 │   ├── feedback.js                   # Handles bug reports & feedback
+│   ├── request-schedule.js           # Handles Calendar Schedule approval flow
 │   ├── send-verification.js          # Handles email verification
 │   └── tmdb.js                       # Secure TMDB API proxy
 ├── scripts/
@@ -177,6 +179,7 @@ CineQ/
 ## ![Roadmap icon](https://api.iconify.design/lucide/map.svg?color=white) Roadmap
 
 - [x] Personal Experience system (5 hearts + notes)
+- [x] New Release & Upcoming Episode Notifications
 - [ ] Search within your own watchlist
 - [x] Google Sign-In (one-click login)
 - [x] Statistics dashboard & ticket export
