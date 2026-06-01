@@ -3477,9 +3477,11 @@ async function confirmArchivePrompt() {
   if (!currentArchiveTarget) return;
   const input = document.getElementById('archivePromptInput');
   const timeStr = input.value;
+  const targetId = currentArchiveTarget.id;
+  const targetType = currentArchiveTarget.mediaType;
   closeArchivePrompt();
 
-  const item = watchlist.find(w => w.id == currentArchiveTarget.id && w.media_type === currentArchiveTarget.mediaType);
+  const item = watchlist.find(w => w.id == targetId && w.media_type === targetType);
   if (!item) return;
 
   item.archived = true;
