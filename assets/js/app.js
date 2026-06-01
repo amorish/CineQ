@@ -3456,7 +3456,7 @@ function exportWatchlistData() {
 // ===== ARCHIVE / DROP LOGIC =====
 let currentArchiveTarget = null;
 function promptArchive(id, mediaType) {
-  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  const item = watchlist.find(w => w.id == id && w.media_type === mediaType);
   if (!item) return;
   currentArchiveTarget = { id, mediaType };
   const backdrop = document.getElementById('archivePromptBackdrop');
@@ -3479,7 +3479,7 @@ async function confirmArchivePrompt() {
   const timeStr = input.value;
   closeArchivePrompt();
 
-  const item = watchlist.find(w => w.id === currentArchiveTarget.id && w.media_type === currentArchiveTarget.mediaType);
+  const item = watchlist.find(w => w.id == currentArchiveTarget.id && w.media_type === currentArchiveTarget.mediaType);
   if (!item) return;
 
   item.archived = true;
@@ -3492,7 +3492,7 @@ async function confirmArchivePrompt() {
 }
 
 async function unarchive(id, mediaType) {
-  const item = watchlist.find(w => w.id === id && w.media_type === mediaType);
+  const item = watchlist.find(w => w.id == id && w.media_type === mediaType);
   if (!item) return;
   item.archived = false;
   item.archiveTime = null;
