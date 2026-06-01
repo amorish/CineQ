@@ -3486,8 +3486,9 @@ async function confirmArchivePrompt() {
   item.archiveTime = timeStr.trim() || 'Unknown';
   item.watched = false;
   await save();
-  renderGrid();
-  openModal(item.id, item.media_type);
+  closeModalDirect();
+  const archiveBtn = document.getElementById('tabArchive');
+  if (archiveBtn) setFilter('archive', archiveBtn);
   showToast('Moved to dropped/archive');
 }
 
