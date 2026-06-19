@@ -139,6 +139,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
       return;
     }
     currentUser = user;
+    if (window.location.hash) {
+      history.replaceState(null, '', window.location.pathname);
+    }
     document.getElementById('authOverlay').style.display = 'none';
     document.getElementById('verifyOverlay').style.display = 'none';
     document.getElementById('userBadge').style.display = 'flex';
@@ -475,11 +478,9 @@ function reclassifyWatchlistItems() {
   watchlist.forEach(item => {
     const orig = (item.original_title || item.title || '').toLowerCase();
     const hasAsianText = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(item.original_title || item.title || '');
-    const isJapaneseOrKorean = item.original_language === 'ja' || item.original_language === 'ko';
     
-    // Explicit title matches or language/script checks
-    const matchesAnime = isJapaneseOrKorean || hasAsianText || 
-                          orig.includes('look back') || 
+    // Explicit title matches
+    const matchesAnime = orig.includes('look back') || 
                           orig.includes('takopi') || 
                           orig.includes('100 meters') || 
                           orig.includes('100m');
@@ -970,7 +971,15 @@ function addTitle(id, itemData, btn, mediaType) {
   const orig = itemData.original_title || itemData.original_name || '';
   const hasAsianText = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(orig);
   const isAnim = (itemData.genres && itemData.genres.some(g => g.id === 16)) || (itemData.genre_ids && itemData.genre_ids.includes(16));
-  const isAnime = isAnim && (itemData.original_language === 'ja' || itemData.original_language === 'ko' || hasAsianText);
+  let isAnime = isAnim && (itemData.original_language === 'ja' || itemData.original_language === 'ko' || hasAsianText);
+  
+  const lowerOrig = orig.toLowerCase();
+  const titleLower = title.toLowerCase();
+  if (lowerOrig.includes('look back') || titleLower.includes('look back') ||
+      lowerOrig.includes('100 meters') || titleLower.includes('100 meters') || titleLower.includes('100m') ||
+      lowerOrig.includes('takopi') || titleLower.includes('takopi')) {
+      isAnime = true;
+  }
   
   const isKDrama = type === 'tv' && itemData.original_language === 'ko';
   const isDoc = (itemData.genres && itemData.genres.some(g => g.id === 99)) || (itemData.genre_ids && itemData.genre_ids.includes(99));
@@ -1085,6 +1094,16 @@ function snapshotStatsCounts() {
     const isWatchedContent = item.watched || (item.episodesWatched && item.episodesWatched > 0);
     if (!isWatchedContent) return;
     let isAnime=item.isAnime, isKDrama=item.isKDrama, isDoc=item.isDoc, isShortFilm=item.isShortFilm, isReality=item.isReality;
+    
+    const searchTitle = (item.original_title || item.title || '').toLowerCase();
+    if (searchTitle.includes('look back') || searchTitle.includes('100 meters') || searchTitle.includes('100m') || searchTitle.includes('takopi')) {
+      isAnime = true;
+    }
+    if (isAnime) {
+      isShortFilm = false;
+      isDoc = false;
+    }
+
     if (isAnime === undefined) {
       const origText = item.original_title || item.title || '';
       const hasAsian = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f\uac00-\ud7af\u1100-\u11ff]/.test(origText);
@@ -1184,6 +1203,15 @@ function updateStats() {
     let isDoc = item.isDoc;
     let isShortFilm = item.isShortFilm;
     let isReality = item.isReality;
+
+    const searchTitle = (item.original_title || item.title || '').toLowerCase();
+    if (searchTitle.includes('look back') || searchTitle.includes('100 meters') || searchTitle.includes('100m') || searchTitle.includes('takopi')) {
+      isAnime = true;
+    }
+    if (isAnime) {
+      isShortFilm = false;
+      isDoc = false;
+    }
 
     if (isAnime === undefined) {
       const origText = item.original_title || item.title || '';
@@ -1852,9 +1880,20 @@ function renderGrid() {
     // Keep serial number continuous across pages
     const i = ((currentPageNum - 1) * ITEMS_PER_PAGE + idx);
     const isTV = a.media_type === 'tv';
-    const typePill = isTV
-      ? `<span class="type-pill tv-pill">TV</span>`
-      : `<span class="type-pill">Movie</span>`;
+    let tempIsAnime = a.isAnime;
+    const searchTitle = (a.original_title || a.title || '').toLowerCase();
+    if (searchTitle.includes('look back') || searchTitle.includes('100 meters') || searchTitle.includes('100m') || searchTitle.includes('takopi')) {
+      tempIsAnime = true;
+    }
+    
+    let typePill = '';
+    if (tempIsAnime) {
+      typePill = `<span class="type-pill" style="background:rgba(244,63,94,0.15); color:#f43f5e; border-color:rgba(244,63,94,0.2);">Anime</span>`;
+    } else if (isTV) {
+      typePill = `<span class="type-pill tv-pill">TV</span>`;
+    } else {
+      typePill = `<span class="type-pill">Movie</span>`;
+    }
     const epCount = isTV ? epDisplay(a) : null;
     const isUpcomingItem = a.status === 'Planned' || a.status === 'In Production' || a.status === 'Post Production' || (a.releaseDate && new Date(a.releaseDate) > new Date());
     return `
@@ -3506,6 +3545,9 @@ async function unarchive(id, mediaType) {
 }
 // ===== HEADER LOGO CLICK RESET =====
 function resetToHome() {
+  if (window.location.hash) {
+    history.replaceState(null, '', window.location.pathname);
+  }
   if (searchInput) searchInput.value = '';
   if (dropdown) dropdown.innerHTML = '';
   if (searchStatus) searchStatus.textContent = '';
