@@ -533,7 +533,12 @@ async function loadWatchlist() {
 
 async function backgroundBackfillMissingData() {
   if (isDemo || !currentUser) return;
-  const itemsToBackfill = watchlist.filter(w => w.score === undefined || w.score === null || (!w.year && !w.releaseDate));
+  const itemsToBackfill = watchlist.filter(w => {
+    if (w.score === undefined || w.score === null || (!w.year && !w.releaseDate)) return true;
+    if (w.isAnime && !w.genresVerified) return true;
+    if (w.isKDrama && !w.genresVerified) return true;
+    return false;
+  });
   if (itemsToBackfill.length === 0) return;
   
   let changed = false;
@@ -552,6 +557,29 @@ async function backgroundBackfillMissingData() {
         if (year) item.year = parseInt(year);
         
         item.releaseDate = item.media_type === 'tv' ? (detail.first_air_date || null) : (detail.release_date || null);
+        
+        const isAnim = (detail.genres && detail.genres.some(g => g.id === 16));
+        const isKDrama = item.media_type === 'tv' && detail.original_language === 'ko';
+        
+        if (isAnim) {
+          item.isAnime = true;
+          item.isKDrama = false;
+        } else if (isKDrama) {
+          item.isAnime = false;
+          item.isKDrama = true;
+        } else {
+          // If neither, ensure it's unflagged
+          item.isAnime = false;
+          item.isKDrama = false;
+        }
+        
+        // Explicit overrides
+        const searchTitle = (item.original_title || item.title || '').toLowerCase();
+        if (searchTitle.includes('look back') || searchTitle.includes('takopi') || searchTitle.includes('100 meters') || searchTitle.includes('100m')) {
+          item.isAnime = true;
+        }
+
+        item.genresVerified = true;
         changed = true;
       }
     } catch (e) {
@@ -1889,6 +1917,8 @@ function renderGrid() {
     let typePill = '';
     if (tempIsAnime) {
       typePill = `<span class="type-pill" style="background:rgba(244,63,94,0.15); color:#f43f5e; border-color:rgba(244,63,94,0.2);">Anime</span>`;
+    } else if (a.isKDrama) {
+      typePill = `<span class="type-pill" style="background:rgba(167,139,250,0.15); color:#a78bfa; border-color:rgba(167,139,250,0.2);">K-Drama</span>`;
     } else if (isTV) {
       typePill = `<span class="type-pill tv-pill">TV</span>`;
     } else {
